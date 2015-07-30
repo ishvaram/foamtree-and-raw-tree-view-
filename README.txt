@@ -63,3 +63,12 @@ Build revision: 539436074ab2afff11d45414c08f7312e5b1fcc2/53943607
 
 Carrot Search Confidential
 Copyright 2002-2015 Carrot Search
+
+
+<-- Foamtree with raw tree and snippet -->
+
+To run a foamtree visualization and tree view navigate to /demos/foamtree.php
+
+Download the source file and run it in your loca server(apache)
+you can  see the foamtree and tree viewed cluster with sub cluster and their snippet form json input
+
