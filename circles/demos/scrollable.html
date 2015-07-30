@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <link rel="stylesheet" href="assets/css/reset.css" />
+    <style type="text/css"> 
+      html, body {
+        width: 100%;
+        height: 2000px; /* intentionally very long. */
+      }
+
+      #container {
+        width: 700px;
+        margin: 0 auto;
+      }
+
+      #visualization {
+        width: 100%;
+        height: 500px;
+      }
+
+      p {
+        margin-top: 1em;
+        color: #d3d3d3;
+      }
+
+      pre {
+        margin-top: 1em;
+        font-family: monospace;
+        white-space: pre-wrap;
+      }
+    </style>
+
+    <script src="../carrotsearch.circles.js"></script>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="visualization"></div>
+      <p style="color: red;">Visualisation will not capture touch events. It is scrollable on touch devices. Scale disabled via
+      meta tag (very slow canvases when zoomed):</p>
+      <pre>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" /&gt;</pre>
+
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae ante enim, sit amet molestie purus. Phasellus dolor felis, bibendum vel tincidunt non, ultricies et nibh. Nunc sodales auctor posuere. Donec a erat nibh, id suscipit lacus. Etiam congue dapibus vestibulum. Sed vitae magna dolor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Quisque varius dignissim dolor ac commodo. Vestibulum hendrerit posuere sagittis. Maecenas ac neque eros, ut dignissim quam.</p>
+      <p>Nunc vulputate venenatis lobortis. Morbi viverra, est non gravida malesuada, sapien nunc sodales mi, ac vehicula lacus ligula accumsan nunc. Duis imperdiet diam sed mi venenatis vel dictum sapien eleifend. Curabitur neque felis, molestie eu iaculis sit amet, imperdiet in orci. Cras aliquet fermentum mi, eu sagittis purus pretium a. Proin euismod odio a mi imperdiet suscipit. Etiam dui tortor, vehicula ut dapibus ac, adipiscing eu turpis. Ut laoreet condimentum rhoncus. Donec dui elit, tincidunt quis pulvinar sed, ultricies sit amet urna. In vel ligula vel massa scelerisque volutpat non nec risus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Sed velit sapien, ornare et eleifend sit amet, pellentesque at tellus. Fusce congue porta nisl, sed bibendum nunc fringilla a. Fusce luctus varius ipsum, eu suscipit turpis luctus at. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p>Suspendisse id quam sed lacus mattis lacinia volutpat in justo. Praesent condimentum tellus vel orci tempor porttitor. Nam vel nunc tortor, vel bibendum orci. Proin pellentesque lacus erat, quis fermentum erat. Nullam sed metus sem, sit amet imperdiet arcu. Nullam sit amet scelerisque tellus. Ut eleifend ante sit amet orci hendrerit nec gravida est posuere. Praesent non massa imperdiet justo tincidunt ornare quis in orci. Ut condimentum varius eros varius dignissim. Quisque aliquam augue at odio pretium iaculis. Nullam risus sem, convallis et rutrum a, lobortis in massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nulla vitae nulla sed ligula vulputate semper a quis velit. Suspendisse pretium metus ligula, a mattis ligula. Sed nec eros nunc. Vestibulum ut orci quam, eget condimentum quam.</p>
+      <p>Integer vitae posuere lacus. Etiam posuere volutpat purus sed dictum. Integer sed ipsum lectus. Suspendisse et rutrum lorem. Phasellus eu elit id mauris fringilla ultricies. Donec metus justo, imperdiet ac sodales eget, hendrerit eu diam. Praesent dapibus nisi nec felis vulputate non luctus velit dignissim. Nam tincidunt accumsan ante sit amet tempus. Cras quis elit id tortor adipiscing feugiat. In hac habitasse platea dictumst. Aliquam sit amet velit ac lacus rutrum vulputate et vitae turpis.</p>
+    </div>
+
+    <script>
+      function embed() {
+        // We respin until the visualization container has non-zero area (there are race 
+        // conditions on Chrome which permit that) and the visualization class is loaded.
+        var container = document.getElementById("visualization");
+        if (container.clientWidth <= 0 || container.clientHeight <= 0 || !window["CarrotSearchCircles"]) {
+          window.setTimeout(embed, 250);
+          return;
+        }
+
+        // Use the defaults for all parameters.
+        var circles = new CarrotSearchCircles({
+          id: "visualization",
+          pixelRatio: window.devicePixelRatio || 1,
+          backgroundColor: "rgba(0,0,0,0.2)",
+          captureMouseEvents: false,
+          dataObject: {
+            groups:[
+              { label:"Group 1", groups:[
+                { label:"Group 1.1" },
+                { label:"Group 1.2" },
+                { label:"Group 1.3" }
+              ]},
+              { label:"Group 2", groups:[
+                { label:"Group 2.1" },
+                { label:"Group 2.2" },
+                { label:"Group 2.3" }
+              ]},
+              { label:"Group 3", groups:[
+                { label:"Group 3.1" },
+                { label:"Group 3.2" },
+                { label:"Group 3.3" }
+              ]}
+            ]
+          }
+        });
+      }
+      embed();
+    </script>
+  </body>
+</html>

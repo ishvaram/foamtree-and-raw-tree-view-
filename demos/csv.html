@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>CSV to FoamTree converter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+
+    <meta charset="utf-8" />
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/common.css" rel="stylesheet" />
+    <style>
+      #json {
+        cursor: default;
+        background-color: #fff;
+      }
+      #json, #csv {
+        max-width: 100%; min-width: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="container" width="1200px"><div id="visualization"></div></div>
+    <script src="../carrotsearch.foamtree.js"></script>
+
+    <!-- Include Hammer.js for mobile interactions. Not required for desktop-only apps. -->
+    <script src="assets/js/hammer.min.js"></script>
+    <script src="assets/js/jquery-2.0.3.min.js"></script>
+
+    <script>
+      $(window).load(function() {
+        // Initialize FoamTree
+        var foamtree = new CarrotSearchFoamTree({
+          id: "visualization",
+          pixelRatio: window.devicePixelRatio || 1,
+          rolloutDuration: 0,
+          pullbackDuration: 0,
+          fadeDuration: 0,
+          rainbowStartColor: "hsla(20, 100%, 50%, 1.0)",
+          rainbowEndColor: "hsla(120, 80%, 50%, 1.0)"
+        });
+
+        // Resize FoamTree on orientation change
+        window.addEventListener("orientationchange", foamtree.resize);
+
+        // Resize on window size changes
+        window.addEventListener("resize", (function() {
+          var timeout;
+          return function() {
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(foamtree.resize, 300);
+          }
+        })());
+
+        // Perform conversion once in a while to easily handle pasting into the field
+        window.setInterval((function() {
+          var lastConverted = null;
+
+          return function() {
+            var current = $("#csv").val();
+            if (current !== lastConverted) {
+              lastConverted = current;
+              convert(current);
+            }
+          };
+        })(), 200);
+
+        function convert(csv) {
+          var log = [];
+          var json = csvToJson(csv, log);
+          $("#json").val(JSON.stringify(json, undefined, " "));
+          foamtree.set("dataObject", json);
+        }
+
+        function csvToJson(csv, log) {
+          var rootGroups = [ ];
+
+          if (csv) {
+            var lines = csv.split(/\n/)
+              .map(function (line) {
+                // Remove trailing tabs to correctly handle a one-level
+                // group in a multi-level data set.
+                return line.replace(/\t+$/g, "").split(/\t/);
+              })
+              .filter(function (line) {
+                // Filter out string-only rows, assuming they are headers
+                for (var i = 0; i < line.length; i++) {
+                  var cell = line[i];
+                  if (!isNaN(parseFloat(cell))) {
+                    return true;
+                  }
+                }
+                return false;
+              });
+
+            // TODO: skipping erroneous rows, logging
+
+            var activeGroups;
+            lines.forEach(function (line) {
+              activeGroups = rootGroups;
+
+              for (var i = 0; i < line.length / 2; i++) {
+                var label = line[i * 2];
+                var weight = line[i * 2 + 1];
+                if (weight) {
+                  weight = parseFloat(weight.replace(",", "."));
+                }
+
+                if (label !== "") {
+                  var groups = [];
+                  activeGroups.push({
+                    label: label,
+                    weight: weight,
+                    groups: groups
+                  });
+                  activeGroups = groups;
+                } else {
+                  activeGroups = activeGroups[activeGroups.length - 1].groups;
+                }
+              }
+            });
+          }
+
+          return { groups: rootGroups };
+        }
+      });
+    </script>
+  </body>
+</html>

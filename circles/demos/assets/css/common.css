@@ -1,0 +1,246 @@
+body {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+body.panel {
+  margin-top: 3em;
+}
+body.about {
+  margin-top: 0;
+}
+
+#toc {
+  display: none;
+}
+
+code, tt, pre {
+  font-family: "Lucida Sans Unicode",monospace;
+}
+
+h1, h2 {
+  margin: 0;
+  padding: 0;
+  margin-top: 0.5em;
+  font-weight: normal;
+  text-shadow: 1px 1px 8px black;
+}
+
+h1 {
+  font-size: 20px;
+}
+h2 {
+  font-size: 15px;
+  font-weight: bold;
+}
+h3 {
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+h3 small {
+  font-weight: normal;
+}
+
+h2 + p {
+  margin-top: 0;
+}
+
+li {
+  margin: 0;
+  padding: 0 0 5px 0;
+}
+
+ul {
+  margin: 0;
+  padding-left: 1.5em;
+}
+
+small {
+  font-size: 100%;
+}
+
+em.brand {
+  font-style: normal;
+  font-weight: bold;
+  font-family: Tahoma, Arial, sans-serif;
+}
+
+a.download {
+	padding-left: 18px;
+	background-image: url(../img/icon-download.png);
+	background-position: 0 center;
+	background-repeat: no-repeat;
+}
+
+
+/** Tiled features */
+ul.tiles {
+  list-style: none;
+  padding: 0;
+  line-height: 1.3;
+  font-size: 14px;
+}
+
+.portrait ul.tiles {
+  width: 2700px;
+}
+
+ul.tiles > li {
+  width: 352px;
+  float: left;
+  margin-right: 30px;
+  margin-bottom: 20px;
+}
+ul.tiles > li.extras {
+  margin-right: 0px;
+}
+ul.tiles > li > p {
+  margin: 0 0 8px 0;
+}
+ul.tiles > li > a > img {
+  float: left;
+  margin-right: 10px;
+  border-radius: 8px;
+  border: 3px solid transparent;
+}
+ul.tiles > li > a > img:hover {
+  border: 3px solid white;
+}
+
+ul.tiles > li > ul > li {
+  padding-bottom: 0;
+}
+ul.tiles > li > ul {
+  float: left;
+  list-style: none;
+  padding: 0;
+}
+ul.tiles > li > ul > li > span > a,
+ul.tiles > li > ul > li > a {
+  padding-left: 10px;
+  padding-right: 6px;
+}
+ul.tiles > li > ul.stateful > li a.active {
+  background: url(../img/arrow-dark-right.png) no-repeat -4px 0;
+}
+ul.tiles > li > ul.stateless > li > span:first-child > a,
+ul.tiles > li > ul.stateless > li > a:first-child {
+  padding-left: 0;
+}
+
+#about-content {
+  overflow-x: hidden;
+}
+
+/** Customizations for the dark theme */
+body.dark {
+  background-color: #1d1c1b;
+  color: #fff;
+}
+
+body.dark h1,
+body.dark h2 {
+  color: white;
+}
+body.dark .folded > h2 {
+  color: #ccc;
+}
+
+body.dark a {
+  color: #8fb5c9;
+}
+
+.folded > h1,
+.unfolded > h1 {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.folded > legend,
+.unfolded > legend,
+.folded > h1,
+.unfolded > h1 {
+  display: inline-block;
+  *display: block;
+  *float: left;
+  *clear: both;
+  padding-right: 20px;
+  cursor: pointer;
+}
+.folded > * {
+  display: none;
+}
+.folded > h2 {
+  display: inline;
+  font-weight: normal;
+  padding-right: 0.5em;
+  margin-right: 0.5em;
+  border-right: 1px solid #666;
+  cursor: pointer;
+}
+.folded > h2:first-of-type {
+  padding-left: 0.5em;
+}
+.folded > h2:last-of-type {
+  border-right: none;
+}
+.folded > h2:hover {
+  text-decoration: underline;
+}
+.folded > legend + *,
+.unfolded > legend + *,
+.folded > h1 + *,
+.unfolded > h1 + * {
+  *clear: both;
+}
+
+.no-x-scroll {
+  overflow-x: hidden;
+}
+
+body.dark .unfolded > legend,
+body.dark .unfolded > h1 {
+  background: url(../img/arrow-dark-down.png) no-repeat right center;
+}
+body.dark .folded > legend,
+body.dark .folded > h1 {
+  background: url(../img/arrow-dark-right.png) no-repeat right center;
+  margin-bottom: 0 !important;
+}
+
+body.dark tt {
+  background-color: #4a4846;
+  padding: 0 2px;
+  color: #fff;
+}
+
+body.dark a > tt {
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+body.dark tt > a {
+  color: #a9d5ed;
+  text-decoration: none;
+}
+body.dark tt > a:hover {
+  text-decoration: underline;
+}
+
+
+body.dark em.brand,
+body.dark strong {
+  color: white;
+}
+body.dark small  {
+  color: #aaa;
+}

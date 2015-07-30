@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="assets/css/reset.css" />
+  <style type="text/css">
+    html, body, #visualization, #container {
+      height: 100%;
+    }
+
+    #container {
+      position: relative;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+  </style>
+
+  <script src="../carrotsearch.circles.js"></script>
+  <script src="../carrotsearch.circles.asserts.js"></script>
+  <script src="assets/js/carrotsearch.examples.helpers.js"></script>
+  <script src="assets/js/carrotsearch.examples.onresizehook.js"></script>
+  <script src="assets/js/carrotsearch.examples.evtdelegation.js"></script>
+  <script src="assets/js/carrotsearch.examples.viewport.js"></script>
+  <script src="assets/js/jquery-1.8.2.min.js"></script>
+</head>
+
+<body>
+<div id="container">
+  <div id="visualization"></div>
+  <canvas id="overlay" width="200" height="200"></canvas>
+</div>
+
+<script>
+  // Defer until everything is loaded (fonts, scripts, models). Simplifies the demo.
+  $(window).load(function() {
+    // Determine the pixel ratio for sub-pixel displays (retina etc.)
+    var devicePixelRatio = Math.min(1.5, window.devicePixelRatio || 1);
+
+    // Link up groups based on text labels.
+    function setupGroupLinks(drinks, food) {
+      var all = [].concat(drinks, food);
+      var labelToGroup = {};
+      // get the mapping of labels to IDs.
+      all.forEach(function(g) {
+        if (!g.linkTo) g.linkTo = [];
+        labelToGroup[g.label] = g;
+      });
+      // add reverse links from food to drinks.
+      drinks.forEach(function(g) {
+        g.linkTo.forEach(function(label) {
+          labelToGroup[label].linkTo.push(g.label);
+        });
+      });
+      // map labels to group references.
+      all.forEach(function(g) {
+        g.linkTo = g.linkTo.map(function(label) {
+          return labelToGroup[label];
+        });
+      });
+    }
+
+    // Connection drawing code pulled out from the onRedraw hook for clarity.
+    function drawConnection(ctx, fromShape, toShape, layoutData) {
+      if (!toShape || !fromShape) return;
+
+      ctx.fillStyle = "rgba(255,0,0,.1)";
+      ctx.strokeStyle = "rgba(255,0,0,.1)";
+
+      // Make the 'to' shape a bit more narrow.
+      var margin = 10 / toShape.r_inner;
+      if (toShape.angle_to - toShape.angle_from > margin) {
+        toShape = $.extend({}, toShape);
+        toShape.angle_to -= margin;
+        toShape.angle_from += margin;
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(
+        fromShape.x + Math.cos(fromShape.angle_to) * fromShape.r_inner,
+        fromShape.y + Math.sin(fromShape.angle_to) * fromShape.r_inner
+      );
+      ctx.quadraticCurveTo(
+        layoutData.centerx,
+        layoutData.centery,
+        toShape.x + Math.cos(toShape.angle_from) * toShape.r_inner,
+        toShape.y + Math.sin(toShape.angle_from) * toShape.r_inner
+      );
+      ctx.arc(
+        toShape.x,
+        toShape.y,
+        toShape.r_inner,
+        toShape.angle_from,
+        toShape.angle_to, false
+      );
+      ctx.quadraticCurveTo(
+        layoutData.centerx,
+        layoutData.centery,
+        fromShape.x + Math.cos(fromShape.angle_from) * fromShape.r_inner,
+        fromShape.y + Math.sin(fromShape.angle_from) * fromShape.r_inner
+      );
+      ctx.arc(
+        fromShape.x,
+        fromShape.y,
+        fromShape.r_inner,
+        fromShape.angle_from,
+        fromShape.angle_to, false
+      );
+      ctx.fill();
+    }
+
+    // Create the data model for our needs. All groups must have unique 'id' property (a call to assignIds below).
+    // The gap groups are for visual separation of foods from drinks.
+    var food = { label: "FOOD", weight: 1, bcolor: "#C4DF9B", groups: [
+      { label: "pizza" },
+      { label: "hot-dog" },
+      { label: "brownie" },
+      { label: "spaghetti al limone" },
+      { label: "arancini con melanzane" },
+      { label: "steak" }
+    ]};
+
+    var drinks = { label: "DRINKS", weight: 1, bcolor: "#7EA7D8", groups: [
+      { label: "pepsi",        linkTo: ["pizza", "hot-dog"] },
+      { label: "white wine",   linkTo: ["spaghetti al limone"] },
+      { label: "red wine",     linkTo: ["steak"] },
+      { label: "water",        linkTo: ["pizza", "hot-dog", "brownie", "spaghetti al limone", "arancini con melanzane", "steak"] },
+      { label: "beer",         linkTo: ["pizza", "steak"], selected: true },
+      { label: "orange juice", linkTo: ["pizza", "hot-dog", "arancini con melanzane"]},
+      { label: "coffee",       linkTo: ["brownie"]}
+    ]};
+
+    var dataModel = assignIds({
+      groups:[
+        { label: "", weight: .1, gap: true },
+        food,
+        { label: "", weight: .2, gap: true },
+        drinks,
+        { label: "", weight: .1, gap: true }
+      ]
+    });
+
+    // Set up direct references between food and drink pairs. Less typing.
+    setupGroupLinks(drinks.groups, food.groups);
+
+    // Create the visualization.
+    var $canvas = $("#overlay").get(0);
+    var ctx = $canvas.getContext("2d");
+    var showLinksFrom, hoverGroup;
+    var updateLinks = function() {
+      showLinksFrom = circles.get("selection").groups.slice();
+      if (hoverGroup) showLinksFrom.push(hoverGroup);
+    };
+
+    var circles = new CarrotSearchCircles({
+      id: "visualization",
+      pixelRatio: devicePixelRatio,
+      dataObject: dataModel,
+      angleStart: 0,
+      visibleGroupCount: 0,
+      rolloutAnimation: "rollout",
+      groupSelectionColor: "rgba(0,0,0,0)",
+      groupHoverColor: "rgba(0,0,0,0)",
+      groupHoverOutlineColor: "rgba(0,0,0,0)",
+      titleBar: "inscribed",
+      titleBarTextColor: "rgba(0,0,0,.5)",
+      isGroupVisible: function(group) { return !group.gap; },
+      onGroupHover: function(evt) {
+        hoverGroup = evt.group;
+        updateLinks();
+      },
+      onGroupSelectionChanged: function(evt) {
+        updateLinks();
+      },
+      onModelChanged: function() {
+        showLinksFrom = this.get("selection").groups;
+      },
+      onRedraw: function() {
+        ctx.clearRect(0, 0, $canvas.width / devicePixelRatio, $canvas.height / devicePixelRatio);
+        var layoutData = circles.get("layout");
+        showLinksFrom.forEach(function(group) {
+          if (group.linkTo) {
+            var fromShape = circles.groupShape(group.id);
+            group.linkTo.forEach(function(toGroup) {
+              var toShape = circles.groupShape(toGroup.id);
+              drawConnection(ctx, fromShape, toShape, layoutData);
+            });
+          }
+        });
+      },
+      groupColorDecorator: function(opts, params, vars) {
+        if (params.group.bcolor) {
+          vars.groupColor = params.group.bcolor;
+        }
+      },
+      onLayout: function(attrs) {
+        // Update overlay canvas width/ height on visualization change.
+        $("#overlay").attr("width", attrs.w * devicePixelRatio).attr("height", attrs.h * devicePixelRatio);
+        ctx.scale(devicePixelRatio,devicePixelRatio);
+      }
+    });
+
+    // Install on-resize update handler.
+    installResizeHandlerFor(circles, 0);
+
+    // Patch overlay layer events for internet explorer.
+    eventPassthru($("#overlay"));
+  });
+</script>
+</body>
+</html> 

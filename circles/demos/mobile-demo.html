@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Carrot Search Circles: an interactive HTML5 hierarchical pie-chart visualization</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" id="meta" />
+
+    <meta name="description" content="
+        Carrot Search Circles is a JavaScript/HTML5 hierarchical pie-chart for mobile, including
+        iPhone, iPad and Android devices." />
+
+    <link rel="stylesheet" href="assets/css/reset.css" />
+    <link rel="stylesheet" href="assets/css/layout.css" />
+    <link rel="stylesheet" href="assets/css/mobile.css" />
+
+    <script>
+      /** Set viewport size in such a way that CSS pixels correspond to physical pixels. */
+      function updateMeta() {
+        var width, height, portrait = (window.orientation % 180) == 0;
+        var iOs = /iPad|iPhone/.test(window.navigator.userAgent);
+        var chrome = /Chrome/.test(window.navigator.userAgent);
+        if (iOs) {
+          width = portrait ? screen.width : screen.height;
+        } else  {
+          var pixelRatio = window.devicePixelRatio || 1;
+          width = screen.width / pixelRatio;
+        }
+        document.getElementById("meta").setAttribute("content",
+          "width=" + width + (iOs || chrome ? ", initial-scale=1, maximum-scale=1" : ""));
+      }
+      updateMeta();
+    </script>
+
+    <script type="text/javascript">
+      /** GA */
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-317750-2']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+      })();
+    </script>
+
+    <!-- Visualization script. -->
+    <script src="../carrotsearch.circles.js"></script>
+
+    <!-- To simplify the demo, not required in general. -->
+    <script src="assets/js/jquery-1.8.2.min.js"></script>
+
+    <!-- Utility functions and parts of the model shared by more than one example. -->
+    <script src="assets/js/carrotsearch.examples.colordecorators.js"></script>
+    <script src="assets/js/carrotsearch.examples.helpers.js"></script>
+    <script src="assets/js/carrotsearch.examples.features.js"></script>
+  </head>
+
+  <body id="body">
+    <div id="visualizationcontainer">
+      <div id="loading">
+        Loading...
+      </div>
+
+      <div id="visualization"></div>
+    </div>
+    <div id="reflection"></div>
+
+    <noscript>
+      To use Carrot Search HTML5 Circles, enable JavaScript.
+    </noscript>
+
+    <script>
+      // Defer until everything is loaded (fonts, scripts, models). Simplifies the demo.
+      $(window).load(function() {
+        // Enable reflection on webkit browsers.
+        if ($.browser.webkit) {
+          $("body").addClass("reflection");
+        }
+
+        //
+        // On window resize or orientation change trigger visualization resize after a short delay.
+        //
+        var onSizeChange = (function() {
+          var timeout;
+          return function() {
+            $("body").addClass("dimmed");
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(function() {
+              if (circles) {
+                updateMeta();
+                circles.resize();
+                $("body").removeClass("dimmed");
+              }
+            }, 250);
+          };
+        })();
+        window.addEventListener("orientationchange", onSizeChange, false);
+        window.addEventListener("resize", onSizeChange, false);
+
+        // Initialize the model. Parts of the model are initialized in the shared script.
+        var model = assignIds({
+          open: true,
+          groups: [
+            featureModel.transitions,
+            featureModel.misc,
+            featureModel.fonts,
+            featureModel.colors,
+            {
+              label: "Next steps",
+              onClick: toggleZoom,
+              groups: [
+                { label: "API docs",
+                  onClick: function() {
+                    window.open("../api/index.html", "_newtab");
+                  }
+                },
+                { label: "Licensing",
+                  onClick: function() {
+                    window.open("http://carrotsearch.com/contact", "_newtab");
+                  }
+                },
+                { label: "Carrot Search",
+                  onClick: function() {
+                    window.open("http://carrotsearch.com/contact", "_newtab");
+                  }
+                }
+              ]
+            }
+          ]
+        });
+
+        function embedVisualization(font) {
+          // Embed the visualization and make it a global object for simplicity.
+          window.circles = new CarrotSearchCircles({
+            id: "visualization",
+            modelChangeAnimations: "parallel",
+            dataObject: model,
+
+            // Draw curved labels less often for mobile devices -- they're resource-intense.
+            noTexturingCurvature: 0.2,
+            deferLabelRedraws: 0,
+            labelRedrawFadeInTime: 0,
+
+            ringScaling: 1.3,
+            pixelRatio: window.devicePixelRatio || 1,
+
+            // Pick the web font as the default.
+            backgroundColor: "rgba(0, 0, 0, 0)",
+            groupFontFamily: font,
+
+            visibleGroupCount: 0,
+            expanderAngle: 7,
+
+            attributionPositionX: "50.5%",
+            attributionPositionY: "50%",
+
+            // Decorate labels to uppercase (looks better with Open Sans Condensed).
+            groupLabelDecorator: function(options, params, variables) {
+              variables.labelText = variables.labelText.toLocaleUpperCase();
+            },
+
+            // Wire up events
+            onGroupClick: function(e) { clickOn(e.group.id); },
+            onBeforeZoom: function(e) { return false; },
+            onBeforeSelection: function(e) { return false; },
+            onGroupSelectionChanged: function(e) {},
+            onGroupHover: function(e) {},
+            onLayout: function(e) {},
+            onModelChanged: function(e) {
+              $("#loading").hide();
+            },
+            onRolloutStart: function() {}
+          });
+
+          // Manually "click" on the defaults so that they're initially highlighted.
+          clickOn("candy", model);
+          clickOn("position", model);
+          clickOn("explode", model);
+
+          // Revert animations to auto (sequential on mobile devs).
+          // This could be fixed by changing clickOn to not rely on the visualization model,
+          // perhaps in the next release...
+          window.circles.set("modelChangeAnimations", "auto");
+        }
+
+        /** Web fonts configuration (only if web fonts are used). Uncomment or add/ remove the ones you wish to use. */
+        WebFontConfig = {
+          google: { families: [
+            'Yanone+Kaffeesatz:700:latin',
+            'Open+Sans+Condensed:700:latin,latin-ext'
+          ]},
+          active:   function() { embedVisualization("Open Sans Condensed"); },
+          inactive: function() { embedVisualization("Tahoma, sans-serif"); }
+        };
+
+        (function() {
+          var wf = document.createElement('script');
+          wf.src = ('https:' == document.location.protocol ? 'https' : 'http') + '://ajax.googleapis.com/ajax/libs/webfont/1/webfont.js';
+          wf.type = 'text/javascript';
+          wf.async = 'true';
+          var s = document.getElementsByTagName('script')[0];
+          s.parentNode.insertBefore(wf, s);
+        })();
+      });
+    </script>
+  </body>
+</html>

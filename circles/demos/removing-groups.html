@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset='utf-8' />
+    <link rel="stylesheet" href="assets/css/reset.css" />
+    <style type="text/css">
+      html, body, #visualization, #container {
+        height: 100%;
+      }
+  
+      #container {
+        position: relative;
+      }
+
+      #overlay {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        margin: 4px;
+        padding: 2px;
+        background-color: yellow;
+        pointer-events: none;
+      }
+    </style>
+
+    <script src="../carrotsearch.circles.js"></script>
+    <script src="../carrotsearch.circles.asserts.js"></script>
+    <script src="assets/js/carrotsearch.examples.onresizehook.js"></script> 
+    <script src="assets/js/carrotsearch.examples.viewport.js"></script>
+    <script src="assets/js/carrotsearch.examples.helpers.js"></script>
+  </head>
+
+  <body onLoad="javascript:embed()">
+    <div id="container">
+      <div id="visualization"></div>
+      <div id="overlay">
+        Ctrl-click (or ⌘-click) on any group to remove it.<br/>
+        Press the alt key to remove the entire subtree.
+      </div>
+    </div>
+
+    <script>
+      function embed() {
+        var circles = new CarrotSearchCircles({
+          id: "visualization",
+          pixelRatio: Math.min(1.5, window.devicePixelRatio || 1),
+          // Immediate label redrawing on layout().
+          deferLabelRedraws: 0,
+          labelRedrawFadeInTime: 0,
+          // Embed the removal logic in pre-selection code.
+          onBeforeSelection:  function(info) {
+            if (info.ctrlKey || info.metaKey) {
+              var removeFn = function(group) {
+                group.removed = true;
+                group.selected = false;
+              };
+              // Apply to the entire subtree of the selected node,
+              // or just to the node itself to punch a hole in the hierarchy.
+              if (info.altKey) {
+                forAllGroups(info.group, removeFn);
+              } else {
+                removeFn(info.group);
+              }
+              // A relayout is required to pick up visibility changes.
+              this.layout();
+              return false;
+            } else {
+              return true;
+            }
+          },
+          // Only display groups if they're not removed.
+          isGroupVisible: function(group) {
+            return !group.removed;
+          },
+          // Assign IDs automatically (we'll need them for manual selection).
+          dataObject: assignIds({
+            groups:[
+              { label: "remove me",
+                groups: [
+                { label: "remove me" },
+                { label: "remove me" },
+                { label: "remove me" }
+              ]},
+              { label: "remove me",
+                groups: [
+                { label: "remove me" },
+                { label: "remove me" }
+              ]},
+              { label: "remove me",
+                groups: [
+                { label: "remove me" },
+                { label: "remove me", groups: [
+                  { label: "remove me" },
+                  { label: "remove me" },
+                  { label: "remove me" }
+                ]},
+                { label: "remove me" }
+              ]}
+            ]
+          })
+        });
+
+        installResizeHandlerFor(circles, 0);
+      }
+    </script>
+  </body>
+</html>

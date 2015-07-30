@@ -1,0 +1,2366 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>FoamTree settings panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+    <meta charset="utf-8" />
+
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/bootstrap-theme.min.css" rel="stylesheet" />
+    <link href="assets/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="assets/css/bootstrap-colorpicker.css" rel="stylesheet" />
+    <link href="assets/css/github.css" rel="stylesheet" />
+    <link href="assets/css/carrotsearch.slider.css" rel="stylesheet" />
+    <link href="assets/css/common.css" rel="stylesheet" />
+    <link href="assets/css/settings.css" rel="stylesheet" />
+
+    <link href="assets/css/carrotsearch.foamtree.util.loading.css" rel="stylesheet" />
+    <link href="assets/css/carrotsearch.foamtree.util.hints.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="visualization"></div>
+      <div id="progress"></div>
+    </div>
+    <div id="side" class="settings">
+      <div class="tools">
+        <input id="search" type="search" class="form-control input-sm" placeholder="type setting to find, e.g. color or label" />
+      </div>
+
+      <div class="intro">
+        <p>
+          Use this panel to tune FoamTree settings to your liking.
+          Look in the Presets section for some ready-to-use combinations.
+        </p>
+
+        <p>
+          When done, you can <a href="#export"><span class="fa fa-lg fa-upload"></span> export your settings to JSON</a>.
+        </p>
+      </div>
+    </div>
+
+    <script src="../carrotsearch.foamtree.js"></script>
+    <script src="../carrotsearch.foamtree.asserts.js"></script>
+    <script src="../carrotsearch.foamtree.util.relaxationprogress.js"></script>
+    <script src="../carrotsearch.foamtree.util.loading.js"></script>
+    <script src="../carrotsearch.foamtree.util.hints.js"></script>
+
+    <script src="assets/js/jquery-2.0.3.min.js"></script>
+    <script src="assets/js/hammer.min.js"></script>
+    <script src="assets/js/bootstrap-colorpicker.js"></script>
+    <script src="assets/js/bootstrap-transition.js"></script>
+    <script src="assets/js/bootstrap-modal.js"></script>
+    <script src="assets/js/carrotsearch.template.js"></script>
+    <script src="assets/js/carrotsearch.jsonp.js"></script>
+    <script src="assets/js/carrotsearch.pluginhelper.js"></script>
+    <script src="assets/js/carrotsearch.slider.js"></script>
+    <script src="assets/js/carrotsearch.foldable.js"></script>
+    <script src="assets/js/carrotsearch.datasets.js"></script>
+    <script src="assets/js/carrotsearch.visualization.utils.datasets.js"></script>
+    <script src="assets/js/carrotsearch.settings.number.js"></script>
+    <script src="assets/js/carrotsearch.settings.js"></script>
+    <script src="assets/js/carrotsearch.export.js"></script>
+    <script src="assets/js/highlight.pack.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js"></script>
+    <script>
+      var foamtree;
+
+      WebFont.load({
+        google: {
+          families: [
+            'Open+Sans',
+            'Droid+Sans',
+            'Oxygen'
+          ]
+        },
+        active: function() {
+          var googleFonts = this.google.families;
+
+          $(document).ready(function() {
+            foamtree = new CarrotSearchFoamTree({
+              id: "visualization",
+              pixelRatio: window.devicePixelRatio || 1,
+              groupLabelFontFamily: "Oxygen",
+              attributionPosition: 45
+            });
+            CarrotSearchFoamTree.relaxationProgress(foamtree, document.getElementById("progress"));
+            var loader = CarrotSearchFoamTree.loader(foamtree, "<div>Loading...</div>");
+            CarrotSearchFoamTree.hints(foamtree);
+
+            var $panel = $(".settings");
+
+            $panel.datasets({
+              categories: [
+                {
+                  id: "searchResults",
+                  label: "Search results for <em>data mining</em>",
+                  datasets: [
+                    { url: "assets/data/data-mining-100-topic-flat.js", label: "100 hits by topic, flat" },
+                    { url: "assets/data/data-mining-500-topic-flat.js", label: "500 hits by topic, flat" },
+                    { url: "assets/data/data-mining-100-topic-hierarchical.js", label: "100 hits by topic, hierarchical" },
+                    { url: "assets/data/data-mining-500-topic-hierarchical.js", label: "500 hits by topic, hierarchical" },
+                    { url: "assets/data/data-mining-100-url-hierarchical.js", label: "100 hits by URL, hierarchical" },
+                    { url: "assets/data/data-mining-500-url-hierarchical.js", label: "500 hits by URL, hierarchical" }
+                  ]
+                },
+
+                {
+                  id: "synthetic",
+                  label: "Synthetic data sets",
+                  datasets: [
+                    { url: "assets/data/full-3-level.js", label: "3-level full hierarchy" },
+                    { url: "assets/data/random-3-level.js", label: "3-level random hierarchy" },
+                    { url: "assets/data/multilingual.js", label: "Multilingual content" },
+                    { url: "assets/data/degenerate-content.js", label: "Degenerate content" }
+                  ]
+                }
+              ],
+              onChange: function(dataset) {
+                loader.complete(dataset);
+              },
+              onLoadingStart: function() {
+                loader.started();
+              }
+            });
+
+            // For some options it's easier to observe the result
+            // when the data set is reloaded but without the rollout/pullback/
+            var fastReloadTriggers = [
+              "layout", "layoutByWeightOrder", "groupMinDiameter", "showZeroWeightGroups",
+              "rectangleAspectRatioPreference",
+              "relaxationInitializer", "relaxationQualityThreshold",
+              "attributionText", "attributionLogo", "attributionUrl", "attributionPosition",
+              "attributionDistanceFromCenter", "attributionWeight"
+            ];
+
+            var fullReloadTriggers = [
+              "relaxationMaxDuration", "relaxationVisible",
+              "groupGrowingEasing", "groupGrowingDuration", "rolloutMethod", "groupGrowingDrag", "groupResizingBudget",
+
+              "groupLabelUpdateThreshold",
+
+              "rolloutEasing", "rolloutMethod", "rolloutStartPoint", "rolloutDuration", "rolloutStrength", "rolloutPolygonDrag",
+              "rolloutPolygonDuration", "rolloutLabelDelay", "rolloutLabelDrag", "rolloutLabelDuration",
+              "rolloutChildGroupsDrag", "rolloutChildGroupsDelay",
+              "rolloutScalingStrength", "rolloutTranslationXStrength", "rolloutTranslationYStrength",
+              "rolloutRotationStrength", "rolloutTransformationCenter",
+
+              "pullbackEasing", "pullbackMethod", "pullbackStartPoint", "pullbackDuration", "pullbackPolygonDelay",
+              "pullbackPolygonDrag", "pullbackPolygonDuration", "pullbackLabelDelay", "pullbackLabelDrag",
+              "pullbackLabelDuration", "pullbackChildGroupsDelay", "pullbackChildGroupsDrag", "pullbackChildGroupsDuration",
+              "pullbackScalingStrength", "pullbackTranslationXStrength", "pullbackTranslationYStrength",
+              "pullbackRotationStrength", "pullbackTransformationCenter",
+
+              "fadeEasing", "fadeDuration",
+
+              "wireframeLabelDrawing", "wireframeDrawMaxDuration",
+              "finalCompleteDrawMaxDuration", "finalIncrementalDrawMaxDuration",
+              "wireframeToFinalFadeDuration"
+            ];
+
+            var toLogInConsole = [
+              "onModelChanging", "onModelChanged", "onRolloutStart", "onRolloutComplete",
+              "onRelaxationStep", "onRedraw", "onViewReset",
+
+              "onGroupOpenOrCloseChanging", "onGroupOpenOrCloseChanged",
+              "onGroupExposureChanging", "onGroupExposureChanged",
+              "onGroupSelectionChanging", "onGroupSelectionChanged",
+
+              "onGroupHover", "onGroupClick", "onGroupDoubleClick", "onGroupHold",
+              "onGroupMouseDown", "onGroupMouseWheel",
+              "onGroupDragStart", "onGroupDrag", "onGroupDragEnd",
+              "onGroupTransformStart", "onGroupTransform", "onGroupTransformEnd",
+
+              "onKeyUp"
+            ];
+            var updateLogging = (function() {
+              var loggers = {};
+              function getLogger(name) {
+                var logger = function() {
+                  console.log(name, arguments);
+                };
+                loggers[name] = logger;
+                return logger;
+              }
+
+              return function (event, enableLogging) {
+                var name = event.charAt(2).toLowerCase() + event.slice(3);
+                if (enableLogging) {
+                  foamtree.on(name, getLogger(event));
+                } else {
+                  foamtree.off(name, loggers[event]);
+                }
+              };
+            })();
+            var applyOptions = function(options) {
+              foamtree.set(options);
+
+              if (hasAny(options, fullReloadTriggers)) {
+                foamtree.set("dataObject", foamtree.get("dataObject"));
+                return;
+              }
+
+              if (hasAny(options, fastReloadTriggers)) {
+                // Temporarily disable rollout/pullback
+                var previousOptions = {
+                  rolloutDuration: foamtree.get("rolloutDuration"),
+                  pullbackDuration: foamtree.get("pullbackDuration"),
+                  fadeDuration: foamtree.get("fadeDuration"),
+                  onRolloutComplete: foamtree.get("onRolloutComplete")
+                };
+                foamtree.on("rolloutComplete", function restore() {
+                  this.set(previousOptions);
+                  this.off("rolloutComplete", restore);
+                });
+                foamtree.set({
+                  rolloutDuration: 0,
+                  pullbackDuration: 0,
+                  fadeDuration: 0
+                });
+                foamtree.set("dataObject", foamtree.get("dataObject"));
+                return;
+              }
+
+              foamtree.redraw(false);
+
+              function hasAny(obj, keys) {
+                for (var i = keys.length - 1; i >= 0; i--) {
+                  if (obj.hasOwnProperty(keys[i])) {
+                    return true;
+                  }
+                }
+                return false;
+              }
+            };
+
+            var easingValues = [
+              { label: "linear",        value: "linear" },
+              { label: "square in",     value: "squareIn" },
+              { label: "square out",    value: "squareOut" },
+              { label: "square in-out", value: "squareInOut" },
+              { label: "qubic in",      value: "cubicIn" },
+              { label: "qubic out",     value: "cubicOut" },
+              { label: "qubic in-out",  value: "cubicInOut" },
+              { label: "quad in",       value: "quadIn" },
+              { label: "quad out",      value: "quadOut" },
+              { label: "quad in-out",   value: "quadInOut" },
+              { label: "bounce",        value: "bounce" }
+            ];
+            var locationValues = [
+              { label: "center",       value: "center" },
+              { label: "top-left",     value: "topleft" },
+              { label: "bottom-right", value: "bottomright" },
+              { label: "random",       value: "random" }
+            ];
+            var gradientTypeValues = [
+              { value: "none" },
+              { value: "plain" },
+              { value: "gradient" }
+            ];
+            var fontFamilyValues = [
+              { value: "sans-serif" },
+              { value: "serif" },
+              { value: "monospace" },
+              { value: "Arial" },
+              { value: "Arial Black" },
+              { value: "Georgia" },
+              { value: "Impact" },
+              { value: "Lucida Console" },
+              { value: "Tahoma" },
+              { value: "Times" },
+              { value: "Trebuchet MS" },
+              { value: "Verdana" }
+            ].concat(googleFonts.map(function(family) {
+              return {
+                value: family.replace(/\+/g, " ").replace(/:.*$/, "")
+              }
+            }));
+            var fontStyleValues = [ { value: "normal" }, { value: "italic" }, { value: "oblique" } ];
+            var fontWeightValues = [ { value: "normal" }, { value: "bold" } ];
+            var fontVariantValues = [ { value: "normal" }, { value: "small-caps" } ];
+
+            $panel.settings({
+              initial: foamtree.get(),
+              onPreset: applyOptions,
+              onChange: function(option, value) {
+                if (toLogInConsole.indexOf(option) >= 0) {
+                  updateLogging(option, value);
+                  return;
+                }
+                var changed = {};
+                changed[option] = value;
+                applyOptions(changed);
+              },
+              presetGroups: [
+                {
+                  defaults: true,
+                  label: "Reset to factory defaults",
+                  options: (function() {
+                    var defaults = $.extend({}, CarrotSearchFoamTree.defaults);
+                    delete defaults.dataObject;
+                    delete defaults.selection;
+                    delete defaults.open;
+                    delete defaults.exposure;
+                    delete defaults.state;
+                    delete defaults.hierarchy;
+                    delete defaults.geometry;
+                    delete defaults.imageData;
+                    delete defaults.pixelRatio;
+                    delete defaults.wireframePixelRatio;
+                    return defaults;
+                  })(),
+                  before: function() {
+                    $("#container").removeClass("dark");
+                  }
+                },
+                {
+                  label: "Animation",
+                  presets: [
+                    {
+                      label: "No animation",
+                      options: {
+                        rolloutDuration: 0,
+                        pullbackDuration: 0,
+                        fadeDuration: 0
+                      }
+                    },
+                    {
+                      label: "Fade in, fade out",
+                      options: {
+                        rolloutDuration: 0,
+                        pullbackDuration: 0,
+                        fadeDuration: 700
+                      }
+                    },
+                    {
+                      label: "Gentle scaling",
+                      options: {
+                        rolloutMethod: "groups",
+                        rolloutDuration: 2000,
+                        rolloutEasing: "squareInOut",
+                        rolloutScalingStrength: -0.3,
+                        rolloutRotationStrength: 0,
+                        rolloutTranslationXStrength: 0,
+                        rolloutTranslationYStrength: 0,
+                        rolloutPolygonDrag: 0.1,
+                        rolloutLabelDrag: 0.1,
+                        rolloutTransformationCenter: 0.7,
+                        rolloutChildGroupsDrag: 0.1,
+                        pullbackMethod: "groups",
+                        pullbackDuration: 2000,
+                        pullbackEasing: "squareInOut",
+                        pullbackScalingStrength: -0.3,
+                        pullbackRotationStrength: 0,
+                        pullbackTranslationXStrength: 0,
+                        pullbackTranslationYStrength: 0,
+                        pullbackPolygonDelay: 0.1,
+                        pullbackPolygonDrag: 0.1,
+                        pullbackLabelDrag: 0.1,
+                        pullbackChildGroupsDrag: 0.1,
+                        pullbackTransformationCenter: 0.7
+                      }
+                    },
+                    {
+                      label: "Fly-in",
+                      options: {
+                        rolloutMethod: "individual",
+                        rolloutEasing: "squareOut",
+                        rolloutDuration: 3000,
+                        rolloutScalingStrength: -1,
+                        rolloutTranslationXStrength: -0.5,
+                        rolloutTranslationYStrength: -0.3,
+                        rolloutRotationStrength: 0,
+                        rolloutTransformationCenter: 0,
+                        rolloutPolygonDrag: 0.02,
+                        rolloutLabelDrag: 0.03,
+                        rolloutChildGroupsDrag: 0.02,
+                        pullbackMethod: "individual",
+                        pullbackDuration: 3000,
+                        pullbackScalingStrength: -1,
+                        pullbackTranslationXStrength: -0.5,
+                        pullbackTranslationYStrength: -0.3,
+                        pullbackRotationStrength: 0,
+                        pullbackTransformationCenter: 0,
+                        pullbackPolygonDelay: 1,
+                        pullbackPolygonDrag: 0.02,
+                        pullbackChildGroupsDrag: 0.02,
+                        pullbackLabelDrag: 0.03
+                      }
+                    },
+                    {
+                      label: "Bouncy rotation",
+                      options: {
+                        rolloutMethod: "groups",
+                        rolloutEasing: "bounce",
+                        rolloutDuration: 4000,
+                        rolloutScalingStrength: -0.65,
+                        rolloutTranslationXStrength: 0,
+                        rolloutTranslationYStrength: 0,
+                        rolloutRotationStrength: 0.7,
+                        rolloutPolygonDrag: 0.1,
+                        rolloutLabelDrag: 0.1,
+                        rolloutTransformationCenter: 1,
+                        rolloutChildGroupsDrag: 0.1,
+                        pullbackMethod: "groups",
+                        pullbackEasing: "bounce",
+                        pullbackDuration: 4000,
+                        pullbackScalingStrength: -0.65,
+                        pullbackTranslationXStrength: 0,
+                        pullbackTranslationYStrength: 0,
+                        pullbackRotationStrength: 0.7,
+                        pullbackPolygonDelay: 1,
+                        pullbackPolygonDrag: 0.1,
+                        pullbackChildGroupsDrag: 0.1,
+                        pullbackLabelDrag: 0.1,
+                        pullbackTransformationCenter: 1
+                      }
+                    }
+                  ]
+                },
+
+                {
+                  label: "Layout",
+                  presets: [
+                    {
+                      label: "Large groups in the center",
+                      options: {
+                        relaxationInitializer: "fisheye"
+                      }
+                    },
+                    {
+                      label: "Large groups in the corners",
+                      options: {
+                        relaxationInitializer: "blackhole"
+                      }
+                    },
+                    {
+                      label: "Like in FoamTree 2.0.x",
+                      options: {
+                        relaxationInitializer: "ordered"
+                      }
+                    },
+                    {
+                      label: "Accurate, slower to compute",
+                      options: {
+                        relaxationQualityThreshold: 0.1,
+                        relaxationMaxDuration: 10000
+                      }
+                    },
+                    {
+                      label: "Rough, fast to compute",
+                      options: {
+                        relaxationQualityThreshold: 3,
+                        relaxationMaxDuration: 1000
+                      }
+                    },
+                    {
+                      label: "Traditional treemap",
+                      options: {
+                        layout: "squarified"
+                      }
+                    }
+                  ]
+                },
+
+                {
+                  label: "Color scheme",
+                  presets: [
+                    {
+                      label: "For light backgrounds",
+                      options: {
+                        groupSelectionOutlineColor: CarrotSearchFoamTree.defaults.groupSelectionOutlineColor,
+                        groupSelectionOutlineShadowSize: CarrotSearchFoamTree.defaults.groupSelectionOutlineShadowSize,
+                        groupSelectionOutlineShadowColor: CarrotSearchFoamTree.defaults.groupSelectionOutlineShadowColor,
+                        groupFillGradientRadius: CarrotSearchFoamTree.defaults.groupFillGradientRadius,
+                        groupFillGradientCenterLightnessShift: CarrotSearchFoamTree.defaults.groupFillGradientCenterLightnessShift,
+                        groupFillGradientRimLightnessShift: CarrotSearchFoamTree.defaults.groupFillGradientRimLightnessShift,
+                        groupStrokeType: CarrotSearchFoamTree.defaults.groupStrokeType,
+                        groupHoverStrokeLightnessShift: CarrotSearchFoamTree.defaults.groupHoverStrokeLightnessShift,
+                        groupExposureShadowColor: CarrotSearchFoamTree.defaults.groupExposureShadowColor,
+                        groupUnexposureLightnessShift: CarrotSearchFoamTree.defaults.groupUnexposureLightnessShift,
+                        groupUnexposureLabelColorThreshold: CarrotSearchFoamTree.defaults.groupUnexposureLabelColorThreshold
+                      },
+                      before: function() {
+                        $("#container").removeClass("dark");
+                      }
+                    },
+                    {
+                      label: "For dark backgrounds",
+                      options: {
+                        groupSelectionOutlineColor: "#fff",
+                        groupSelectionOutlineShadowSize: 2,
+                        groupSelectionOutlineShadowColor: "#000",
+                        groupFillGradientRadius: 1.2,
+                        groupFillGradientCenterLightnessShift: 30,
+                        groupFillGradientRimLightnessShift: 0,
+                        groupStrokeType: "gradient",
+                        groupStrokeGradientLowerLightnessShift: 0,
+                        groupHoverStrokeLightnessShift: 10,
+                        groupExposureShadowColor: "#000",
+                        groupUnexposureLightnessShift: -50,
+                        groupUnexposureLabelColorThreshold: 0.15
+                      },
+                      before: function() {
+                        $("#container").addClass("dark");
+                      }
+                    },
+                    {
+                      label: "Warm colors",
+                      options: {
+                        rainbowColorDistribution: "linear",
+                        rainbowColorDistributionAngle: 45,
+                        rainbowStartColor: "hsla(60, 100%, 55%, 1)",
+                        rainbowEndColor: "hsla(0, 100%, 60%, 1)"
+                      }
+                    },
+                    {
+                      label: "Full rainbow",
+                      options: {
+                        rainbowColorDistribution: "radial",
+                        rainbowColorDistributionAngle: -45,
+                        rainbowStartColor: "hsla(0, 100%, 55%, 1)",
+                        rainbowEndColor: "hsla(360, 100%, 55%, 1)"
+                      }
+                    }
+                  ]
+                },
+
+                {
+                  label: "Borders & fill",
+                  presets: [
+                    {
+                      label: "Straight and flat",
+                      options: {
+                        groupBorderRadius: 0,
+                        groupFillType: "plain",
+                        groupStrokePlainLightnessShift: -20,
+                        rainbowStartColor: "hsla(0, 100%, 60%, 1)",
+                        rainbowEndColor: "hsla(360, 100%, 60%, 1)",
+
+                        groupFillGradientCenterLightnessShift: CarrotSearchFoamTree.defaults.groupFillGradientCenterLightnessShift,
+                        groupFillGradientRimSaturationShift: CarrotSearchFoamTree.defaults.groupFillGradientRimSaturationShift,
+                        groupFillGradientRimLightnessShift: CarrotSearchFoamTree.defaults.groupFillGradientRimLightnessShift
+                      }
+                    },
+                    {
+                      label: "Round with gradients",
+                      options: {
+                        groupBorderRadius: 1,
+                        groupFillType: "gradient",
+                        groupStrokePlainLightnessShift: -10,
+                        groupFillGradientCenterLightnessShift: 30,
+                        groupFillGradientRimSaturationShift: 20,
+                        groupFillGradientRimLightnessShift: -15,
+
+                        rainbowStartColor: CarrotSearchFoamTree.defaults.rainbowStartColor,
+                        rainbowEndColor: CarrotSearchFoamTree.defaults.rainbowEndColor
+                      }
+                    },
+
+                    {
+                      label: "Bold borders",
+                      options: {
+                        groupBorderWidth: 8,
+                        groupInsetWidth: 16,
+                        groupSelectionOutlineWidth: 8,
+                        groupStrokeWidth: 4,
+
+                        groupBorderRadius: CarrotSearchFoamTree.defaults.groupBorderRadius
+                      }
+                    },
+
+                    {
+                      label: "No borders",
+                      options: {
+                        groupBorderRadius: 0,
+                        groupBorderWidth: 0,
+                        groupInsetWidth: 0,
+                        groupSelectionOutlineWidth: 5,
+                        groupStrokeWidth: 0
+                      }
+                    }
+                  ]
+                }
+              ],
+              optionGroups: [
+                {
+                  id: "layout",
+                  label: "Layout",
+                  options: [
+                    {
+                      option: "layout",
+                      label: "Layout",
+                      level: "basic",
+                      type: "enum",
+                      values: [
+                        { value: "relaxed" },
+                        { value: "ordered" },
+                        { value: "squarified" }
+                      ]
+                    },
+                    {
+                      option: "layoutByWeightOrder",
+                      label: "Layout in the order of weights",
+                      level: "intermediate",
+                      type: "boolean"
+                    },
+                    {
+                      option: "showZeroWeightGroups",
+                      label: "Show zero-weight groups",
+                      level: "intermediate",
+                      type: "boolean"
+                    },
+                    {
+                      option: "groupMinDiameter",
+                      label: "Minimum group diameter",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1000,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "rectangleAspectRatioPreference",
+                      label: "Rectangle aspect ratio preference",
+                      level: "intermediate",
+                      type: "number",
+                      min: -4,
+                      max: 4,
+                      step: 0.01,
+                      immediate: true
+                    }
+                  ]
+                },
+
+                {
+                  id: "relaxation",
+                  label: "Relaxation",
+                  options: [
+                    {
+                      option: "relaxationInitializer",
+                      label: "Relaxation initializer",
+                      level: "basic",
+                      type: "enum",
+                      values: [
+                        { value: "fisheye" },
+                        { value: "ordered" },
+                        { value: "squarified" },
+                        { value: "blackhole" },
+                        { value: "random" }
+                      ]
+                    },
+                    {
+                      option: "relaxationVisible",
+                      label: "Relaxation visible",
+                      level: "basic",
+                      type: "boolean"
+                    },
+                    {
+                      option: "relaxationQualityThreshold",
+                      label: "Relaxation quality threshold",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0.0,
+                      max: 4,
+                      step: 0.01,
+                      immediate: true
+                    },
+                    {
+                      option: "relaxationMaxDuration",
+                      label: "Maximum relaxation duration",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 60000,
+                      step: 500,
+                      immediate: false
+                    },
+                    {
+                      option: "groupGrowingDuration",
+                      label: "Group growing duration",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 10000,
+                      step: 100,
+                      immediate: false
+                    },
+                    {
+                      option: "groupGrowingEasing",
+                      label: "Group growing easing",
+                      level: "basic",
+                      type: "enum",
+                      ui: "combo",
+                      values: easingValues
+                    },
+                    {
+                      option: "groupGrowingDrag",
+                      label: "Group growing drag",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.01,
+                      immediate: false
+                    },
+                    {
+                      option: "groupResizingBudget",
+                      label: "Group resizing budget",
+                      level: "advanced",
+                      type: "number",
+                      min: 0,
+                      max: 50,
+                      step: 1,
+                      immediate: false
+                    }
+                  ]
+                },
+
+                {
+                  id: "groupBorders",
+                  label: "Group borders",
+                  options: [
+                    {
+                      option: "groupBorderRadius",
+                      label: "Group border radius",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.01,
+                      immediate: true
+                    },
+                    {
+                      option: "groupBorderWidth",
+                      label: "Group border width",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 50,
+                      step: 0.1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupInsetWidth",
+                      label: "Group inset width",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 50,
+                      step: 0.1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupBorderWidthScaling",
+                      label: "Group border width scaling",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.01,
+                      immediate: true
+                    },
+                    {
+                      option: "groupBorderRadiusCorrection",
+                      label: "Group border radius correction",
+                      level: "advanced",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.01,
+                      immediate: true
+                    }
+                  ]
+                },
+
+                {
+                  id: "groupFill",
+                  label: "Group fill",
+                  options: [
+                    {
+                      option: "groupFillType",
+                      label: "Group fill type",
+                      level: "basic",
+                      type: "enum",
+                      values: gradientTypeValues
+                    },
+                    {
+                      option: "groupFillGradientRadius",
+                      label: "Gradient radius",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 5,
+                      step: 0.01,
+                      immediate: true
+                    },
+
+                    {
+                      option: "groupFillGradientCenterHueShift",
+                      label: "Gradient center hue shift",
+                      level: "basic",
+                      type: "number",
+                      min: -180,
+                      max: 180,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupFillGradientCenterSaturationShift",
+                      label: "Gradient center saturation shift",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupFillGradientCenterLightnessShift",
+                      label: "Gradient center lightness shift",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    },
+
+                    {
+                      option: "groupFillGradientRimHueShift",
+                      label: "Gradient rim hue shift",
+                      level: "basic",
+                      type: "number",
+                      min: -180,
+                      max: 180,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupFillGradientRimSaturationShift",
+                      label: "Gradient rim saturation shift",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupFillGradientRimLightnessShift",
+                      label: "Gradient rim lightness shift",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    }
+                  ]
+                },
+
+                {
+                  id: "groupStroke",
+                  label: "Group stroke",
+                  options: [
+                    {
+                      option: "groupStrokeType",
+                      label: "Group stroke type",
+                      level: "basic",
+                      type: "enum",
+                      values: gradientTypeValues
+                    },
+
+                    {
+                      option: "groupStrokeWidth",
+                      label: "Group stroke width",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 20,
+                      step: 0.1,
+                      immediate: true
+                    },
+
+                    {
+                      option: "groupStrokePlainHueShift",
+                      label: "Plain hue shift",
+                      level: "basic",
+                      type: "number",
+                      min: -180,
+                      max: 180,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupStrokePlainSaturationShift",
+                      label: "Plain saturation shift",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupStrokePlainLightnessShift",
+                      label: "Plain lightness shift",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    },
+
+                    {
+                      option: "groupStrokeGradientRadius",
+                      label: "Gradient radius",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 5,
+                      step: 0.01,
+                      immediate: true
+                    },
+
+                    {
+                      option: "groupStrokeGradientAngle",
+                      label: "Gradient angle",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 180,
+                      step: 1,
+                      immediate: true
+                    },
+
+                    {
+                      option: "groupStrokeGradientLowerHueShift",
+                      label: "Gradient lower hue shift",
+                      level: "basic",
+                      type: "number",
+                      min: -180,
+                      max: 180,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupStrokeGradientLowerSaturationShift",
+                      label: "Gradient lower saturation shift",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupStrokeGradientLowerLightnessShift",
+                      label: "Gradient lower lightness shift",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    },
+
+                    {
+                      option: "groupStrokeGradientUpperHueShift",
+                      label: "Gradient upper hue shift",
+                      level: "basic",
+                      type: "number",
+                      min: -180,
+                      max: 180,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupStrokeGradientUpperSaturationShift",
+                      label: "Gradient upper saturation shift",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupStrokeGradientUpperLightnessShift",
+                      label: "Gradient upper lightness shift",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    }
+                  ]
+                },
+
+                {
+                  id: "groupSelection",
+                  label: "Group selection",
+                  options: [
+                    {
+                      option: "groupSelectionOutlineColor",
+                      label: "Selection outline color",
+                      level: "basic",
+                      type: "color",
+                      immediate: true
+                    },
+                    {
+                      option: "groupSelectionOutlineWidth",
+                      label: "Selection outline width",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 20,
+                      step: 0.1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupSelectionOutlineShadowColor",
+                      label: "Selection outline shadow color",
+                      level: "basic",
+                      type: "color",
+                      immediate: true
+                    },
+                    {
+                      option: "groupSelectionOutlineShadowSize",
+                      label: "Selection outline shadow size",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 20,
+                      step: 0.1,
+                      immediate: true
+                    },
+
+                    {
+                      option: "groupSelectionFillHueShift",
+                      label: "Fill hue shift on selection",
+                      level: "basic",
+                      type: "number",
+                      min: -180,
+                      max: 180,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupSelectionFillSaturationShift",
+                      label: "Fill saturation shift on selection",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupSelectionFillLightnessShift",
+                      label: "Fill lightness shift on selection",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    },
+
+                    {
+                      option: "groupSelectionStrokeHueShift",
+                      label: "Stroke hue shift on selection",
+                      level: "basic",
+                      type: "number",
+                      min: -180,
+                      max: 180,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupSelectionStrokeSaturationShift",
+                      label: "Stroke saturation shift on selection",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupSelectionStrokeLightnessShift",
+                      label: "Stroke lightness shift on selection",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    }
+
+                  ]
+                },
+
+                {
+                  id: "groupLabels",
+                  label: "Group labels",
+                  options: [
+                    {
+                      option: "groupLabelFontFamily",
+                      label: "Font family",
+                      level: "basic",
+                      type: "enum",
+                      ui: "combo",
+                      values: fontFamilyValues
+                    },
+                    {
+                      option: "groupLabelFontStyle",
+                      label: "Font style",
+                      level: "basic",
+                      type: "enum",
+                      ui: "radio",
+                      values: fontStyleValues
+                    },
+                    {
+                      option: "groupLabelFontWeight",
+                      label: "Font weight",
+                      level: "basic",
+                      type: "enum",
+                      ui: "radio",
+                      values: fontWeightValues
+                    },
+                    {
+                      option: "groupLabelFontVariant",
+                      label: "Font variant",
+                      level: "basic",
+                      type: "enum",
+                      ui: "radio",
+                      values: fontVariantValues
+                    },
+                    {
+                      option: "groupLabelMinFontSize",
+                      label: "Minimum font size",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 200,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupLabelMaxFontSize",
+                      label: "Maximum font size",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 200,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupLabelLightColor",
+                      label: "Label light color",
+                      level: "basic",
+                      type: "color",
+                      immediate: true
+                    },
+                    {
+                      option: "groupLabelDarkColor",
+                      label: "Label dark color",
+                      level: "basic",
+                      type: "color",
+                      immediate: true
+                    },
+                    {
+                      option: "groupLabelColorThreshold",
+                      label: "Label color threshold",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.01,
+                      immediate: true
+                    },
+                    {
+                      option: "groupLabelLineHeight",
+                      label: "Line height",
+                      level: "intermediate",
+                      type: "number",
+                      min: 1,
+                      max: 2,
+                      step: 0.1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupLabelVerticalPadding",
+                      label: "Vertical padding",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 5,
+                      step: 0.1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupLabelHorizontalPadding",
+                      label: "Horizontal padding",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 5,
+                      step: 0.1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupLabelMaxTotalHeight",
+                      label: "Maximum total height",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.01,
+                      immediate: true
+                    },
+                    {
+                      option: "groupLabelUpdateThreshold",
+                      label: "Label update threshold",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: true
+                    }
+                  ]
+                },
+
+                {
+                  id: "hover",
+                  label: "Group hover",
+                  options: [
+                    {
+                      option: "groupHoverFillHueShift",
+                      label: "Fill hue shift on hover",
+                      level: "basic",
+                      type: "number",
+                      min: -180,
+                      max: 180,
+                      step: 1,
+                      immediate: false
+                    },
+                    {
+                      option: "groupHoverFillSaturationShift",
+                      label: "Fill saturation shift on hover",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: false
+                    },
+                    {
+                      option: "groupHoverFillLightnessShift",
+                      label: "Fill lightness shift on hover",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: false
+                    },
+
+                    {
+                      option: "groupHoverStrokeHueShift",
+                      label: "Stroke hue shift on hover",
+                      level: "basic",
+                      type: "number",
+                      min: -180,
+                      max: 180,
+                      step: 1,
+                      immediate: false
+                    },
+                    {
+                      option: "groupHoverStrokeSaturationShift",
+                      label: "Stroke saturation shift on hover",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: false
+                    },
+                    {
+                      option: "groupHoverStrokeLightnessShift",
+                      label: "Stroke lightness shift on hover",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: false
+                    }
+                  ]
+                },
+
+                {
+                  id: "exposure",
+                  label: "Group exposure",
+                  options: [
+                    {
+                      option: "groupExposureScale",
+                      label: "Exposed group scale",
+                      level: "basic",
+                      type: "number",
+                      min: 1,
+                      max: 2,
+                      step: 0.01,
+                      immediate: true
+                    },
+                    {
+                      option: "groupUnexposureLightnessShift",
+                      label: "Unexposed lightness shift",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupUnexposureSaturationShift",
+                      label: "Unexposed saturation shift",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "groupUnexposureLabelColorThreshold",
+                      label: "Unexposed label color threshold",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.01,
+                      immediate: true
+                    },
+                    {
+                      option: "groupExposureZoomMargin",
+                      label: "Exposed group zoom margin",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 2,
+                      step: 0.05,
+                      immediate: true
+                    },
+                    {
+                      option: "groupExposureShadowColor",
+                      label: "Exposed group shadow color",
+                      level: "basic",
+                      type: "color",
+                      immediate: true
+                    },
+                    {
+                      option: "groupExposureShadowSize",
+                      label: "Exposed group shadow size",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "exposeDuration",
+                      label: "Expose animation duration",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 5000,
+                      step: 100,
+                      immediate: false
+                    },
+                    {
+                      option: "exposeEasing",
+                      label: "Expose animation easing",
+                      level: "basic",
+                      type: "enum",
+                      ui: "combo",
+                      values: easingValues
+                    }
+                  ]
+                },
+
+                {
+                  id: "openClose",
+                  label: "Group opening and closing",
+                  options: [
+                    {
+                      option: "openCloseDuration",
+                      label: "Opening / closing duration",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 5000,
+                      step: 100,
+                      immediate: false
+                    }
+                  ]
+                },
+
+                {
+                  id: "hierarchy",
+                  label: "Group hierarchy",
+                  options: [
+                    {
+                      option: "parentFillOpacity",
+                      label: "Parent fill opacity",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.01,
+                      immediate: true
+                    },
+                    {
+                      option: "parentStrokeOpacity",
+                      label: "Parent stroke opacity",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.01,
+                      immediate: true
+                    },
+                    {
+                      option: "parentLabelOpacity",
+                      label: "Parent label opacity",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.01,
+                      immediate: true
+                    },
+                    {
+                      option: "parentOpacityBalancing",
+                      label: "Balance opacity",
+                      level: "advanced",
+                      type: "boolean"
+                    }
+                  ]
+                },
+
+                {
+                  id: "rainbowColor",
+                  label: "Rainbow colors",
+                  options: [
+                    {
+                      option: "rainbowStartColor",
+                      label: "Rainbow start color",
+                      level: "basic",
+                      type: "color",
+                      immediate: true
+                    },
+                    {
+                      option: "rainbowEndColor",
+                      label: "Rainbow end color",
+                      level: "basic",
+                      type: "color",
+                      immediate: true
+                    },
+                    {
+                      option: "rainbowColorDistribution",
+                      label: "Color distribution",
+                      level: "intermediate",
+                      type: "enum",
+
+                      values: [
+                        { label: "radial", value: "radial" },
+                        { label: "linear", value: "linear" }
+                      ]
+                    },
+                    {
+                      option: "rainbowColorDistributionAngle",
+                      label: "Color distribution angle",
+                      level: "advanced",
+                      type: "number",
+                      min: -180,
+                      max: 180,
+                      step: 1,
+                      immediate: true
+                    },
+
+                    {
+                      option: "rainbowLightnessDistributionAngle",
+                      label: "Lightness distribution angle",
+                      level: "advanced",
+                      type: "number",
+                      min: -180,
+                      max: 180,
+                      step: 1,
+                      immediate: true
+                    },
+
+                    {
+                      option: "rainbowSaturationCorrection",
+                      label: "Saturation correction",
+                      level: "advanced",
+                      type: "number",
+                      min: -1,
+                      max: 1,
+                      step: 0.05,
+                      immediate: true
+                    },
+                    {
+                      option: "rainbowLightnessCorrection",
+                      label: "Lightness correction",
+                      level: "advanced",
+                      type: "number",
+                      min: -1,
+                      max: 1,
+                      step: 0.05,
+                      immediate: true
+                    },
+
+                    {
+                      option: "rainbowLightnessShift",
+                      label: "Rainbow lightness shift",
+                      level: "basic",
+                      type: "number",
+                      min: -100,
+                      max: 100,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "rainbowLightnessShiftCenter",
+                      label: "Rainbow lightness shift center",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: true
+                    }
+                  ]
+                },
+
+                {
+                  id: "rollout",
+                  label: "Rollout",
+                  options: [
+                    {
+                      option: "rolloutStartPoint",
+                      label: "Rollout start point",
+                      level: "basic",
+                      type: "enum",
+                      values: locationValues
+                    },
+                    {
+                      option: "rolloutEasing",
+                      label: "Rollout easing",
+                      level: "basic",
+                      type: "enum",
+                      ui: "combo",
+                      values: easingValues
+                    },
+                    {
+                      option: "rolloutMethod",
+                      label: "Rollout method",
+                      level: "intermediate",
+                      type: "enum",
+                      values: [
+                        { value: "groups" },
+                        { value: "individual" }
+                      ]
+                    },
+                    {
+                      option: "rolloutDuration",
+                      label: "Rollout duration",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 10000,
+                      step: 100,
+                      immediate: false
+                    },
+                    {
+                      option: "rolloutScalingStrength",
+                      label: "Rollout scaling strength",
+                      level: "basic",
+                      type: "number",
+                      min: -1,
+                      max: 5,
+                      step: 0.1,
+                      immediate: false
+                    },
+                    {
+                      option: "rolloutTranslationXStrength",
+                      label: "Rollout translation X strength",
+                      level: "basic",
+                      type: "number",
+                      min: -5,
+                      max: 5,
+                      step: 0.1,
+                      immediate: false
+                    },
+                    {
+                      option: "rolloutTranslationYStrength",
+                      label: "Rollout translation Y strength",
+                      level: "basic",
+                      type: "number",
+                      min: -5,
+                      max: 5,
+                      step: 0.1,
+                      immediate: false
+                    },
+                    {
+                      option: "rolloutRotationStrength",
+                      label: "Rollout rotation strength",
+                      level: "basic",
+                      type: "number",
+                      min: -2,
+                      max: 2,
+                      step: 0.1,
+                      immediate: false
+                    },
+                    {
+                      option: "rolloutTransformationCenter",
+                      label: "Rollout transformation center",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "rolloutPolygonDrag",
+                      label: "Polygon rollout drag",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "rolloutPolygonDuration",
+                      label: "Polygon rollout duration",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "rolloutLabelDelay",
+                      label: "Label rollout delay",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "rolloutLabelDrag",
+                      label: "Label rollout drag",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "rolloutLabelDuration",
+                      label: "Label rollout duration",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "rolloutChildGroupsDelay",
+                      label: "Children rollout delay",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "rolloutChildGroupsDrag",
+                      label: "Children rollout drag",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    }
+                  ]
+                },
+
+
+                {
+                  id: "pullback",
+                  label: "Pullback",
+                  options: [
+                    {
+                      option: "pullbackStartPoint",
+                      label: "Pullback start point",
+                      level: "basic",
+                      type: "enum",
+                      values: locationValues
+                    },
+                    {
+                      option: "pullbackEasing",
+                      label: "Pullback easing",
+                      level: "basic",
+                      type: "enum",
+                      ui: "combo",
+                      values: easingValues
+                    },
+                    {
+                      option: "pullbackMethod",
+                      label: "Pullback method",
+                      level: "intermediate",
+                      type: "enum",
+                      values: [
+                        { value: "groups" },
+                        { value: "individual" }
+                      ]
+                    },
+                    {
+                      option: "pullbackDuration",
+                      label: "Pullback duration",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 10000,
+                      step: 100,
+                      immediate: false
+                    },
+                    {
+                      option: "pullbackScalingStrength",
+                      label: "Pullback scaling strength",
+                      level: "basic",
+                      type: "number",
+                      min: -1,
+                      max: 5,
+                      step: 0.1,
+                      immediate: false
+                    },
+                    {
+                      option: "pullbackTranslationXStrength",
+                      label: "Pullback translation X strength",
+                      level: "basic",
+                      type: "number",
+                      min: -5,
+                      max: 5,
+                      step: 0.1,
+                      immediate: false
+                    },
+                    {
+                      option: "pullbackTranslationYStrength",
+                      label: "Pullback translation Y strength",
+                      level: "basic",
+                      type: "number",
+                      min: -5,
+                      max: 5,
+                      step: 0.1,
+                      immediate: false
+                    },
+                    {
+                      option: "pullbackRotationStrength",
+                      label: "Pullback rotation strength",
+                      level: "basic",
+                      type: "number",
+                      min: -2,
+                      max: 2,
+                      step: 0.1,
+                      immediate: false
+                    },
+                    {
+                      option: "pullbackTransformationCenter",
+                      label: "Pullback transformation center",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "pullbackPolygonDelay",
+                      label: "Polygon pullback delay",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "pullbackPolygonDrag",
+                      label: "Polygon pullback drag",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "pullbackPolygonDuration",
+                      label: "Polygon pullback duration",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "pullbackLabelDelay",
+                      label: "Label pullback delay",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "pullbackLabelDrag",
+                      label: "Label pullback drag",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "pullbackLabelDuration",
+                      label: "Label pullback duration",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "pullbackChildGroupsDuration",
+                      label: "Children pullback duration",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "pullbackChildGroupsDelay",
+                      label: "Children pullback delay",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "pullbackChildGroupsDrag",
+                      label: "Children pullback drag",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: false
+                    }
+                  ]
+                },
+
+                {
+                  id: "fading",
+                  label: "Fading",
+                  options: [
+                    {
+                      option: "fadeDuration",
+                      label: "Fade duration",
+                      level: "basic",
+                      type: "number",
+                      min: 0,
+                      max: 10000,
+                      step: 100,
+                      immediate: false
+                    },
+                    {
+                      option: "fadeEasing",
+                      label: "Fade easing",
+                      level: "basic",
+                      type: "enum",
+                      ui: "combo",
+                      values: easingValues
+                    }
+                  ]
+                },
+
+                {
+                  id: "zoom",
+                  label: "Zoom",
+                  options: [
+                    {
+                      option: "zoomMouseWheelFactor",
+                      label: "Mouse wheel zoom factor",
+                      level: "intermediate",
+                      type: "number",
+                      min: 1,
+                      max: 2,
+                      step: 0.05,
+                      immediate: false
+                    },
+                    {
+                      option: "zoomMouseWheelDuration",
+                      label: "Mouse wheel zoom duration",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 5000,
+                      step: 100,
+                      immediate: false
+                    },
+                    {
+                      option: "zoomMouseWheelEasing",
+                      label: "Mouse wheel zoom easing",
+                      level: "intermediate",
+                      type: "enum",
+                      ui: "combo",
+                      values: easingValues
+                    }
+                  ]
+                },
+
+                {
+                  id: "titleBar",
+                  label: "Title bar",
+                  options: [
+                    {
+                      option: "titleBarFontFamily",
+                      label: "Title bar font family",
+                      level: "basic",
+                      type: "enum",
+                      ui: "combo",
+                      values: fontFamilyValues
+                    },
+                    {
+                      option: "titleBarFontStyle",
+                      label: "Title bar font style",
+                      level: "basic",
+                      type: "enum",
+                      ui: "radio",
+                      values: fontStyleValues
+                    },
+                    {
+                      option: "titleBarFontWeight",
+                      label: "Title bar font weight",
+                      level: "basic",
+                      type: "enum",
+                      ui: "radio",
+                      values: fontWeightValues
+                    },
+                    {
+                      option: "titleBarFontVariant",
+                      label: "Title bar font variant",
+                      level: "basic",
+                      type: "enum",
+                      ui: "radio",
+                      values: fontVariantValues
+                    },
+                    {
+                      option: "titleBarTextColor",
+                      label: "Title bar text color",
+                      level: "basic",
+                      type: "color",
+                      immediate: false
+                    },
+                    {
+                      option: "titleBarBackgroundColor",
+                      label: "Title bar background color",
+                      level: "basic",
+                      type: "color",
+                      immediate: false
+                    },
+                    {
+                      option: "titleBarMinFontSize",
+                      label: "Title bar min font size",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 200,
+                      step: 1,
+                      immediate: false
+                    },
+                    {
+                      option: "titleBarMaxFontSize",
+                      label: "Title bar max font size",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 200,
+                      step: 1,
+                      immediate: false
+                    },
+                    {
+                      option: "titleBarTextPaddingLeftRight",
+                      label: "Title bar horizontal padding",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 100,
+                      step: 1,
+                      immediate: false
+                    },
+                    {
+                      option: "titleBarTextPaddingTopBottom",
+                      label: "Title bar vertical padding",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 100,
+                      step: 1,
+                      immediate: false
+                    },
+                    {
+                      option: "maxLabelSizeForTitleBar",
+                      label: "Max label size for title bar",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 200,
+                      step: 1,
+                      immediate: false
+                    }
+                  ]
+                },
+
+                {
+                  id: "decorators",
+                  label: "Decorators",
+                  options: [
+                    {
+                      option: "groupLabelDecorator",
+                      label: "Label decorator",
+                      level: "advanced",
+                      type: "link",
+                      values: [
+                        { label: "none", value: undefined },
+                        {
+                          label: "uppercase",
+                          value: function(opts, params, vars) {
+                            vars.labelText = vars.labelText.toLocaleUpperCase();
+                          }
+                        },
+                        {
+                          label: "append id",
+                          value: function(opts, params, vars) {
+                            if (params.group.id) {
+                              vars.labelText += "\u00a0[" + params.group.id + "]";
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+
+                {
+                  id: "rendering",
+                  label: "Rendering",
+                  options: [
+                    {
+                      option: "pixelRatio",
+                      label: "Pixel ratio",
+                      level: "advanced",
+                      type: "number",
+                      min: 0.125,
+                      max: 2,
+                      step: 0.005,
+                      immediate: true
+                    },
+                    {
+                      option: "wireframePixelRatio",
+                      label: "Pixel ratio during animation",
+                      level: "advanced",
+                      type: "number",
+                      min: 0.125,
+                      max: 2,
+                      step: 0.005,
+                      immediate: false
+                    },
+                    {
+                      option: "wireframeLabelDrawing",
+                      label: "Wireframe label drawing",
+                      level: "advanced",
+                      type: "enum",
+
+                      values: [
+                        { value: "auto" },
+                        { value: "never" },
+                        { value: "always" }
+                      ]
+                    },
+                    {
+                      option: "maxGroupLevelsDrawn",
+                      label: "Max group levels drawn",
+                      level: "advanced",
+                      type: "number",
+                      min: 0,
+                      max: 10,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "maxGroupLabelLevelsDrawn",
+                      label: "Max group label levels drawn",
+                      level: "advanced",
+                      type: "number",
+                      min: 0,
+                      max: 10,
+                      step: 1,
+                      immediate: true
+                    },
+                    {
+                      option: "wireframeDrawMaxDuration",
+                      label: "Max wireframe draw duration",
+                      level: "advanced",
+                      type: "number",
+                      min: 0,
+                      max: 1000,
+                      step: 5,
+                      immediate: false
+                    },
+                    {
+                      option: "finalIncrementalDrawMaxDuration",
+                      label: "Max final incremental draw duration",
+                      level: "advanced",
+                      type: "number",
+                      min: 0,
+                      max: 1000,
+                      step: 50,
+                      immediate: false
+                    },
+                    {
+                      option: "finalCompleteDrawMaxDuration",
+                      label: "Max final complete draw duration",
+                      level: "advanced",
+                      type: "number",
+                      min: 0,
+                      max: 1000,
+                      step: 50,
+                      immediate: false
+                    },
+                    {
+                      option: "wireframeToFinalFadeDuration",
+                      label: "Wireframe to final fade duration",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 2000,
+                      step: 50,
+                      immediate: false
+                    },
+                    {
+                      option: "wireframeToFinalFadeDelay",
+                      label: "Wireframe to final fade delay",
+                      level: "intermediate",
+                      type: "number",
+                      min: 100,
+                      max: 3000,
+                      step: 50,
+                      immediate: false
+                    },
+                    {
+                      option: "finalToWireframeFadeDuration",
+                      label: "Final to wireframe fade duration",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1000,
+                      step: 50,
+                      immediate: false
+                    }
+                  ]
+                },
+
+                {
+                  id: "attribution",
+                  label: "Attribution",
+                  options: [
+                    {
+                      option: "attributionText",
+                      label: "Attribution text",
+                      level: "intermediate",
+                      type: "string",
+                      enabled: CarrotSearchFoamTree.version().brandingAllowed,
+                      hint: CarrotSearchFoamTree.version().brandingAllowed ? "" : "Attribution is locked in this edition"
+                    },
+                    {
+                      option: "attributionLogo",
+                      label: "Attribution logo",
+                      level: "intermediate",
+                      type: "string",
+                      enabled: CarrotSearchFoamTree.version().brandingAllowed,
+                      hint: CarrotSearchFoamTree.version().brandingAllowed ? "" : "Attribution is locked in this edition"
+                    },
+                    {
+                      option: "attributionLogoScale",
+                      label: "Attribution logo scale",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.05,
+                      immediate: true,
+                      enabled: CarrotSearchFoamTree.version().brandingAllowed,
+                      hint: CarrotSearchFoamTree.version().brandingAllowed ? "" : "Attribution is locked in this edition"
+                    },
+                    {
+                      option: "attributionUrl",
+                      label: "Attribution URL",
+                      level: "intermediate",
+                      type: "string",
+                      enabled: CarrotSearchFoamTree.version().brandingAllowed,
+                      hint: CarrotSearchFoamTree.version().brandingAllowed ? "" : "Attribution is locked in this edition"
+                    },
+                    {
+                      option: "attributionWeight",
+                      label: "Attribution weight",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 2,
+                      step: 0.005,
+                      immediate: true,
+                      enabled: CarrotSearchFoamTree.version().brandingAllowed,
+                      hint: CarrotSearchFoamTree.version().brandingAllowed ? "" : "Attribution is locked in this edition"
+                    },
+                    {
+                      option: "attributionPosition",
+                      label: "Attribution group position",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 359,
+                      step: 1,
+                      immediate: false
+                    },
+                    {
+                      option: "attributionDistanceFromCenter",
+                      label: "Attribution group distance from center",
+                      level: "intermediate",
+                      type: "number",
+                      min: 0,
+                      max: 1,
+                      step: 0.01,
+                      immediate: false
+                    }
+                  ]
+                },
+
+                {
+                  id: "events",
+                  label: "Event logging",
+                  description: "Log the following events to browser\'s console:",
+                  options: toLogInConsole.map(eventToSetting)
+                },
+
+                {
+                  id: "debug",
+                  label: "Debugging",
+                  options: [
+                    {
+                      option: "logging",
+                      label: "Logging",
+                      level: "intermediate",
+                      type: "boolean"
+                    }
+                  ]
+                }
+              ]
+            });
+
+            function eventToSetting(name) {
+              return {
+                option: name,
+                label: name,
+                level: "advanced",
+                type: "boolean"
+              }
+            }
+
+            $panel.children("section").foldable();
+
+            $("#search").on("keyup click", function() {
+                $panel.trigger("search", this.value);
+            });
+
+            $(document).keyup(function(e) {
+              if (e.target === document.body) {
+                if (e.keyCode === 191 && !e.shiftKey || e.keyCode === 220) {
+                  $("#search").select().focus();
+                }
+              }
+            });
+
+            $("a[href='#export']").export({
+              current: function() {
+                return foamtree.get();
+              },
+              defaults: function() {
+                return CarrotSearchFoamTree.defaults;
+              },
+              skip: toLogInConsole.concat([
+                "id", "element",
+                "pixelRatio",
+
+                "selection", "open", "exposure",
+                "hierarchy", "state", "geometry"
+              ])
+            });
+
+            // Resize FoamTree on orientation change
+            window.addEventListener("orientationchange", foamtree.resize);
+
+            // Resize on window size changes
+            window.addEventListener("resize", (function() {
+              var timeout;
+              return function() {
+                window.clearTimeout(timeout);
+                timeout = window.setTimeout(foamtree.resize, 300);
+              };
+            })());
+          })
+        }
+      });
+    </script>
+  </body>
+</html>

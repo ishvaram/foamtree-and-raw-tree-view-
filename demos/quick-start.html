@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>FoamTree Quick Start</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+
+    <meta charset="utf-8" />
+    <style>
+      body, html {
+        position: relative;
+        height: 100%;
+        margin: 0;
+      }
+
+      /** Set some preferred visualization size, but cap it to the maximum screen size */
+      #visualization {
+        width: 600px; height: 400px;
+        max-width: 100%;
+        max-height: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- The element to embed FoamTree into, must have non-zero dimensions. -->
+    <div id="visualization"></div>
+
+    <!-- Include FoamTree implementation. -->
+    <script src="../carrotsearch.foamtree.js"></script>
+
+    <!-- Include Hammer.js for mobile interactions. Not required for desktop-only apps. -->
+    <script src="assets/js/hammer.min.js"></script>
+
+    <script>
+      // Initialize FoamTree after the whole page loads to make sure
+      // the element has been laid out and has non-zero dimensions.
+      window.addEventListener("load", function() {
+        var foamtree = new CarrotSearchFoamTree({
+          // Identifier of the HTML element defined above
+          id: "visualization",
+
+          // Some data to visualize.
+          dataObject: {
+            groups: [
+              { label: "Your", weight: 1.0 },
+              { label: "First", weight: 3.0 },
+              { label: "FoamTree", weight: 2.0 },
+              { label: "Visualization", weight: 4.0 }
+            ]
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,95 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Circles test suite</title>
+
+    <link rel="stylesheet" href="assets/css/mocha.css"/>
+    <style>
+      #container {
+        width: 400px;
+        height: 300px;
+      }
+
+      #visualization {
+        width: 100%;
+        height: 100%;
+      }
+
+      #visualization.halfsize {
+        max-height: 50%;
+      }
+      #visualization.zerosize {
+        max-height: 0;
+      }
+
+      #mocha {
+        margin: 0;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        bottom: 10px;
+        left: 400px;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container"><div id="visualization"></div></div>
+    <div id="mocha"></div>
+
+    <script src="../carrotsearch.circles.js"></script>
+
+    <script src="assets/js/seedrandom.js"></script>
+    <script src="assets/js/chai.js"></script>
+    <script src="assets/js/sinon-1.7.3.js"></script>
+    <script src="assets/js/sinon-chai.js"></script>
+    <script src="assets/js/mocha.js"></script>
+    <script src="assets/js/mocha_phantomjs_core_extensions.js"></script>
+
+    <script>
+      var exampleData = {};
+      window.modelDataAvailable = function (data, metadata) {
+        exampleData[metadata.file] = { dataObject: data, label: metadata.label };
+      };
+    </script>
+    <script src="assets/data/data-mining-100-topic-flat.js"></script>
+    <script src="assets/data/data-mining-100-topic-hierarchical.js"></script>
+    <script src="assets/data/data-mining-500-topic-flat.js"></script>
+    <script src="assets/data/data-mining-500-topic-hierarchical.js"></script>
+
+    <script src="assets/js/helpers.js"></script>
+
+    <script>
+      var query = Mocha.utils.parseQuery(location.search || '');
+      switch (query.reporter) {
+        case 'xunit': // xunit XML output
+        case 'spec':  // hierarchical, color-coded.
+        case 'tap':   // plain list of num + title
+        case 'list':  // plain list (color coded)
+          // Disables ASCII color sequences. They do work in cygwin, so I keep them in.
+          // Mocha.reporters.Base.useColors = false;
+          mocha.reporter("reporters/" + query.reporter + ".js");
+          break;
+        default:
+          mocha.reporter("html");
+          break;
+      }
+      mocha.setup('bdd');
+      mocha.suite.title = capitalize(unobfuscated ? "unobfuscated" : "demo");
+
+      function capitalize(s) {
+        return s.charAt(0).toUpperCase() + s.slice(1);
+      }
+    </script>
+
+    <script src="carrotsearch.circles.test.functional.js"></script>
+
+    <script>
+      mocha.checkLeaks();
+      mocha.globals(['requestAnimationFrame']);
+      mocha.run(function() {
+        window.done = true;
+      });
+    </script>
+  </body>
+</html>

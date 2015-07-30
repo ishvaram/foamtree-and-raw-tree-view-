@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Carrot Search Circles - highly interactive HTML5 hierarchical pie-chart visualization</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <link rel="stylesheet" type="text/css" href="assets/css/prettify.css" />
+    <link rel="stylesheet" type="text/css" href="assets/css/common.css" />
+    <link rel="stylesheet" type="text/css" href="assets/css/layout.css" />
+
+    <link rel="stylesheet" type="text/css" href="assets/css/settings.css" />
+    <link rel="stylesheet" type="text/css" href="assets/css/colorpicker.css" />
+    <link rel="stylesheet" type="text/css" href="assets/css/ui-lightness/jquery-ui-1.9.1.custom.css" />
+
+    <script type="text/javascript" src="assets/js/prettify.js"></script>
+    <script type="text/javascript" src="assets/js/jquery-1.8.2.min.js"></script>
+    <script type="text/javascript" src="assets/js/jquery-ui-1.9.1.custom.min.js"></script>
+    <script type="text/javascript" src="assets/js/jquery.ui.touch-punch.min.js"></script>
+    <script type="text/javascript" src="assets/js/colorpicker.js"></script>
+
+    <script type="text/javascript" src="assets/js/carrotsearch.tweakpanel.datasets.js"></script>
+    <script type="text/javascript" src="assets/js/carrotsearch.tweakpanel.settings.js"></script>
+    <script type="text/javascript" src="assets/js/carrotsearch.tweakpanel.eventlog.js"></script>
+    <script type="text/javascript" src="assets/js/carrotsearch.tweakpanel.debug.js"></script>
+    <script type="text/javascript" src="assets/js/carrotsearch.tweakpanel.framerate.js"></script>
+    <script type="text/javascript" src="assets/js/carrotsearch.tweakpanel.foldable.js"></script>
+  </head>
+
+  <body id="body" class="dark">
+    <!-- Some basic HTML scaffolding, optional. -->
+    <div id="main">
+      <div id="gradient"></div>
+      <div id="visualizationcontainer">
+        <!-- Crop marks -->
+        <span class="cropmark horizontal topleft"></span>
+        <span class="cropmark vertical topleft"></span>
+        <span class="cropmark horizontal bottomright"></span>
+        <span class="cropmark vertical bottomright"></span>
+
+        <div id="loading">
+          Loading...
+        </div>
+
+        <canvas id="groupTitle" style="z-index: 2"></canvas>
+
+        <!--
+             The element into which the visualization is to be embedded (required). Make sure the
+             element has an id (referenced in the script below) and non-zero width and height.
+          -->
+        <div id="visualization"></div>
+      </div>
+    </div>
+
+    <div id="sidebar" style="overflow: auto;">
+      <p>
+        Try <em class="brand">Carrot Search Circles</em> with different
+        data sets and experiment with its visual settings.
+      </p>
+
+      <form id="settings-form" action=""><div>Loading...</div></form>
+    </div>
+
+    <!-- Visualization script. -->
+    <script src="../carrotsearch.circles.js"></script>
+
+    <!-- Embed visualization -->
+    <script>
+      var model;
+      var webfonts;
+
+      // Create the visualization object but don't load anything yet.
+      circles = undefined;
+
+      function initializeSettings() {
+        $("#settings-form").html("");
+        $("#settings-form").datasets({
+          legend: "Data set",
+          datasets: {
+            searchResults: {
+              label: "Search results for <em>data mining</em>",
+              urls: {
+                "assets/data/data-mining-100-topic-flat.jsonp": "100 hits by topic, flat",
+                "assets/data/data-mining-500-topic-flat.jsonp": "500 hits by topic, flat",
+                "assets/data/data-mining-100-topic-hierarchical.jsonp": "100 hits by topic, hierarchical",
+                "assets/data/data-mining-500-topic-hierarchical.jsonp": "500 hits by topic, hierarchical",
+                "assets/data/data-mining-100-url-hierarchical.jsonp": "100 hits by URL, hierarchical",
+                "assets/data/data-mining-500-url-hierarchical.jsonp": "500 hits by URL, hierarchical"
+              }
+            },
+
+            synthetic: {
+              label: "Synthetic data sets",
+              urls: {
+                "assets/data/full-3-level.jsonp": "3-level full hierarchy",
+                "assets/data/random-3-level.jsonp": "3-level random hierarchy",
+                "assets/data/multilingual.jsonp": "Multilingual content",
+                "assets/data/degenerate-content.jsonp": "Degenerate content",
+                "assets/data/preselection.jsonp": "Preselection"
+              }
+            }
+          },
+          controls: {
+            pasteJson: true
+          },
+          onChange: function(dataset, type) {
+            if (type == "json") {
+              circles.set("dataObject", dataset);
+            }
+          },
+          onLoadingStart: function() {
+            // TODO: dim the visualization?
+          }
+        });
+
+        $("#settings-form").settings({
+          apiDocsUrl: "../api/index.html",
+          metadata: {
+            appearance: {
+              label: "General appearance",
+              settings: {
+                backgroundColor: {
+                  type: "color",
+                  model: "css-rgba",
+                  immediate: true,
+                  label: "Background color"
+                },
+                showZeroWeightGroups: {
+                  type: "boolean",
+                  label: "Show zero-weight groups"
+                },
+                ringScaling: {
+                  type: "number",
+                  model: "float",
+                  min: 0.5,
+                  max: 2,
+                  step: 0.01,
+                  immediate: true,
+                  label: "Ring scaling"
+                },
+                zoomedFraction: {
+                  type: "number",
+                  model: "float",
+                  min: 0.1,
+                  max: 0.95,
+                  step: 0.01,
+                  immediate: true,
+                  label: "Zoomed groups space ratio"
+                },
+                centerx: {
+                  type: "number",
+                  model: "int",
+                  min: 0,
+                  max: 100,
+                  step: 1,
+                  immediate: true,
+                  valueSuffix: "%",
+                  label: "Center's X coord"
+                },
+                centery: {
+                  type: "number",
+                  model: "int",
+                  min: 0,
+                  max: 100,
+                  step: 1,
+                  immediate: true,
+                  valueSuffix: "%",
+                  label: "Center's Y coord"
+                },
+                diameter: {
+                  type: "number",
+                  model: "int",
+                  min: 0,
+                  max: 100,
+                  step: 1,
+                  immediate: true,
+                  valueSuffix: "%",
+                  label: "Outer ring diameter"
+                },
+                angleStart: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 360,
+                  step: 1,
+                  immediate: true,
+                  label: "Big circle start angle"
+                },
+                angleWidth: {
+                  type: "number",
+                  model: "float",
+                  min: -360,
+                  max: 360,
+                  step: 1,
+                  immediate: true,
+                  label: "Big circle angle size"
+                },
+                pixelRatio: {
+                  type: "number",
+                  model: "float",
+                  min: 0.5,
+                  max: 2,
+                  step: 0.5,
+                  immediate: false,
+                  label: "Pixel ratio"
+                }
+              }
+            },
+
+            groupLabels: {
+              label: "Group labels",
+              settings: {
+                groupFontFamily: {
+                  type: "font",
+                  label: "Font family",
+                  families: webfonts
+                },
+                fontSizeUnit: {
+                  type: "enum",
+                  label: "Font size unit",
+                  values: {
+                    "": "pixels",
+                    "%": "% of available space"
+                  }
+                },
+                groupFontSizes: {
+                  type: "range",
+                  model: "int",
+                  label: "Label font size",
+                  min: 2,
+                  max: 100,
+                  step: 1,
+                  lower: "groupMinFontSize",
+                  upper: "groupMaxFontSize",
+                  immediate: true
+                },
+                groupLinePadding: {
+                  type: "number",
+                  model: "int",
+                  min: -5,
+                  max: 20,
+                  step: 1,
+                  immediate: true,
+                  label: "Label line padding"
+                },
+                ratioRadialPadding: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 1,
+                  step: 0.05,
+                  immediate: true,
+                  label: "Radial padding ratio"
+                },
+                minRadialPadding: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 30,
+                  step: 1,
+                  immediate: true,
+                  label: "Minimum radial padding"
+                },
+                ratioAngularPadding: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 1,
+                  step: 0.05,
+                  immediate: true,
+                  label: "Angular padding ratio"
+                },
+                minAngularPadding: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 30,
+                  step: 1,
+                  immediate: true,
+                  label: "Minimum angular padding"
+                },
+                angularTextureStep: {
+                  type: "number",
+                  model: "float",
+                  min: 5,
+                  max: 50,
+                  step: 1,
+                  immediate: true,
+                  label: "Angular texture mesh step"
+                },
+                radialTextureStep: {
+                  type: "number",
+                  model: "float",
+                  min: 5,
+                  max: 50,
+                  step: 1,
+                  immediate: true,
+                  label: "Radial texture mesh step"
+                },
+                textureOverlapFudge: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 2,
+                  step: 0.5,
+                  immediate: true,
+                  label: "Texture overlap fudge"
+                },
+                noTexturingCurvature: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 1,
+                  step: 0.01,
+                  immediate: true,
+                  label: "Texturing curvature"
+                },
+                ratioAspectSwap: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 5,
+                  step: 0.25,
+                  immediate: true,
+                  label: "Aspect swap ratio"
+                },
+                deferLabelRedraws: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 1,
+                  step: 0.1,
+                  immediate: true,
+                  label: "Defer painting after layout"
+                },
+                labelRedrawFadeInTime: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 1,
+                  step: 0.1,
+                  immediate: true,
+                  label: "Fade in after layout"
+                },
+                labelDecorator: {
+                  type: "links",
+                  label: "Label decorators",
+                  links: {
+                    "uppercase": function() {
+                      circles.set("groupLabelDecorator", function(options, params, variables) {
+                        variables.labelText = variables.labelText.toLocaleUpperCase();
+                      });
+                      return false;
+                    },
+                    "xxx": function() {
+                      circles.set("groupLabelDecorator", function(options, params, variables) {
+                        variables.labelText = "XXX";
+                      });
+                      return false;
+                    },
+                    "none": function() {
+                      circles.set("groupLabelDecorator", null);
+                      return false;
+                    }
+                  }
+                },
+                groupColorDecorator: {
+                  type: "links",
+                  label: "Group color decorators",
+                  links: {
+                    "stripe": function() {
+                      circles.set("groupColorDecorator", function(options, params, variables) {
+                        var even = ((params.index & 1) === 0);
+                        var gray  = "rgba(80,80,80,.8)";
+                        var black = "rgba(0,0,0,.8)";
+                        variables.labelColor = (even ? gray  : black);
+                        variables.groupColor = (even ? black : gray);
+                      });
+                      return false;
+                    },
+                    "none": function() {
+                      circles.set("groupColorDecorator", null);
+                      return false;
+                    }
+                  }
+                }
+              }
+            },
+
+            groupColors: {
+              label: "Group colors",
+              settings: {
+                groupOutlineWidth: {
+                  type: "number",
+                  model: "int",
+                  min: 0,
+                  max: 10,
+                  step: 1,
+                  immediate: true,
+                  label: "Group outline width"
+                },
+                groupOutlineColor: {
+                  type: "color",
+                  model: "css-rgba",
+                  immediate: true,
+                  label: "Group outline color"
+                },
+                rainbowStartColor: {
+                  type: "color",
+                  model: "css-hsla",
+                  immediate: true,
+                  label: "Rainbow start color"
+                },
+                rainbowEndColor: {
+                  type: "color",
+                  model: "css-hsla",
+                  immediate: true,
+                  label: "Rainbow end color"
+                },
+                labelLightColor: {
+                  type: "color",
+                  model: "css-rgba",
+                  immediate: true,
+                  label: "Label light color"
+                },
+                labelDarkColor: {
+                  type: "color",
+                  model: "css-rgba",
+                  immediate: true,
+                  label: "Label dark color"
+                },
+                labelColorThreshold: {
+                  type: "number",
+                  model: "float",
+                  min: 0.0,
+                  max: 1,
+                  step: 0.01,
+                  immediate: true,
+                  label: "Label color threshold"
+                }
+              }
+            },
+
+            selection: {
+              label: "Selection",
+              settings: {
+                groupSelectionOutlineWidth: {
+                  type: "number",
+                  model: "int",
+                  min: 0,
+                  max: 10,
+                  step: 1,
+                  immediate: true,
+                  label: "Selection outline width"
+                },
+                groupSelectionOutlineColor: {
+                  type: "color",
+                  model: "css-rgba",
+                  immediate: true,
+                  label: "Selection outline color"
+                },
+                groupSelectionColor: {
+                  type: "color",
+                  model: "css-rgba",
+                  immediate: true,
+                  label: "Selection color"
+                }
+              }
+            },
+
+            hover: {
+              label: "Hover marker",
+              settings: {
+                groupHoverOutlineWidth: {
+                  type: "number",
+                  model: "int",
+                  min: 0,
+                  max: 10,
+                  step: 1,
+                  immediate: true,
+                  label: "Hover outline width"
+                },
+                groupHoverOutlineColor: {
+                  type: "color",
+                  model: "css-rgba",
+                  immediate: true,
+                  label: "Hover outline color"
+                },
+                groupHoverColor: {
+                  type: "color",
+                  model: "css-rgba",
+                  immediate: true,
+                  label: "Hover color"
+                },
+                groupHoverHierarchy: {
+                  type: "boolean",
+                  label: "Include parent groups"
+                }
+              }
+            },
+
+            expanders: {
+              label: "Expanders",
+              settings: {
+                visibleGroupCount: {
+                  type: "number",
+                  model: "int",
+                  min: 0,
+                  max: 50,
+                  step: 1,
+                  immediate: true,
+                  label: "Visible group count"
+                },
+                expanderAngle: {
+                  type: "number",
+                  model: "int",
+                  min: 0,
+                  max: 90,
+                  step: 1,
+                  immediate: true,
+                  label: "Expander gap space"
+                },
+                minExpanderAngle: {
+                  type: "number",
+                  model: "int",
+                  min: 0,
+                  max: 90,
+                  step: 1,
+                  immediate: true,
+                  label: "Minimum expander angle"
+                },
+                expanderOutlineWidth: {
+                  type: "number",
+                  model: "int",
+                  min: 0,
+                  max: 10,
+                  step: 1,
+                  immediate: true,
+                  label: "Expander outline width"
+                },
+                expanderOutlineColor: {
+                  type: "color",
+                  model: "css-rgba",
+                  immediate: true,
+                  label: "Expander outline color"
+                },
+                expanderColor: {
+                  type: "color",
+                  model: "css-rgba",
+                  immediate: true,
+                  label: "Expander color"
+                }
+              }
+            },
+
+            titleBar: {
+              label: "Title bar",
+              settings: {
+                titleBar: {
+                  type: "enum",
+                  label: "Title bar type",
+                  values: {
+                    "none": "none",
+                    "inscribed": "inscribed",
+                    "topbottom": "topbottom",
+                    "top": "top",
+                    "bottom": "bottom"
+                  }
+                },
+                titleBarFontFamily: {
+                  type: "font",
+                  label: "Font family",
+                  families: webfonts
+                },
+                /*
+                TODO: see CIRCLES-183
+                titleBarFontSizeUnit: {
+                  type: "enum",
+                  label: "Font size unit",
+                  values: {
+                    "": "pixels",
+                    "%": "% of available space"
+                  }
+                },
+                */
+                titleBarFontSizes: {
+                  type: "range",
+                  model: "int",
+                  label: "Label font size",
+                  min: 2,
+                  max: 100,
+                  step: 1,
+                  lower: "titleBarMinFontSize",
+                  upper: "titleBarMaxFontSize",
+                  immediate: true
+                },
+                titleBarBackgroundColor: {
+                  type: "color",
+                  model: "css-rgba",
+                  immediate: true,
+                  label: "Title bar's background color"
+                },
+                titleBarTextColor: {
+                  type: "color",
+                  model: "css-rgba",
+                  immediate: true,
+                  label: "Label color"
+                },
+                titleBarTextPaddingLeftRight: { type: "number", model: "int", min: 0, max: 100, step: 1, label: "Title bar left/right padding" },
+                titleBarTextPaddingTopBottom: { type: "number", model: "int", min: 0, max: 100, step: 1, label: "Title bar top/bottom padding" }
+              }
+            },
+
+            transitions: {
+              label: "Transitions",
+              settings: {
+                expandTime: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 3,
+                  step: 0.1,
+                  immediate: true,
+                  label: "Group expand/collapse time"
+                },
+                zoomTime: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 3,
+                  step: 0.1,
+                  immediate: true,
+                  label: "Group zoom/unzoom time"
+                },
+                rolloutTime: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 3,
+                  step: 0.1,
+                  immediate: false,
+                  label: "Rollout animation time"
+                },
+                rolloutAnimation: {
+                  type: "enum",
+                  label: "Rollout animation type",
+                  values: {
+                    "random":  "random",
+                    "implode": "implode",
+                    "rollout": "rollout",
+                    "tumbler": "tumbler",
+                    "fadein":  "fadein"
+                  }
+                },
+                pullbackTime: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 3,
+                  step: 0.1,
+                  immediate: false,
+                  label: "Pullback animation time"
+                },
+                pullbackAnimation: {
+                  type: "enum",
+                  label: "Pullback animation type",
+                  values: {
+                    "random":  "random",
+                    "explode": "explode",
+                    "rollin": "rollin",
+                    "tumbler": "tumbler",
+                    "fadeout": "fadeout"
+                  }
+                },
+                modelChangeAnimations: {
+                  type: "enum",
+                  label: "Model change parallelism",
+                  values: {
+                    "auto":  "auto",
+                    "sequential": "sequential",
+                    "parallel": "parallel"
+                  }
+                }
+              }
+            },
+
+            attribution: {
+              label: "Attribution",
+              subtitle: circles.version().brandingAllowed ? "" : "<div class='limitedEditionWarning'>Attribution is locked in this edition.</div>",
+              settings: {
+                attributionLogo:             { type: "string", label: "Attribution logo" },
+                attributionUrl:              { type: "string", label: "Attribution URL" },
+                attributionPositionX: {
+                  type: "number",
+                  model: "int",
+                  min: 0,
+                  max: 100,
+                  step: 1,
+                  immediate: false,
+                  valueSuffix: "%",
+                  label: "Relative X position"
+                },
+                attributionPositionY: {
+                  type: "number",
+                  model: "int",
+                  min: 0,
+                  max: 100,
+                  step: 1,
+                  immediate: false,
+                  valueSuffix: "%",
+                  label: "Relative Y position"
+                },
+                attributionStayOnTime: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 5,
+                  step: 0.5,
+                  immediate: false,
+                  label: "Stay-on time"
+                },
+                attributionFadeInTime: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 5,
+                  step: 0.5,
+                  immediate: false,
+                  label: "Fade-in time"
+                },
+                attributionFadeOutTime: {
+                  type: "number",
+                  model: "float",
+                  min: 0,
+                  max: 5,
+                  step: 0.5,
+                  immediate: false,
+                  label: "Fade-out time"
+                }
+              }
+            },
+
+            debug: {
+              label: "Debug",
+              settings: {
+                logging: {
+                  type: "boolean",
+                  label: "Logging"
+                },
+                textureMappingMesh: {
+                  type: "boolean",
+                  label: "Texture mapping mesh"
+                }
+              }
+            }
+          },
+          values: $.extend({}, circles.get(), {fontSizeUnit: ""}),
+          defaults: circles.get(null),
+          onChange: function(changedOptions) {
+            if (circles.set.apply(circles, arguments) == 0) {
+              return;
+            }
+
+            var requiresReload = {
+              rolloutTime:           true,
+              rolloutAnimation:      true,
+              pullbackTime:          true,
+              pullbackAnimation:     true,
+              modelChangeAnimations: true
+            }
+            var reload = false;
+            $.each(changedOptions, function (key) {
+              if (requiresReload[key]) {
+                reload = true;
+                return false;
+              }
+            });
+
+            if (reload) {
+              var currentModel = circles.get("dataObject");
+              circles.set("dataObject", null);
+              circles.set("dataObject", currentModel);
+            } else {
+              circles.redraw();
+            }
+          },
+          ignoredInExportToJs: {
+            id: true,
+            dataObject: true
+          },
+          fontSizeProperties: {
+            groupMinFontSize: true,
+            groupMaxFontSize: true
+          }
+        });
+
+        $("#settings-form").eventlog({
+          source: circles,
+          events: [
+            "onModelChanged",
+            "onGroupSelectionChanging",
+            "onGroupSelectionChanged",
+            "onGroupOpenOrClose",
+            "onGroupZoom",
+            "onGroupHover",
+            "onRedraw",
+            "onRolloutStart",
+            "onRolloutComplete",
+            "onLayout"
+          ],
+          optional: {
+            "onGroupHover": true,
+            "onGroupSelectionChanging": true,
+            "onRedraw": true
+          },
+          piggybackEvents: {
+            onRedraw: function() {
+              $("#settings-form").framerate({
+                source: circles,
+                update: true
+              });
+            },
+            onRolloutComplete: function() {
+              $("#settings-form").framerate({
+                source: circles,
+                update: true
+              });
+            }
+          }
+        });
+
+        $("#settings-form").debug({ });
+
+        $("#settings-form").submit(function() {
+          return false;
+        });
+
+        $("#settings-form legend").foldable();
+      }
+
+      function embed() {
+        // We respin until the visualization container has non-zero area (there are race
+        // conditions on Chrome which permit that) and the visualization class is loaded.
+        var container = document.getElementById("visualization");
+        if (container.clientWidth <= 0 || container.clientHeight <= 0 ||
+            !window["CarrotSearchCircles"] ||
+            !model ||
+            !webfonts) {
+          window.setTimeout(embed, 250);
+          return;
+        }
+
+        var info = CarrotSearchCircles.version();
+        $("body").append(
+          $('<p id="copyright" />').html([
+          'version ' + info.version, 
+          'build ' + info.build,
+          '&copy; <a href="http://carrotsearch.com">Carrot Search</a></p>'].join("<span>|</span>")));
+
+        circles = new CarrotSearchCircles({
+          // Container element.
+          id: "visualization",
+
+          // Data model.
+          dataObject: model,
+
+          // title bar defaults
+          titleBar: "inscribed",
+
+          // Pick the web font as the default.
+          groupFontFamily: "Open Sans Condensed",
+
+          // Decorate labels to uppercase (looks better with Open Sans Condensed).
+          groupLabelDecorator: function(options, params, variables) {
+            variables.labelText = variables.labelText.toLocaleUpperCase();
+          },
+
+          // Hide the loading indicator once the animation starts
+          onRolloutStart: function() {
+            $("#loading").detach();
+          }
+        });
+
+        initializeSettings();
+      }
+      embed();
+
+      //
+      // JSON-P callback method for the initial data model.
+      //
+      function modelDataAvailable(modelData) {
+        model = modelData;
+      }
+
+      //
+      // Web fonts configuration (only if web fonts are used).
+      // Uncomment or add/ remove the ones you wish to use.
+      //
+      WebFontConfig = {
+        google: { families: [
+          'Source+Sans+Pro::latin,latin-ext',
+          'Yanone+Kaffeesatz:700:latin',
+          'Open+Sans+Condensed:700:latin,latin-ext'
+        ]},
+        active: function() {
+          webfonts = true;
+        },
+        inactive: function() {
+          console.error("Could not load webfonts.");
+          webfonts = true;
+        }
+      };
+
+      (function() {
+        var wf = document.createElement('script');
+        wf.src = ('https:' == document.location.protocol ? 'https' : 'http') + '://ajax.googleapis.com/ajax/libs/webfont/1/webfont.js';
+        wf.type = 'text/javascript';
+        wf.async = 'true';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(wf, s);
+      })();
+
+      //
+      // On window resize trigger visualization resize after a short delay.
+      //
+      window.addEventListener("resize", (function() {
+        var timeout;
+        return function() {
+          window.clearTimeout(timeout);
+          timeout = window.setTimeout(function() {
+            if (window.circles) {
+              window.circles.resize();
+            }
+          }, 330);
+        };
+      })(), false);
+    </script>
+
+    <!-- Example data, wrapped in the a function call (json-p) -->
+    <script src="assets/data/data-mining-500-topic-hierarchical.jsonp"></script>
+
+    <!-- Demo helper, ignore. -->
+    <script src="assets/js/carrotsearch.tweakpanel.helpers.js"></script>
+  </body>
+</html>

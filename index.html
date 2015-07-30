@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Carrot Search FoamTree: JavaScript Voronoi treemep</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="description" content="JavaScript library for hierarchical data visualization. Space-efficient non-rectangular treemaps, animated zooming and engaging transitions. Free demo."/>
+    <meta name="keywords" content="javascript, treemap, voronoi"/>
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+    <style>
+      .wf {
+        opacity: 0;
+        transition: opacity 1s;
+        -webkit-transition: opacity 1s;
+      }
+      .wf-active .wf {
+        opacity: 1;
+      }
+    </style>
+    <link href="demos/assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="demos/assets/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="demos/assets/css/carrotsearch.foamtree.util.hints.css" rel="stylesheet" />
+    <link href="demos/assets/css/site.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div class="jumbotron main">
+      <div class="container inset">
+        <nav class="navbar" role="navigation">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle wf" id="collapse-button">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="fa fa-bars"></span>
+            </button>
+            <a class="navbar-brand" href="index.html">
+              <h1 class="hidden">FoamTree</h1>
+              <img class="logo" src="demos/assets/img/foamtree.svg" alt="FoamTree logo" />
+              <strong class="tagline hidden-xs hidden-sm wf">Makes browsing hierarchical data efficient and fun.</strong>
+            </a>
+          </div>
+
+          <div class="collapse navbar-collapse wf" id="collapse-navbar">
+            <ul class="nav nav-pills navbar-nav navbar-right">
+              <li><a href="download/index.html"><i class="fa fa-lg fa-download"></i> Download</a></li>
+              <li><a href="api/index.html">Docs</a></li>
+              <li><a href="demos/index.html">Demos</a></li>
+              <li><a href="http://carrotsearch.com/contact">Contact</a></li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+
+      <div class="container">
+        <div class="foamtree-container">
+          <div id="loading"><i class="fa fa-spinner fa-spin"></i></div>
+          <div id="foamtree"></div>
+          <div class="demo-control wf">
+            <a href="#pause" id="pause" class="fa fa-pause pause-play" title="pause demo"></a>
+            <a href="#resume" id="resume" class="fa fa-play pause-play" style="display: none" title="resume demo"></a>
+            <a href="#replay" id="replay" class="fa fa-repeat pause-play" style="display: none" title="replay demo"></a>
+            <div class="progress"><div id="progress" style="width: 0%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="jumbotron features shadow-clip">
+      <div class="container inset">
+        <div class="row wf">
+          <div class="col-md-8 col-sm-12 summary">
+            FoamTree is a JavaScript tree map visualization with innovative layout algorithms and animations.
+          </div>
+          <div class="col-md-4 col-sm-12">
+          </div>
+        </div>
+
+        <div class="row wf">
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-html5"></i> No plugins needed</h4>
+            FoamTree is a JavaScript / HTML5 component, compatible with any modern browser.
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-eye"></i> Innovative layout</h4>
+            Hierarchical Voronoi Treemaps are visually-pleasing and
+            efficiently use the available space.
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-cog"></i> Visual tuning</h4>
+            You can <a href="demos/settings.html">customize</a> the colors,
+            fonts, borders, shadows and other aspects of FoamTree cells.
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-film"></i> Varied animations</h4>
+            With the multitude of <a href="demos/settings.html">animation
+            parameters</a>, you can create tens of
+            rollout and pullback effects.
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-mobile"></i> Variety of devices</h4>
+            FoamTree works both on desktop and mobile, looks gorgeous
+            on high-resolution displays.
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-globe"></i> Multilingual</h4>
+            FoamTree supports a wide range of languages, including Arabic,
+            Chinese, Japanese and Korean.
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-arrows-alt"></i> Zoom &amp; expose</h4>
+            Zoom and pan the area with mouse wheel or touch,
+            double click cell to expose.
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-file-text"></i> Licensing</h4>
+            <a href="download/index.html">Branding-locked version</a> free for use. Contact Carrot Search
+            for fully-brandable binaries.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="jumbotron navigation">
+      <div class="container inset">
+        <div class="row wf">
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-code"></i> Documentation</h4>
+
+            <a href="api/index.html">FoamTree JavaScript API reference</a> contains
+            tens of executable code examples.
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-flask"></i> Experiments</h4>
+
+            Try the <a href="demos/settings.html">settings panel</a> to tweak the parameters,
+            see the <a href="demos/index.html">demos</a> for fun and advanced usage examples.
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-download"></i> Download</h4>
+
+            <a href="download/index.html">Download branding-locked version</a> or
+            newest fully-brandable binaries for <a href="download/index.html">existing customers</a>.
+          </div>
+
+          <div class="col-md-3 col-sm-6 social">
+            <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en"
+               data-url="http://get.carrotsearch.com/foamtree"
+               data-via="carrotsearch"
+               data-text="FoamTree, interactive non-rectangular #treemap #visualization | ">Tweet</a>
+
+            <a href="https://twitter.com/carrotsearch" class="twitter-follow-button" data-show-count="true"
+               data-lang="en" data-show-screen-name="false">Follow</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="jumbotron footer text-center">
+      <div>
+        FoamTree 3.3.1 by <a href="http://carrotsearch.com">Carrot Search</a>
+        -
+        <a href="http://carrotsearch.com/foamtree/faq">FAQ</a>
+        -
+        <a href="http://carrotsearch.com/foamtree/how-to-order">How to order</a>
+      </div>
+
+      <div>
+        Check also:
+        <a href="http://carrotsearch.com/lingo3g">Lingo3G text clustering engine</a> -
+        <a href="http://carrotsearch.com/circles">Circles multi-level interactive pie-chart</a>
+      </div>
+    </div>
+
+    <script src="carrotsearch.foamtree.js"></script>
+    <script src="carrotsearch.foamtree.util.hints.js"></script>
+    <script src="demos/assets/js/hammer.min.js"></script>
+    <script src="demos/assets/js/carrotsearch.demo.js"></script>
+    <script src="demos/assets/js/carrotsearch.jsonp.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js"></script>
+    <script>
+      (function() {
+        document.addEventListener("DOMContentLoaded", function() {
+          // Simple showing/hiding of the collapsed navigation bar
+          var collapseButton = document.getElementById("collapse-button");
+          var collapseNavbar = document.getElementById("collapse-navbar");
+          collapseButton.addEventListener("click", function() {
+            collapseNavbar.className = collapseNavbar.className.indexOf("collapse ") >= 0 ?
+              "navbar-collapse" : "collapse navbar-collapse";
+          });
+
+          // Pause and resume links
+          var pause = document.getElementById("pause");
+          var resume = document.getElementById("resume");
+          var progress = document.getElementById("progress");
+          var replay = document.getElementById("replay");
+
+          WebFont.load({
+            google: {
+              families: [
+                'Open+Sans:400',
+                'PT+Serif:400',
+                'Oxygen:400'
+              ]
+            },
+            active: function() {
+              window.setTimeout(function() {
+                var foamtree = new CarrotSearchFoamTree({
+                  id: "foamtree",
+                  pixelRatio: window.devicePixelRatio || 1,
+                  groupLabelFontFamily: "Oxygen"
+                });
+                CarrotSearchFoamTree.hints(foamtree);
+
+                var demo = new CarrotSearchFoamTreeDemo({
+                  foamtree: foamtree,
+                  started: function() {
+                    document.getElementById("loading").className = "fadeout";
+                  },
+                  progress: function (step, all) {
+                    progress.style.width = (100 * (step / all)) + "%";
+                  },
+                  paused: function() {
+                    progress.style.backgroundColor = "#E6B82E";
+                    pause.style.display = "none";
+                    replay.style.display = "none";
+                    resume.style.display = "inline-block";
+                  },
+                  resumed: function() {
+                    progress.style.backgroundColor = "#59B359";
+                    pause.style.display = "inline-block";
+                    resume.style.display = "none";
+                    replay.style.display = "none";
+                  },
+                  finished: function() {
+                    replay.style.display = "inline-block";
+                    resume.style.display = "none";
+                    pause.style.display = "none";
+                  }
+                });
+
+                pause.addEventListener("click", function(event) {
+                  demo.pause();
+                  event.preventDefault();
+                });
+                resume.addEventListener("click", function(event) {
+                  demo.resume();
+                  event.preventDefault();
+                });
+                replay.addEventListener("click", function(event) {
+                  demo.start();
+                  event.preventDefault();
+                });
+              }, 1000);
+            }
+          });
+        });
+      })();
+    </script>
+    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-317750-2']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+  </body>
+</html>

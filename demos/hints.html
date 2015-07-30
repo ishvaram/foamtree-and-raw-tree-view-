@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>FoamTree interaction guide and hints</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+
+    <meta charset="utf-8" />
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/common.css" rel="stylesheet" />
+
+    <!-- Include the default style for the interaction hints and guide -->
+    <link href="assets/css/carrotsearch.foamtree.util.hints.css" rel="stylesheet"/>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="visualization"></div>
+    </div>
+
+    <div id="side">
+      <h2>Interaction guide &amp; hints</h2>
+
+      <p>
+        To help the users to discover all the ways in which they can interact
+        with FoamTree, you can use the <code>CarrotSearchFoamTree.hints</code>
+        utility. It will show contextual suggestions on
+        how to browse the data (desktop only) and also a guide to all
+        possible interactions and keyboard bindings.
+      </p>
+
+      <p>
+        To show the contextual hints, hover over the groups. To see the guide, click
+        the info button or press <span class="key">?</span>.
+      </p>
+
+      <h4>What's in the code?</h4>
+
+      <ul>
+        <li>
+          Including the <code>carrotsearch.foamtree.hints.css</code> stylesheet
+          with default CSS for the interaction hints and guide boxes.
+        </li>
+        <li>
+          Including and initialization of the hints using <code>CarrotSearchFoamTree.hints</code>.
+        </li>
+      </ul>
+    </div>
+
+    <!-- Include FoamTree visualization code -->
+    <script src="../carrotsearch.foamtree.js"></script>
+
+    <!-- Include Hammer.js for mobile interactions. Not required for desktop-only apps. -->
+    <script src="assets/js/hammer.min.js"></script>
+
+    <!-- Include the interaction hints utility -->
+    <script src="../carrotsearch.foamtree.util.hints.js"></script>
+
+    <!-- A simple static JSON-P loader, optional -->
+    <script src="assets/js/carrotsearch.jsonp.js"></script>
+
+    <script>
+      window.addEventListener("load", function () {
+        // Initialize FoamTree
+        var foamtree = new CarrotSearchFoamTree({
+          id: "visualization",
+          pixelRatio: window.devicePixelRatio || 1
+        });
+
+        // Initialized interaction hints and guide. The required
+        // HTML will be automatically inserted into the visualization container.
+        CarrotSearchFoamTree.hints(foamtree);
+
+        // Resize FoamTree on orientation change
+        window.addEventListener("orientationchange", foamtree.resize);
+
+        // Resize on window size changes
+        window.addEventListener("resize", (function() {
+          var timeout;
+          return function() {
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(foamtree.resize, 300);
+          }
+        })());
+
+        // Load some data set
+        JSONP.load("assets/data/data-mining-100-topic-hierarchical.js", "modelDataAvailable", function(dataObject) {
+          foamtree.set("dataObject", dataObject);
+        });
+      });
+    </script>
+  </body>
+</html>

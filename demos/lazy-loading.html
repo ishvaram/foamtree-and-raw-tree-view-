@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>FoamTree: lazy loading of data</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+
+    <meta charset="utf-8" />
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/common.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="container"><div id="visualization"></div></div>
+    <div id="side">
+      <h2>Lazy loading of data</h2>
+
+      <p>
+        With FoamTree 3.2.0 and later you can defer loading of the data for lower levels of the hierarchy until the data
+        is really needed, that is when the user opens the parent group. Click-and-hold or double-click a group with the
+        <code>&raquo;</code> suffix to load its child groups.
+      </p>
+
+      <p>
+        In a real world, you would probably load data from a remote server using Ajax, but for the sake of this demo we
+        simply generate new data and simulate the loading delay using <code>window.setTimeout()</code>.
+      </p>
+
+      <p>
+        For very deeply-nested hierarchies, FoamTree will hit the limit of double floating point precision and will not
+        be able to generate child groups. In such scenarios, the group will be annotated with the
+        <code>&raquo;&raquo;</code> suffix. The only way to let the user browse the contents of such a group is to
+        reload FoamTree with the relevant sub-hierarchy.
+      </p>
+
+      <h4>What's in the code?</h4>
+
+      <ul>
+        <li>
+          <p>Listening to <code><a href="../api/index.html#onGroupHold">onGroupHold</a></code> and
+          <code><a href="../api/index.html#onGroupDoubleClick">onGroupDoubleClick</a></code> events
+          and initiating loading of the group's content if needed.</p>
+        </li>
+
+        <li>
+          <p>Using <code><a href="../api/index.html#groupLabelDecorator">groupLabelDecorator</a></code> to append
+          the <code>&raquo;</code> and <code>&raquo;&raquo;</code> decorations based on the current state
+          of the visualization.</p>
+        </li>
+
+        <li>
+          <p>A simple utility for displaying spinner animations inside those polygons for which the data
+          is currently loading. The utility uses the <code><a href="../api/index.html#groupContentDecorator">groupContentDecorator</a></code>
+          to draw the animation.</p>
+        </li>
+      </ul>
+    </div>
+
+    <script src="../carrotsearch.foamtree.js"></script>
+
+    <!-- Include Hammer.js for mobile interactions. Not required for desktop-only apps. -->
+    <script src="assets/js/hammer.min.js"></script>
+
+    <script>
+        // Generates some random groups
+        var generate = (function () {
+          var number = 0;
+
+          return function (levels) {
+            if (levels == 0) {
+              return undefined;
+            }
+
+            var result = [];
+            var count = 5;
+            for (var i = 0; i < count; i++) {
+              var expandable = Math.random() < 0.7;
+
+              result.push({
+                label: "Group\u00a0" + (++number),
+                expandable: expandable,
+                weight: (expandable ? 5 : 1) * Math.random(),
+                groups: generate(levels - 1)
+              });
+            }
+            return result;
+          }
+        })();
+
+      // Initialize FoamTree after the whole page loads to make sure
+      // the element has been laid out and has non-zero dimensions.
+      window.addEventListener("load", function() {
+        var foamtree = new CarrotSearchFoamTree({
+          // Identifier of the HTML element defined above
+          id: "visualization",
+
+          // Remove restriction on the minimum group diameter, so that
+          // we can render as many diagram levels as possible.
+          groupMinDiameter: 0,
+
+          // Lower the minimum label font size a bit to show more labels.
+          groupLabelMinFontSize: 3,
+
+          // Disable rounded corners, deeply-nested groups
+          // will look much better and render faster.
+          groupBorderRadius: 0,
+
+          // Lower the parent group opacity, so that lower-level groups show through.
+          parentFillOpacity: 0.5,
+
+          // Lower the border radius a bit to fit more groups.
+          groupBorderWidth: 2,
+          groupInsetWidth: 3,
+          groupSelectionOutlineWidth: 1,
+          groupBorderWidthScaling: 0.25,
+
+          // Generate some initial data
+          dataObject: {
+            groups: generate(2)
+          },
+
+          // Use a simple fading animation
+          rolloutDuration: 0,
+          pullbackDuration: 0,
+
+          // When the user holds the mouse button over a group,
+          // load the data if needed.
+          onGroupHold: function (e) {
+            if (!e.secondary && e.group.expandable && !e.group.groups) {
+              loader.load(e.group);
+            } else {
+              this.open({ groups: e.group, open: !e.secondary });
+            }
+          },
+
+          // Dynamic loading of groups does not play very well with expose.
+          // Therefore, when the user double-clicks a group, initiate data loading
+          // if needed and zoom in to the group.
+          onGroupDoubleClick: function (e) {
+            e.preventDefault();
+            var group = e.secondary ? e.bottommostOpenGroup : e.topmostClosedGroup;
+            var toZoom;
+            if (group) {
+              // Open on left-click, close on right-click
+              if (!e.secondary && group.expandable && !e.group.groups) {
+                loader.load(group);
+              } else {
+                this.open({ groups: group, open: !e.secondary });
+              }
+              toZoom = e.secondary ? group.parent : group;
+            } else {
+              toZoom = this.get("dataObject");
+            }
+            this.zoom(toZoom);
+          },
+
+          // Display a "+" if a group can be expanded
+          groupLabelDecorator: function (opts, params, vars) {
+            if (params.group.expandable && !params.group.groups) {
+              vars.labelText += "\u00a0\u00bb";
+            }
+            if (params.group.groups && params.browseable === false) {
+              vars.labelText += "\u00a0\u00bb\u00bb";
+            }
+          }
+        });
+
+        // Resize FoamTree on orientation change
+        window.addEventListener("orientationchange", foamtree.resize);
+
+        // Resize on window size changes
+        window.addEventListener("resize", (function () {
+          var timeout;
+          return function () {
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(foamtree.resize, 300);
+          }
+        })());
+
+        //
+        // A simple utility for simulating the Ajax loading of data
+        // and updating FoamTree with the newly loaded data.
+        //
+        var loader = (function(foamtree) {
+          return {
+            load: function (group) {
+              if (!group.groups && !group.loading) {
+                spinner.start(group);
+
+                // Simulate loading from the server by a timeout
+                window.setTimeout(function() {
+                  group.groups = generate(1);
+
+                  // We need to open the group for FoamTree to update its model
+                  foamtree.open({ groups: group, open: true }).then(function() {
+                    spinner.stop(group);
+                  });
+                }, 500 + 1500 * Math.random());
+              }
+            }
+          };
+        })(foamtree);
+
+        //
+        // A simple utility for starting and stopping spinner animations
+        // inside groups to show that some content is loading.
+        //
+        var spinner = (function(foamtree) {
+          var toRedraw = [];
+
+          foamtree.on("redraw", function() {
+            if (toRedraw.length > 0) {
+              // Since we're already running a redraw,
+              // schedule the next redraw in the next frame.
+              window.setTimeout(function () {
+                foamtree.redraw(true, { groups: toRedraw });
+                toRedraw = [];
+              }, 32);
+            }
+          });
+
+          // Set up a groupContentDecorator that draws the loading spinner
+          foamtree.set("wireframeContentDecorationDrawing", "always");
+          foamtree.set("groupContentDecoratorTriggering", "onSurfaceDirty");
+          foamtree.set("groupContentDecorator", function (opts, props, vars) {
+            var group = props.group;
+            if (!group.loading) {
+              return;
+            }
+
+            // The center of the polygon
+            var cx = props.polygonCenterX;
+            var cy = props.polygonCenterY;
+
+            // Compute the spinner position if the shape changed
+            if (props.shapeDirty || !group.iconBox) {
+              group.iconBox = CarrotSearchFoamTree.geometry.rectangleInPolygon(
+                props.polygon, cx, cy, 1, 0.9
+              );
+            }
+
+            // Draw the spinner
+            var ctx = props.context;
+            var iconBox = group.iconBox;
+
+            var spinnerRadius = iconBox.w * 0.25;
+            var dots = 10;
+
+            // Advance the animation based on the current time
+            var now = Date.now();
+
+            // Some simple fade-in of the spinner
+            var baseAlpha;
+            if (now - group.loadingStartTime < 500) {
+              baseAlpha = Math.pow((now - group.loadingStartTime) / 500, 2);
+            } else {
+              baseAlpha = 1.0;
+            }
+
+            // Draw the animation frame
+            var frame = now / 50;
+            for (var i = 0; i < dots; i++) {
+              // Vary the actual radius based on the frame number, which creates the animation.
+              var ratio = (0.3 + 0.7 * (1 - ((i + frame) % dots) / dots));
+              ctx.globalAlpha = baseAlpha * (ratio - 0.3) / 0.7;
+              var dotRadius = ratio * spinnerRadius / 4;
+              ctx.beginPath();
+              ctx.arc(
+                cx + Math.cos(i * Math.PI * 2 / dots) * spinnerRadius,
+                cy - Math.sin(i * Math.PI * 2 / dots) * spinnerRadius,
+                dotRadius, 0, Math.PI * 2);
+              ctx.fill();
+            }
+
+            // Schedule the group for redrawing
+            toRedraw.push(group);
+          });
+
+          return {
+            start: function (group) {
+              group.loading = true;
+              group.loadingStartTime = Date.now();
+
+              // Initiate the spinner animation
+              foamtree.redraw();
+            },
+
+            stop: function (group) {
+              group.loading = false;
+            }
+          };
+        })(foamtree);
+      });
+    </script>
+  </body>
+</html>

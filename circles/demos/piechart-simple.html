@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="assets/css/reset.css" />
+    <style type="text/css">
+      html, body, #visualization {
+        height: 100%;
+      }
+    </style>
+
+    <script src="../carrotsearch.circles.js"></script>
+    <script src="../carrotsearch.circles.asserts.js"></script>
+    <script src="assets/js/carrotsearch.examples.onresizehook.js"></script>
+    <script src="assets/js/carrotsearch.examples.viewport.js"></script>
+  </head>
+
+  <body>
+    <div id="visualization"></div>
+
+    <script>
+      // Wait until everything finishes loading and visual elements
+      // have a non-zero size.
+      window.onload = function() {
+        var circles = new CarrotSearchCircles({
+          id: "visualization",
+          pixelRatio: Math.min(1.5, window.devicePixelRatio || 1),
+
+          visibleGroupCount: 0,
+          showZeroWeightGroups: false,
+          angleStart: 90 * 3 + 45,
+          angleWidth: -360,
+          ringScaling: 1000,
+
+          groupOutlineWidth: 2,
+          groupOutlineColor: "#000",
+          groupHoverColor: "rgba(0,0,0,0)",
+          groupHoverOutlineColor: "rgba(0,0,0,0)",
+
+          diameter: function(box) {
+            var min = Math.min(box.height, box.width);
+            return Math.min(box.height, box.width) - min * 0.1;
+          },
+
+          labelDarkColor: "#000",
+          labelLightColor: "#000",
+
+          groupMinFontSize: "10%",
+          groupMaxFontSize: "25%",
+          ratioAngularPadding: 0,
+          minAngularPadding: 0,
+          ratioRadialPadding: 0.1,
+          minRadialPadding: 0,
+          ratioAspectSwap: /* prevent horizontal */ 1000,
+          textureMappingMesh: false,
+
+          deferLabelRedraws: 0,
+          labelRedrawFadeInTime: 0,
+
+          groupColorDecorator: function(opts, params, vars) {
+            vars.groupColor = params.group.color;
+          },
+
+          isGroupVisible: function(group) {
+            return !group.gap;
+          },
+
+          ringShape: function(attrs) {
+            var v = attrs.group.extrudeBy;
+            if (v) {
+              attrs.r_outer += v;
+            }
+          },
+
+          onBeforeZoom: function() { return false; },
+          onBeforeSelection: function() { return false; },
+          onGroupClick: function(info) {
+            info.group.extrudeBy = ((info.group.extrudeBy | 0) + 30) % 90;
+
+            // Clear any gaps.
+            var model = circles.get("dataObject");
+            for (var i = 0; i < model.groups.length; i++) {
+              var g = model.groups[i];
+              if (g.gap) g.weight = 0;
+            }
+            // And add them again around extruded groups.
+            for (var i = 0; i < model.groups.length; i++) {
+              if (model.groups[i].extrudeBy) {
+                model.groups[i - 1].weight = model.groups[i + 1].weight = 0.1;
+              }
+            }
+
+            // Relayout.
+            circles.layout();
+          },
+
+          dataObject: {
+            groups: [
+              { gap: true, weight: 0 },
+              { label:"Carrot",  color: "#ff6f06" },
+              { gap: true, weight: 0 },
+              { label:"Search",  color: "#cc0000" },
+              { gap: true, weight: 0 },
+              { label:"Circles", color: "#45c516" },
+              { gap: true, weight: 0 },
+              { label:"is",      color: "#edd400" },
+              { gap: true, weight: 0.1 },
+              { label:"awesome", color: "#059afb", extrudeBy: 60 },
+              { gap: true, weight: 0.1 }
+            ]
+          }
+        });
+
+        installResizeHandlerFor(circles, 0);
+      };
+    </script>
+  </body>
+</html>

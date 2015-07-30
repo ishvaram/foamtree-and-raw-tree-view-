@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Group details display in FoamTree title bar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+
+    <meta charset="utf-8" />
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/common.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="container"><div id="visualization"></div></div>
+    <div id="side">
+      <h2>Group details in title bar</h2>
+
+      <p>
+        You can use title bar decorator to display extra information
+        about the group in FoamTree's built-in title bar.
+      </p>
+
+      <h4>What's in the code?</h4>
+
+      <p>
+        <ul>
+          <li>Converting data into FoamTree JSON format</li>
+          <li>Embedding additional data in FoamTree JSON format</li>
+          <li>Using <code><a href="../api/index.html#titleBarDecorator">titleBarDecorator</a></code> to display the additional data</li>
+        </ul>
+      </p>
+    </div>
+
+    <script src="../carrotsearch.foamtree.js"></script>
+
+    <!-- Include Hammer.js for mobile interactions. Not required for desktop-only apps. -->
+    <script src="assets/js/hammer.min.js"></script>
+
+    <script>
+      window.addEventListener("load", function () {
+        // Get the data. This example uses search results for the query "visualization".
+        var searchResults = data();
+
+        // Convert the data to the JSON format required by FoamTree.
+        var dataObject = {
+          groups: searchResults.map(function (result, index) {
+            return {
+              // Use the result's title as the label
+              label: "[" + (index + 1) + "]\u00a0" + result.title,
+
+              // Combine the rank and number of sources to form group weight
+              weight: Math.sqrt(searchResults.length - index) * result.sources.length,
+
+              // Pass the snippet as an extra bit of data. We'll display
+              // the snippet in FoamTree title bar.
+              snippet: result.snippet
+            }
+          })
+        };
+
+        // Get the element FoamTree will be embedded in
+        var element = document.getElementById("visualization");
+
+        // Initialize FoamTree
+        var foamtree = new CarrotSearchFoamTree({
+          element: element,
+          pixelRatio: window.devicePixelRatio || 1,
+          relaxationInitializer: "fisheye",
+          dataObject: dataObject,
+          titleBarDecorator: function (opts, props, vars) {
+            vars.titleBarText = props.group.snippet;
+          },
+          maxLabelSizeForTitleBar: Number.MAX_VALUE
+        });
+
+        // Resize FoamTree on orientation change
+        window.addEventListener("orientationchange", foamtree.resize);
+
+        // Resize on window size changes
+        window.addEventListener("resize", (function() {
+          var timeout;
+          return function() {
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(foamtree.resize, 300);
+          }
+        })());
+
+        function data() {
+          return [
+            {"id": "0", "url": "http://www.thefreedictionary.com/visualization", "language": "en", "title": "visualization - definition of visualization by the Free Online …", "snippet": "vi·su·al·ize (v zh - -l z ). v. vi·su·al·ized, vi·su·al·iz·ing, vi·su·al·iz·es. v.tr. 1. To form a mental image of; envisage: tried to visualize the scene as it was described. 2.", "sources": ["Bing", "Google", "Teoma", "Yahoo"]},
+            {"id": "1", "url": "http://en.wikipedia.org/wiki/Visualization", "language": "en", "title": "Visualization - Wikipedia, the free encyclopedia", "snippet": "The term visualization or visualisation may refer to: Creative visualization · Flow visualization · Geovisualization · Illustration · Information graphics, visual …‎Creative visualization - ‎Information visualization - ‎Visualization (computer …", "sources": ["Google", "Wikipedia", "Yahoo"]},
+            {"id": "2", "url": "http://en.wikipedia.org/wiki/Visualization_(computer_graphics)", "language": "en", "title": "Visualization (computer graphics) - Wikipedia, the free encyclopedia", "snippet": "Visualization or visualisation is any technique for creating images, diagrams, or animations to communicate a message. Visualization through visual imagery has been …", "sources": ["Google", "Wikipedia", "Yahoo"]},
+            {"id": "3", "url": "http://datavisualization.ch/", "language": "en", "title": "Datavisualization.ch", "snippet": "News, people, event listings, tools and data sets, focusing on the domain of information visualization.", "sources": ["Bing", "Google", "Yahoo"]},
+            {"id": "4", "url": "http://www.visual-literacy.org/periodic_table/periodic_table.html", "language": "en", "title": "A Periodic Table of Visualization Methods - Visual Literacy", "snippet": "continuum …", "sources": ["Google", "Teoma", "Yahoo"]},
+            {"id": "5", "url": "http://en.wikipedia.org/wiki/Scientific_visualization", "language": "en", "title": "Scientific visualization - Wikipedia, the free encyclopedia", "snippet": "Scientific visualization (also spelled scientific visualisation) is an interdisciplinary branch of science according to Friendly (2008) \"primarily concerned with the …", "sources": ["Bing", "Wikipedia"]},
+            {"id": "6", "url": "http://visualizing.org/", "language": "en", "title": "visualizing.org | Data Visualizations, Challenges, Community", "snippet": "A community of creative people making sense of complex issues through data and design.‎Explore Visualizations - ‎Challenges - ‎Find Data - ‎Favorite …", "sources": ["Google", "Teoma"]},
+            {"id": "7", "url": "http://psychcentral.com/lib/guided-visualization-a-way-to-relax-reduce-stress-and-more/000684", "language": "en", "title": "Guided Visualization: A Way to Relax, Reduce Stress, and More …", "snippet": "Jan 30, 2013 … Make yourself comfortable. Lie down or sit up, spine straight, legs uncrossed… Take a slow, deep breath…Continue to take slow, deep breaths.", "sources": ["Google", "Teoma"]},
+            {"id": "8", "url": "http://vis.stanford.edu/", "language": "en", "title": "Stanford Visualization Group", "snippet": "updates. 15 October 2012. At VisWeek 2012: studies of slope judgments (InfoVis) and enterprise analysts (VAST best paper nominee). 20 September 2012 …", "sources": ["Google", "Teoma"]},
+            {"id": "9", "url": "http://www.tacc.utexas.edu/resources/visualization", "language": "en", "title": "Texas Advanced Computing Center - Visualization", "snippet": "Visualization Resources. To support the world-class research being performed on our high performance computing systems, TACC provides advanced …", "sources": ["Google", "Teoma"]},
+            {"id": "10", "url": "http://lungcancer.about.com/od/glossary/g/visualization.htm", "language": "en", "title": "Medical Definition of Visualization", "snippet": "What is meant by the term visualization in medicine?", "sources": ["Teoma"]},
+            {"id": "11", "url": "http://dictionary.reference.com/browse/visualization", "language": "en", "title": "Visualization | Define Visualization at Dictionary.com", "snippet": "verb (used without object) 1. to recall or form mental images or pictures. verb (used with object) 2. to make visual or visible. 3. to form a mental image of. 4. to …", "sources": ["Yahoo"]},
+            {"id": "12", "url": "http://www.teoma.com/wiki/Visualization", "language": "en", "title": "Visualization - Wikipedia on Ask.com", "snippet": "The term visualization or visualisation may refer to: Creative visualization · Flow visualization · Geovisualization · Illustration · Information graphics, visual …..", "sources": ["Teoma"]},
+            {"id": "13", "url": "http://www.teoma.com/wiki/Visualization_(computer_graphics)", "language": "en", "title": "Visualization (computer graphics) - Wikipedia on Ask.com", "snippet": "See also [[Information graphics]] Visualization is any technique for creating [[image]]s, [[diagram]]s, or [[animation]]s to communicate a message. Visualization through visual imagery has been an eff…", "sources": ["Teoma"]},
+            {"id": "14", "url": "http://www.amazon.com/Creative-Visualization-Imagination-Create-Gawain/dp/1577312295", "language": "en", "title": "Creative Visualization (Book 2002) - Amazon", "snippet": "When it comes to creating the life you want, Shakti Gawain literally wrote the book. Now considered a classic, Creative Visualization teaches readers how to use their …", "sources": ["Bing"]},
+            {"id": "15", "url": "http://en.wikipedia.org/wiki/Information_visualization", "language": "en", "title": "Information visualization", "snippet": "Information visualization or information visualisation is the study of (interactive) visual representations of abstract data to reinforce …", "sources": ["Wikipedia"]},
+            {"id": "16", "url": "http://code.google.com/p/gwt-google-apis/wiki/VisualizationGettingStarted", "language": "en", "title": "VisualizationGettingStarted - gwt-google-apis - Getting Started …", "snippet": "25.09.2010 · Getting Started with Chart Tools Assumptions. You are familiar with Google Web Toolkit. You know how to create a new GWT project. You are familiar with …", "sources": ["Bing"]},
+            {"id": "17", "url": "https://idre.ucla.edu/visualization", "language": "en", "title": "Visualization | Institute for Digital Research and Education - UCLA", "snippet": "Visualization. The term visualization encompasses a broad range of analytic tools and techniques that includes GIS, 3D modeling, and data and statistical visualations.", "sources": ["Yahoo"]},
+            {"id": "18", "url": "http://en.wikipedia.org/wiki/Data_visualization", "language": "en", "title": "Data visualization", "snippet": "Data visualization or data visualisation is the study of the visual representation of data , meaning \"information that has been abstracted …", "sources": ["Wikipedia"]},
+            {"id": "19", "url": "http://www.smashingmagazine.com/2007/08/02/data-visualization-modern-approaches/", "language": "en", "title": "Data Visualization: Modern Approaches | Smashing Magazine", "snippet": "Data presentation can be beautiful, elegant and descriptive. There is a variety of conventional ways to visualize data - tables, histograms, pie charts and bar graphs …", "sources": ["Bing"]},
+            {"id": "20", "url": "http://www.merriam-webster.com/dictionary/visualization", "language": "en", "title": "Visualization - Definition and More from the Free Merriam-Webster …", "snippet": "Definition of VISUALIZATION. 1: formation of mental visual images . 2: the act or process of interpreting in visual terms or of putting into visible form …", "sources": ["Yahoo"]},
+            {"id": "21", "url": "http://en.wikipedia.org/wiki/Creative_visualization", "language": "en", "title": "Creative visualization", "snippet": "Creative visualization (sports visualization) refers to the practice of seeking to affect the outer world by changing one's thoughts and …", "sources": ["Wikipedia"]},
+            {"id": "22", "url": "http://www.youtube.com/watch?v=cWt8hTayupE", "language": "en", "title": "Obama Budget Cuts Visualization - YouTube", "snippet": "How much is the $100 million dollars in budget cuts compared to the federal budget as a whole? This video imagines the budget as $100 in pennies to provide …", "sources": ["Bing"]},
+            {"id": "23", "url": "http://medical-dictionary.thefreedictionary.com/visualization", "language": "en", "title": "visualization - definition of visualization in the Medical dictionary …", "snippet": "visualization /vis·u·al·iza·tion/ (vizh″oo-al-ĭ-za´shun) 1. the act of viewing or of achieving a complete visual impression of an object.", "sources": ["Yahoo"]},
+            {"id": "24", "url": "http://en.wikipedia.org/wiki/Illustration", "language": "en", "title": "Illustration", "snippet": "An illustration is a visualization or a depiction made by an artist, such as a drawing , sketch , painting , photograph , or other kind of …", "sources": ["Wikipedia"]},
+            {"id": "25", "url": "http://spotfire.tibco.com/", "language": "en", "title": "TIBCO Spotfire - Business Intelligence Analytics Software & Data …", "snippet": "TIBCO Spotfire designs, develops and distributes in-memory analytics software for next generation business intelligence. By offering a visual, interactive experience …", "sources": ["Bing"]},
+            {"id": "26", "url": "http://en.wikipedia.org/wiki/Music_visualization", "language": "en", "title": "Music visualization", "snippet": "Music visualization or music visualisation, a feature found in electronic music visualizers and media player software , generates animated …", "sources": ["Wikipedia"]},
+            {"id": "27", "url": "http://www.umass.edu/microbio/rasmol/", "language": "en", "title": "Molecular Visualization Freeware - Home | UMass Amherst", "snippet": "Molecular Visualization Freeware for proteins, dna and macromolecules.", "sources": ["Bing"]},
+            {"id": "28", "url": "https://idre.ucla.edu/gis-visualization", "language": "en", "title": "GIS and Visualization | Institute for Digital Research and Education", "snippet": "IDRE staff currently provide the following services related to GIS and visualization : General consulting and mentoring for faculty research projects that involve …", "sources": ["Teoma"]},
+            {"id": "29", "url": "http://ezinearticles.com/?Visualization&id=585141", "language": "en", "title": "Visualization - EzineArticles Submission - Submit Your Best Quality …", "snippet": "What is Visualization? Visualization is quite simply using your imagination. You create a scenario in your mind, just like a day dream and imagine yourself …", "sources": ["Yahoo"]},
+            {"id": "30", "url": "http://en.wikipedia.org/wiki/Interactive_visualization", "language": "en", "title": "Interactive visualization", "snippet": "Interactive visualization or interactive visualisation is a branch of graphic visualization in computer science that involves studying …", "sources": ["Wikipedia"]},
+            {"id": "31", "url": "http://holisticonline.com/guided-imagery.htm", "language": "en", "title": "Guided Imagery, Visualization, Negative Visualizations …", "snippet": "Imagery uses the power of imagination as a potent healer. Imagery can relieve pain, speed healing and help the body subdue hundreds of ailments, including depression …", "sources": ["Bing"]},
+            {"id": "32", "url": "http://book.flowingdata.com/", "language": "en", "title": "Visualize This: The FlowingData Guide to Design, Visualization, and …", "snippet": "There are lots of books on visualization that describe best practices and design concepts, but what do you do when it comes time for you to actually make …", "sources": ["Teoma"]},
+            {"id": "33", "url": "http://www.yourdictionary.com/visualization", "language": "en", "title": "visualization - Definition of visualization", "snippet": "Using the computer to convert data into picture form. The most basic visualization is that of turning transaction data and summary information into charts and graphs …", "sources": ["Yahoo"]},
+            {"id": "34", "url": "https://developers.google.com/chart/interactive/docs/reference", "language": "en", "title": "Google Visualization API Reference - Google Developers", "snippet": "A Note on Arrays. Some browsers don't properly handle trailing commas in JavaScript arrays, so don't use them. Empty values in the middle of an array are fine.", "sources": ["Google"]},
+            {"id": "35", "url": "http://en.wikipedia.org/wiki/Software_visualization", "language": "en", "title": "Software visualization", "snippet": "Software visualization or software visualisation is the static or animated 2-D or 3-D visual representation of information about software …", "sources": ["Wikipedia"]},
+            {"id": "36", "url": "http://svs.gsfc.nasa.gov/vis/a000000/a003800/a003827/", "language": "en", "title": "Nasa's website", "snippet": "We would like to show you a description here but the site won’t allow us.", "sources": ["Bing"]},
+            {"id": "37", "url": "http://visual.ly/learn/data-visualization-tools", "language": "en", "title": "Data Visualization Tools | Visual.ly", "snippet": "Visual.ly is working to create tools that help you create beautiful data visualizations in minutes. The goal is to plug and play, then grab and go. It.", "sources": ["Teoma"]},
+            {"id": "38", "url": "http://visualization.geblogs.com/", "language": "en", "title": "GE Data Visualization", "snippet": "At GE, we believe data visualization is a powerful way to simplify complexity. We are committed to creating visualizations that advance the conversation about issues …", "sources": ["Yahoo"]},
+            {"id": "39", "url": "http://en.wikipedia.org/wiki/Graph_drawing", "language": "en", "title": "Graph drawing", "snippet": "combining methods from geometric graph theory and information visualization to derive two-dimensional depictions of graph s arising from …", "sources": ["Wikipedia"]},
+            {"id": "40", "url": "http://support.sas.com/rnd/datavisualization/index.htm", "language": "en", "title": "Graphics - SAS Customer Support Knowledge Base and Community", "snippet": "create graphs ranging from simple scatter plots and bar charts to complex multi-page classification panels.", "sources": ["Bing"]},
+            {"id": "41", "url": "http://wtfviz.net/", "language": "en", "title": "WTF Visualizations", "snippet": "Going in circles. WTFViz · submission · Diagram · Oct 9th, 2013 · 10 notes. Open in app; Facebook · Tweet · Mail. 390% mess. WTFViz · CoxcombChart · Radial …", "sources": ["Teoma"]},
+            {"id": "42", "url": "http://en.wikipedia.org/wiki/Biological_data_visualization", "language": "en", "title": "Biological data visualization", "snippet": "Biology Data Visualization is a branch of bioinformatics concerned with the application of computer graphics , scientific visualization , …", "sources": ["Wikipedia"]},
+            {"id": "43", "url": "http://svs.gsfc.nasa.gov/", "language": "en", "title": "NASA", "snippet": "We would like to show you a description here but the site won’t allow us.", "sources": ["Bing"]},
+            {"id": "44", "url": "http://www.npr.org/blogs/deceptivecadence/2013/05/27/186461168/watch-a-mind-blowing-visualization-of-the-rite-of-spring", "language": "en", "title": "Watch A Mind-Blowing Visualization Of 'The Rite Of Spring … - NPR", "snippet": "May 27, 2013 … Composer and artist Stephen Malinowski has created an incredibly illuminating — but very easy to understand — path into exploring …", "sources": ["Teoma"]},
+            {"id": "45", "url": "http://encyclopedia2.thefreedictionary.com/visualization", "language": "en", "title": "visualization definition of visualization in the Free Online Encyclopedia.", "snippet": "visualization Using the computer to convert data into picture form. The most basic visualization is that of turning transaction data and summary information into …", "sources": ["Yahoo"]},
+            {"id": "46", "url": "http://en.wikipedia.org/wiki/Spatial_visualization_ability", "language": "en", "title": "Spatial visualization ability", "snippet": "Spatial visualization ability or visual-spatial ability is the ability to mentally manipulate 2-dimensional and 3-dimensional figures.", "sources": ["Wikipedia"]},
+            {"id": "47", "url": "http://www.youtube.com/watch?v=nOm1DMZJITs", "language": "en", "title": "Pentecost - YouTube", "snippet": "A dramatic scripture reading of the Pentecost story from Acts 2. These videos serve as a Visual Liturgy, combining dramatic spoken scripture, music and …", "sources": ["Bing"]},
+            {"id": "48", "url": "http://www.youtube.com/watch?v=8aCK_Vcz-pA", "language": "en", "title": "Visualization - YouTube", "snippet": "A great tool to use when working with Law of Attraction to manifest your desires is Visualization. WOW, this really works! Athletes use it all the time …", "sources": ["Yahoo"]},
+            {"id": "49", "url": "http://en.wikipedia.org/wiki/Computer_graphics", "language": "en", "title": "Computer graphics", "snippet": "Over the past decade, other specialized fields have been developed like information visualization , and scientific visualization more …", "sources": ["Wikipedia"]}
+          ];
+        }
+      });
+    </script>
+  </body>
+</html>

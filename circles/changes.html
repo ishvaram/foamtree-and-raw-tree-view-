@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="demos/assets/css/bootstrap.css" />
+  <link rel="stylesheet" href="demos/assets/css/bootstrap-responsive.css" />
+</head>
+
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="span12">
+        <div class="page-header">
+          <h1>Carrot Search Circles</h1>
+          <h2>Release notes and API changes</h2>
+        </div>
+      </div>
+    </div>
+
+    <!--
+    IMPORTANT! Update section.id attribute and release date on introducing new versions/ releases.
+    -->
+    
+    <section id="v2.3.0">
+      <div class="row">
+        <div class="span12">
+          <h3>Version 2.3.0, <span class="label"><span class="icon-share icon-white"></span> April 9th, 2014</span></h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span12">
+          <p><strong>This release brings a roundup of bug fixes from the maintenance branch and 
+            a few minor features.</strong></p>
+
+          <p><span class="badge badge-info">New features, Improvements</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-219]</dt><dd>Make the default logo a tad smaller (esp. for demo version).</dd>
+            <dt>[CIRCLES-214]</dt><dd>Added pixelRatio to 
+              <a href="api/index.html#imageData">imageData</a> for compatibility with FoamTree and easier higher-resolution visualization captures.</dd>
+            <dt>[CIRCLES-217]</dt><dd>Added <a href="demos/dejavu.html">a simple demo</a> of using WebFonts to simulate Circles 1.x look.</dd>
+            <dt>[CIRCLES-218]</dt><dd>The color of zoomed-in group decorations is now customizable via
+            <a href="api/index.html#zoomDecorationFillColor">zoomDecorationFillColor</a> and
+            <a href="api/index.html#zoomDecorationStrokeColor">zoomDecorationStrokeColor</a>.
+            </dd>
+          </dl>
+
+          <p><span class="badge badge-important">Bugs</span></p>
+          <dl class="dl-horizontal">
+            <dt>[cumulative]</dt><dd>A roundup of all bugs and minor enhancements from 2.2.x maintenance line.</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="v2.2.4">
+      <div class="row">
+        <div class="span12">
+          <h3>Version 2.2.4, <span class="label"><span class="icon-share icon-white"></span> February 4th, 2014</span></h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span12">
+            <p><strong>This is a bugfix release.</strong></p>
+
+            <p><span class="badge badge-important">Bugs</span></p>
+            <dl class="dl-horizontal">
+              <dt>[CIRCLES-213]</dt><dd>Assertions should allow CSS predefined color names, such as "black".</dd>
+              <dt>[CIRCLES-212]</dt><dd>An exception could be thrown when changing from a null model and modifying visualization attributes in onModelChanged.</dd>
+              <dt>[CIRCLES-211]</dt><dd>Opening all groups on an empty model causes an exception.</dd>
+              <dt>[CIRCLES-210]</dt><dd>Circles does not work for containers with 0x0 size (throws InvalidStateError and becomes unusable).</dd>
+              <dt>[CIRCLES-208]</dt><dd>Fixed documentation typos (related to onload event).</dd>
+            </dl>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="v2.2.3">
+      <div class="row">
+        <div class="span12">
+          <h3>Version 2.2.3, <span class="label"><span class="icon-share icon-white"></span> October 2nd, 2013</span></h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span12">
+          <p><strong>This is a bugfix release.</strong></p>
+
+          <p><span class="badge badge-important">Bugs</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-205]</dt><dd>Selection and hover are not properly displayed (regression in version 2.2.2).</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    
+    <section id="v2.2.2">
+      <div class="row">
+        <div class="span12">
+          <h3>Version 2.2.2, <span class="label"><span class="icon-share icon-white"></span> September 3rd, 2013</span></h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span12">
+          <p><strong>This release brings a bunch of minor fixes and tweaks.</strong></p>
+
+          <p><span class="badge badge-info">New features, Improvements</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-195]</dt><dd>nhttpd starts on port 8080 by default.</dd>
+            <dt>[CIRCLES-202]</dt><dd>imageData and other attributes with odd defaults should not
+            show up in the documentation.</dd>
+            <dt>[CIRCLES-199]</dt><dd>
+            <a href="api/index.html#onGroupClick"><code>onGroupClick</code></a> and
+            <a href="api/index.html#onGroupDoubleClick"><code>onGroupDoubleClick</code></a>
+            now expose <code>ctrlKey</code>, <code>shiftKey</code>, <code>altKey</code> and <code>metaKey</code>
+            properties.</dd>
+            <dt>[CIRCLES-204]</dt><dd>An example of handling dynamic removal of groups from view.</dd>
+          </dl>
+
+          <p><span class="badge badge-important">Bugs</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-200]</dt><dd>An invisible group should not display selection.</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="v2.2.1">
+      <div class="row">
+        <div class="span12">
+          <h3>Version 2.2.1, <span class="label"><span class="icon-share icon-white"></span> July 17th, 2013</span></h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span12">
+          <p><strong>This release corrects the example snippets for mobile devices and fixes an issue with IE10 event propagation.</strong>
+            The visualization code is identical to 2.2.0.</p>
+
+          <p><span class="badge badge-important">Bugs</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-196]</dt><dd>Click-through layer events are not propagated on IE10 (examples only).</dd>
+            <dt>[CIRCLES-192]</dt><dd>Screen not refreshing properly on an iPhone after orientation change (examples only).</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="v2.2.0">
+      <div class="row">
+        <div class="span12">
+          <h3>Version 2.2.0, <span class="label"><span class="icon-share icon-white"></span> June 19th, 2013</span></h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span12">
+          <p><strong>This release brings a bunch of new features.</strong></p>
+
+          <p><span class="badge badge-info">New features, Improvements</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-187]</dt><dd><a href="api/index.html#groupShape"><code>groupShape()</code></a> function to retrieve each group's current shape.
+            This can be used to track groups on screen and <a href="demos/connections.html">this demo</a> shows where such a feature
+            may be handy.</dd>
+            <dt>[CIRCLES-115]</dt><dd>Integrated title bar component. See
+            <a href="api/index.html#titleBar"><code>titleBar</code></a> attribute and the simplest
+            <a href="demos/titlebar-builtin.html">showcase example</a>.</dd>
+            <dt>[CIRCLES-182]</dt><dd>Added read-only <a href="api/index.html#layout"><code>layout</code> attribute</a>
+            for accessing the current (most recent) layout state.</dd>
+            <dt>[CIRCLES-181]</dt><dd>Support for multiple callback listeners. Check out
+            <a href="api/index.html#visualization-events">this section</a> of the manual for a description how
+            to pass multiple callback listeners to the visualization.</dd>
+            <dt>[CIRCLES-184]</dt><dd>An example of <a href="demos/titlebar-external.html">an external title bar component handling</a> via
+            callback events.</dd>
+          </dl>
+
+          <p><span class="badge badge-important">Bugs</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-190]</dt><dd>The deprecated attribute <a href="api/index.html#angleEnd"><code>angleEnd</code></a> does not work as advertised.</dd>
+            <dt>[CIRCLES-186]</dt><dd>Double click was emitted when position delta was higher than some threshold.</dd>
+            <dt>[CIRCLES-185]</dt><dd><a href="api/index.html#onRedraw"><code>onRedraw</code></a> callback was never called. Also improved the documentation on this callback.</dd>
+            <dt>[CIRCLES-177]</dt><dd>Endless loop freezing the browser on expanding a single group at the root level.</dd>
+          </dl>
+
+          <p><span class="badge badge-warning">Deprecations, migration guide</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-181]</dt><dd>The new <a href="api/index.html#visualization-events">multiple callback listeners</a> feature
+            is designed to be backwards compatible but there are minor deviations from previous behavior. The value returned
+            from the visualization on <a href="api/index.html#get"><code>get()</code></a> calls will always be an array of functions bound to the given callback (it
+            was previously the current function reference). Where callbacks return a value
+            (as in <a href="api/index.html#onBeforeSelection"><code>onBeforeSelection</code></a>), any callback can veto the change (mutual
+            consensus is not required).</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="v2.1.0">
+      <div class="row">
+        <div class="span12">
+          <h3>Version 2.1.0, <span class="label"><span class="icon-share icon-white"></span> February 26th, 2013</span></h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span12">
+          <p><strong>This release brings a number of improvements to the core animation and rendering routines, documentation
+          and examples. Make sure to check out the <a href="demos/index.html">list of examples</a>, as well
+          as the <a href="api/index.html">new documentation</a>.</strong></p>
+
+          <p><span class="badge badge-info">New features, Improvements</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-138]</dt><dd><a href="api/index.html">New documentation</a>, all API examples are now executable.</dd>
+            <dt>[CIRCLES-166]</dt><dd>The distribution bundle now comes with an assertions file which can
+            be included in your pages during development, this will result in validation of attributes and
+            other helpful messages printed to the console. See the <a href="api/index.html#debugging">debugging section</a>
+            in the API reference for more information.</dd>
+            <dt>[CIRCLES-127]</dt><dd><a href="api/index.html#attributionSize"><code>attributionSize</code></a> callback
+            to make attribution logo size customizable (in particular when branding is locked)</dd>
+            <dt>[CIRCLES-124]</dt><dd>Clockwise and counterclockwise layout directions are now possible via
+            <a href="api/index.html#angleWidth"><code>angleWidth</code></a> attribute. Check out <a href="demos/angles.html">this
+            example for the possibilities</a>.</dd>
+            <dt>[CIRCLES-119]</dt><dd>Add <a href="api/index.html#isGroupVisible"><code>isGroupVisible</code></a> callback attribute
+            to allow invisible groups (gaps). Check out <a href="demos/piechart-simple.html">this example</a> to see
+            an example where this can be useful.</dd>
+            <dt>[CIRCLES-109]</dt><dd>Seamless handling of label blending on rapid succession of tweens.</dd>
+            <dt>[CIRCLES-110]</dt><dd>Configurable model change animation parallelism via the
+            <a href="api/index.html#modelChangeAnimations"><code>modelChangeAnimations</code></a> attribute.</dd>
+            <dt>[CIRCLES-143]</dt><dd>String weights that are numeric are respected.</dd>
+            <dt>[CIRCLES-154]</dt><dd>Tweaks to the default rainbow color model.</dd>
+            <dt>[CIRCLES-139]</dt><dd>Added <a href="api/index.html#ringShape"><code>ringShape</code></a> attribute for non-uniform,
+            customizable per-group ring sizes.</dd>
+            <dt>[CIRCLES-155]</dt><dd>Allow bubbling mouse events (disable capturing) via
+            <a href="api/index.html#captureMouseEvents"><code>captureMouseEvents</code></a> option.</dd>
+            <dt>[CIRCLES-158]</dt><dd><a href="api/index.html#ratioAspectSwap"><code>ratioAspectSwap</code></a> allows controlling
+            labels aspect (radial/angular).</dd>
+            <dt>[CIRCLES-165]</dt><dd>Explicit control of attribution fade-in time with
+            <a href="api/index.html#attributionFadeInTime"><code>attributionFadeInTime</code></a> attribute.</dd>
+          </dl>
+
+          <p><span class="badge badge-important">Bugs</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-172]</dt><dd>Control key could be undetected in events under internet explorer.</dd>
+            <dt>[CIRCLES-108]</dt><dd>Performance regressions on initial loading and fast transitions.</dd>
+            <dt>[CIRCLES-117]</dt><dd>Hover highlights don't show on IE9 and Safari.</dd>
+            <dt>[CIRCLES-118]</dt><dd>Logo images could be slightly blurred.</dd>
+            <dt>[CIRCLES-121]</dt><dd>Changing selection via an API call produces a callback event.</dd>
+            <dt>[CIRCLES-140]</dt><dd>Sequential model change does not work for rapid succession of calls.</dd>
+            <dt>[CIRCLES-142]</dt><dd>When a container with fixed positioning is used mouse coordinates are incorrect.</dd>
+            <dt>[CIRCLES-144]</dt><dd>Removed enforced label fade out times with certain rollout/pullback transitions.</dd>
+            <dt>[CIRCLES-148]</dt><dd><code>imageData</code> property could still be black during <code>onRolloutComplete</code>
+            when no animations were used.</dd>
+            <dt>[CIRCLES-149]</dt><dd>It is not possible to apply open attribute to the root object.</dd>
+            <dt>[CIRCLES-156]</dt><dd>Attribution image may disappear after window is resized.</dd>
+            <dt>[CIRCLES-157]</dt><dd>Incorrect callback arguments for <code>centerx</code>,
+            <code>centery</code> and <code>diameter</code> if <code>pixelRatio</code> != 1</dd>
+            <dt>[CIRCLES-163]</dt><dd><code>NaN</code> can appear in rainbow color calculation (luminance)
+            if <code>parent.groups.length == 1</code>.</dd>
+            <dt>[CIRCLES-164]</dt><dd>Group identifier that evaluated to false was not properly detected
+            (an id of '0' for example).</dd>
+          </dl>
+
+          <p><span class="badge badge-warning">Deprecations, migration guide</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-124]</dt><dd><a href="api/index.html#angleEnd"><code>angleEnd</code></a> parameter has been deprecated and
+            will be removed in future versions. Please change your code to use the more flexible alternative:
+            <a href="api/index.html#angleWidth"><code>angleWidth</code></a>.</dd>
+            <dt>[CIRCLES-122]</dt><dd>Removed deprecated attributes:
+            <code>selectionColor</code>,
+            <code>selectionOutlineColor</code> and
+            <code>selectionOutlineWidth</code> to comply with FoamTree API. They are now called, respectively:
+            <code>groupSelectionColor</code>,
+            <code>groupSelectionOutlineColor</code> and
+            <code>groupSelectionOutlineWidth</code>.</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="v2.0.3">
+      <div class="row">
+        <div class="span12">
+          <h3>Version 2.0.3, <span class="label"><span class="icon-share icon-white"></span> January 14th, 2013</span></h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span12">
+          <p><strong>Maintenance branch for 2.0.x release.</strong></p>
+
+          <p><span class="badge badge-important">Bugs</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-122]</dt><dd>Aliased
+            <code>selectionColor</code>,
+            <code>selectionOutlineColor</code> and
+            <code>selectionOutlineWidth</code> to comply with FoamTree API. They are now
+            called, respectively:
+            <code>groupSelectionColor</code>,
+            <code>groupSelectionOutlineColor</code> and
+            <code>groupSelectionOutlineWidth</code>. Aliased old attributes
+            will be removed in release 2.1.0.</dd>
+            <dt>[CIRCLES-121]</dt><dd>Changing selection via an API was producing a callback event which
+            is inconsistent with the API description and might have led to endless loops.</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+
+
+    <section id="v2.0.2">
+      <div class="row">
+        <div class="span12">
+          <h3>Version 2.0.2, <span class="label"><span class="icon-share icon-white"></span> December 27th, 2012</span></h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span12">
+          <p><strong>Maintenance branch for 2.0.x release.</strong></p>
+
+          <p><span class="badge badge-important">Bugs</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-117]</dt><dd>Hover highlights don't show on IE9+ and Safari.</dd>
+            <dt>[CIRCLES-116]</dt><dd>Label component has differing canvas and CSS dimensions.</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="v2.0.1">
+      <div class="row">
+        <div class="span12">
+          <h3>Version 2.0.1, <span class="label"><span class="icon-share icon-white"></span> December 20th, 2012</span></h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span12">
+          <p><strong>Maintenance branch for 2.0.x release.</strong></p>
+
+          <p><span class="badge badge-info">New features, Improvements</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-110]</dt><dd>Configurable model change animation parallelism via the
+            <a href="api/index.html#modelChangeAnimations"><code>modelChangeAnimations</code></a> attribute.</dd>
+          </dl>
+
+          <p><span class="badge badge-important">Bugs</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-109]</dt><dd>Seamless handling of label blending on rapid succession of tweens.</dd>
+            <dt>[CIRCLES-108]</dt><dd>Performance regressions on initial loading and fast transitions.</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="v2.0.0">
+      <div class="row">
+        <div class="span12">
+          <h3>Version 2.0.0, <span class="label"><span class="icon-share icon-white"></span> December 6th, 2012</span></h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span12">
+          <p><strong>Official release of Circles HTML5.</strong> Reimplementation from Flash to HTML5.</p>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="v2.0.0-rc2">
+      <div class="row">
+        <div class="span12">
+          <h3>Version 2.0.0-rc2, <span class="label"><span class="icon-share icon-white"></span> November 21th, 2012</span></h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span12">
+          <p><strong>Circles HTML5 release candidate 2.</strong></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="v2.0.0-rc1">
+      <div class="row">
+        <div class="span12">
+          <h3>Version 2.0.0-rc1, <span class="label"><span class="icon-share icon-white"></span> November 16th, 2012</span></h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span12">
+          <p><strong>Circles HTML5 release candidate 2.</strong></p>
+        </div>
+      </div>
+    </section>
+
+    <!--
+    <section id="v0.0.0">
+      <div class="row">
+        <div class="span12">
+          <h3>Version 0.0.0, <span class="label"><span class="icon-share icon-white"></span> Mon. dd, yyyy</span></h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span12">
+          <p><strong>FooBar</strong></p>
+
+          <p><span class="badge badge-info">New features, Improvements</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-XXX]</dt><dd></dd>
+          </dl>
+
+          <p><span class="badge badge-important">Bugs</span></p>
+          <dl class="dl-horizontal">
+            <dt>[CIRCLES-XXX]</dt><dd></dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+    -->
+  </div>
+
+  <script src="demos/assets/js/jquery-1.8.2.min.js"></script>
+  <script>
+    // Link up example images with titles.
+    $(document).ready(function() {
+      $("div.thumbnail").each(function(i, element) {
+        var href = $(element).find("a").attr("href");
+        $(this).find("img").wrap("<a href='" + href + "'></a>");
+      });
+    });
+  </script>
+</body>
+</html> 

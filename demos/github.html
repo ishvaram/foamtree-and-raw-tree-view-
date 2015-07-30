@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GitHub search visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+
+    <meta charset="utf-8"/>
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="assets/css/common.css" rel="stylesheet"/>
+
+    <!-- The CSS for the loading indicator container-->
+    <link href="assets/css/carrotsearch.foamtree.util.loading.css" rel="stylesheet" />
+    <style>
+      .visualization-loading > div {
+        font-size: 36px;
+        position: absolute;
+        width: 100%;
+        top: 50%;
+        margin-top: -40px;
+        text-align: center;
+        line-height: 1.05;
+      }
+    </style>
+
+    <!-- The CSS for this demo -->
+    <style type="text/css">
+      #side { overflow-x: hidden; }
+      #progress { position: absolute; top: 0; left: 0; right: 0; height: 5px; }
+
+      #details {
+        background-color: rgba(255, 255, 255, 0.95);
+        transition: right 0.5s ease, left 0.5s ease, opacity 0.5s;
+        opacity: 0;
+      }
+      #details.showing { opacity: 1; }
+      #details .forks { position: relative; left: 5px; }
+      #details .watchers { position: relative; top: -2px; }
+      #details .stats span { padding-right: 2em; }
+      #details .stats span:last-of-type { padding-right: 0; }
+
+      .newer, .older { font-weight: normal; padding: 2px 5px; border-radius: 2px; }
+      .newer { background-color: hsla(50, 80%, 85%, 1.0); }
+      .older { background-color: hsla(339, 80%, 40%, 1.0); color: white; }
+
+      .examples { margin-top: 10px; color: #aaa }
+
+      @media (min-width: 1024px) {
+        input[name='query'] { width: 12em; }
+        select[name='results'] { width: 4em; padding-left: 0; padding-right: 0 }
+        select[name='sort'] { width: 7em; padding-left: 0; padding-right: 0 }
+
+        #details {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 430px;
+          right: -430px;
+          padding-top: 50px;
+        }
+        #details.showing { right: 0; opacity: 1; }
+        #details { text-align: center; }
+        #details .avatar { width: 256px; height: 256px; border-radius: 4px; }
+        #details .description { margin: 30px auto; width: 60%; }
+        #details .close { position: absolute; top: 0; right: 10px; font-size: 50px; }
+      }
+      @media (max-width: 1023px) {
+        #side { position: relative; }
+
+        #details {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 100%; right: -100%;
+          opacity: 0;
+          padding: 10px;
+        }
+        #details.showing { right: 0; left: 0; opacity: 1; }
+        #details { text-align: left; }
+        #details .avatar { position: absolute; left: 2%; width: 20%; border-radius: 4px;}
+        #details .info { margin-left: 24%; }
+        #details h2 { margin-top: 0; }
+        #details .close { position: absolute; top: 0; right: 10px; font-size: 50px; }
+        #details .description { margin: 20px auto;}
+      }
+    </style>
+
+    <!-- HTML template for the slide-in details panel -->
+    <script id="details-template" type="text/template">
+      <img class="avatar" src="<%- owner.avatar_url %>"/>
+      <div class="info">
+        <h2><a target="_blank" href="<%- owner.html_url %>"><%- owner.login %></a>/&#8203;<a target="_blank" href="<%- html_url %>"><%- name %></a></h2>
+        <div class="stats">
+          <img src="assets/svg/star.svg"/> <span><%- stargazers_count %></span>
+          <img class="watchers" src="assets/svg/eye.svg"/> <span><%- watchers_count %></span>
+          <img class="forks" src="assets/svg/fork.svg"/> <span><%- forks_count %></span>
+        </div>
+
+        <div class="description"><%- description %></div>
+        <a target="_blank" href="<%- homepage %>"><%- homepage %></a>
+
+        <hr/>
+
+        <div style="color: #888">
+          created: <span><%- moment(created_at).fromNow() %></span><br/>
+          last push: <span><%- moment(pushed_at).fromNow() %></span><br/>
+          last update: <span><%- moment(updated_at).fromNow() %></span>
+        </div>
+      </div>
+      <div class="close">&times;</div>
+    </script>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="visualization"></div>
+
+      <!-- The element to use as the relaxation progress indicator -->
+      <div id="progress"></div>
+    </div>
+
+    <!-- The right-hand-side panel with search form and some code overview -->
+    <div id="side">
+      <img src="assets/img/github-profile.png" style="float: right; height: 120px; margin: 10px 0 20px 10px" />
+      <h2 class="font">GitHub search &amp; visualization</h2>
+
+      <p>
+        This demo searches GitHub repositories and visualizes them in <a target="_blank"
+        href="http://carrotsearch.com/foamtree">FoamTree</a>.
+      </p>
+
+      <hr style="clear: both" />
+
+      <form class="form-inline" role="form" style="margin-top: 30px">
+        <div class="form-group">
+          <input type="text" class="form-control" name="query" placeholder="query" value="language:javascript">
+        </div>
+        <div class="form-group">
+          <select name="results" class="form-control">
+            <option value="25">&nbsp;&nbsp;25 results</option>
+            <option value="50">&nbsp;&nbsp;50 results</option>
+            <option selected="selected" value="100">100 results</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <select name="sort" class="form-control">
+            <option value="stars|desc">by stars &#9660;</option>
+            <option value="stars|asc">by stars &#9650;</option>
+            <option value="forks|desc">by forks &#9660;</option>
+            <option value="forks|asc">by forks &#9650;</option>
+            <option value="updated|desc">by updated &#9660;</option>
+            <option value="updated|asc">by updated &#9650;</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Search</button>
+      </form>
+
+      <p class="examples">
+        Try:
+
+        <a href="#language:javascript">language:javascript</a> |
+        <a href="#language:java">language:java</a> |
+        <a href="#voronoi">voronoi</a> |
+        <a href="#webgl">webgl</a> |
+        <a href="#testing">testing</a>
+      </p>
+
+      <div class="row" style="margin-right: 0; margin-top: 20px; margin-bottom: 20px">
+        <div class="col-md-5">
+          <h5>Size polygons by:</h5>
+
+          <div>
+            <div class="radio">
+              <label><input type="radio" name="weighting" value="watchers_count" checked> Watchers count</label>
+            </div>
+            <div class="radio">
+              <label><input type="radio" name="weighting" value="forks_count"> Fork count</label>
+            </div>
+            <div class="radio">
+              <label><input type="radio" name="weighting" value="size"> Repository size</label>
+            </div>
+            <div class="radio">
+              <label><input type="radio" name="weighting" value="open_issues"> Open issues</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-7">
+          <h5>Color by (<span class="newer">recently</span>...<span class="older">earlier</span>):</h5>
+
+          <div>
+            <div class="radio">
+              <label><input type="radio" name="colors" value="pushed_at_time" checked> Time since last push</label>
+            </div>
+            <div class="radio">
+              <label><input type="radio" name="colors" value="created_at_time"> Time since repository created</label>
+            </div>
+            <div class="radio">
+              <label><input type="radio" name="colors" value="updated_at_time"> Time since repository last updated</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="small">
+        Click polygon for more details. Use mouse wheel or pinch to zoom. <span id="fps"></span>
+      </p>
+
+      <hr />
+
+      <h4 class="font">What's in the code?</h4>
+
+      <ul>
+        <li>
+          <p>
+            Getting search results from a public search engine using AJAX and converting
+            the results to <a href="../api/index.html#dataObject">FoamTree format</a>.
+          </p>
+        </li>
+
+        <li>
+          <p>
+            Using the <code><a target="_blank" href="loading.html">CarrotSearchFoamTree.loader</a></code> utility script to
+            manage the data loading indicator.
+          </p>
+        </li>
+
+        <li>
+          <p>
+            Using the <code><a href="../api/index.html#groupContentDecorator">groupContentDecorator</a></code> along
+            with <a href="../api/index.html#options-geometry-utils">geometry utilities</a> to lay out and
+            render custom content in each polygon.
+          </p>
+        </li>
+
+        <li>
+          <p>
+            Dynamically loading user avatar images and displaying a loading indicator animation while the image is loading.
+          </p>
+        </li>
+
+        <li>
+          <p>
+            Using the <code><a href="../api/index.html#update">update</a></code> method to dynamically adjust the
+            visualization after weights change in response to the user's choice of a different <strong>Size polygons
+            by</strong> option.
+          </p>
+        </li>
+
+        <li>
+          <p>
+            Using the <code><a href="../api/index.html#groupColorDecorator">groupColorDecorator</a></code> to apply
+            custom colors based on the time the repository was created, pushed to or updated.
+          </p>
+        </li>
+
+        <li>
+          <p>
+            Displaying a simple details panel when the user selects some group.
+          </p>
+        </li>
+
+        <li>
+          <p>
+            Using the <code><a target="_blank" href="relaxation-progress.html">CarrotSearchFoamTree.relaxationProgress</a></code>
+            utility script to show the layout relaxation progress bar.
+          </p>
+        </li>
+
+        <li>
+          <p>
+            Using the <code><a href="../api/index.html#titleBarDecorator">titleBarDecorator</a></code>
+            option to customize the triggering and content of the built-in title bar.
+          </p>
+        </li>
+
+        <li>
+          <p>
+            Loading and using custom web fonts to render FoamTree content.
+          </p>
+        </li>
+      </ul>
+
+      <div id="details"></div>
+    </div>
+
+    <!-- Include FoamTree visualization code and some utilities -->
+    <script src="../carrotsearch.foamtree.js"></script>
+    <script src="../carrotsearch.foamtree.util.loading.js"></script>
+    <script src="../carrotsearch.foamtree.util.relaxationprogress.js"></script>
+
+    <!-- Include Hammer.js for mobile interactions -->
+    <script src="assets/js/hammer.min.js"></script>
+
+    <!-- A number of utilities we'll need -->
+    <script src="assets/js/carrotsearch.jsonp.js"></script>
+    <script src="assets/js/carrotsearch.template.js"></script>
+    <script src="assets/js/jquery-2.0.3.min.js"></script>
+    <script src="assets/js/moment.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js"></script>
+
+    <style id="font">.font { font-family: Roboto Condensed, sans-serif }</style>
+    <script>
+      (function() {
+        // Firefox has problems handling SVG images on canvas
+        // (https://bugzilla.mozilla.org/show_bug.cgi?id=1017847),
+        // so we need to enable a workaround.
+        var isFirefox = window.navigator.userAgent.indexOf("Firefox") >= 0;
+
+        // Define two deferreds we'll wait for before initializing FoamTree
+        var load = $.Deferred();
+        $(window).load(function() { load.resolve() });
+
+        var font = $("#font").html().match(/font-family: (.*), sans-serif/)[1];
+        var fonts = $.Deferred();
+        WebFont.load({
+          google: { families: [ font ] },
+          active: function() { fonts.resolve(); }
+        });
+
+        // Initialize FoamTree when all content loads
+        $.when(load, fonts).then(function () {
+          // A very rough heuristic to detect slower devices.
+          // On slower devices we'll use some less demanding settings,
+          // such as less animation and lower relaxation accuracy.
+          var isMobile = screen.width <= 1080;
+
+          // Load some static SVG images we'll draw inside FoamTree polygons
+          var fork = createImage("assets/svg/fork.svg");
+          var eye = createImage("assets/svg/eye.svg");
+
+          // A queue of polygons to redraw when loading images
+          var toRedraw = [];
+
+          // Initialize FoamTree
+          var foamtree = new CarrotSearchFoamTree({
+            id: "visualization",
+            pixelRatio: window.devicePixelRatio || 1,
+
+            // Use the custom web font for FoamTree texts
+            groupLabelFontFamily: font,
+
+            // Don't use any rollout animations
+            rolloutDuration: 0,
+            pullbackDuration: 0,
+            fadeDuration: 0,
+
+            // Grow polygons to their final size in
+            // an animated fashion
+            groupGrowingDuration: 3000,
+
+            // Show relaxation, but only on fast devices
+            relaxationVisible: !isMobile,
+            relaxationMaxDuration: 8000,
+            relaxationQualityThreshold: isMobile ? 2.0 : 0.2,
+
+            // Tune polygon borders a bit
+            groupStrokePlainLightnessShift: -30,
+            groupBorderWidth: isMobile ? 2.5 : 4.0,
+            groupSelectionOutlineWidth: isMobile ? 4.0 : 5.0,
+
+            // Draw all groups in grey
+            rainbowStartColor: "hsla(0, 0%, 95%, 1.0)",
+            rainbowEndColor: "hsla(0, 0%, 95%, 1.0)",
+            rainbowLightnessCorrection: 0,
+            rainbowSaturationCorrection: 1,
+
+            // Register two listeners for redraw events
+            onRedraw: [
+              // A simple FPS counter
+              (function() {
+                var frames = 0, start, timeout;
+
+                return function() {
+                  if (frames === 0) {
+                    start = Date.now();
+                  }
+
+                  frames++;
+                  if (frames % 10 === 0 && frames > 10) {
+                    document.getElementById("fps").innerHTML =
+                      (1000.0 * frames / (Date.now() - start)).toFixed(2) + " FPS";
+
+                    // Clear the counter after the animation stops for 1s
+                    window.clearTimeout(timeout);
+                    timeout = window.setTimeout(function() {
+                      frames = 0;
+                    }, 1000);
+                  }
+                }
+              })(),
+
+              // Triggers a redraw queued during image loading
+              function () {
+                if (toRedraw.length > 0) {
+                  // Since we're already running a redraw,
+                  // schedule the next redraw in the next frame.
+                  window.setTimeout(function () {
+                    foamtree.redraw(true, { groups: toRedraw });
+                    toRedraw = [];
+                  }, 16);
+                }
+              }
+            ],
+
+            // We want to vary the amount of detail we display based on the zoom level.
+            // We therefore need to get our drawing code called on every redraw.
+            groupContentDecoratorTriggering: "onSurfaceDirty",
+
+            // Also draw custom code during animations
+            wireframeContentDecorationDrawing: "always",
+
+            // The code FoamTree will call to do the custom drawing
+            groupContentDecorator: function (opts, props, vars) {
+              // If there's no data to draw, do nothing
+              var group = props.group;
+              if (!group.item) {
+                return;
+              }
+
+              // Initialize the per-group state
+              var iconCrossFadeFrames = isMobile ? 1 : 10;
+              if (typeof group.loadingAnimationFrame === 'undefined') {
+                // The current frame of the per-polygon icon loading indicator animation
+                group.loadingAnimationFrame = 0;
+
+                // The number of indicator->icon cross-fade animation frames left
+                group.iconCrossFadeFrame = iconCrossFadeFrames;
+
+                // The text layout cache
+                group.cache = {};
+              }
+
+              if (props.shapeDirty) {
+                // If the shape of the polygon changed, we need to recompute the
+                // layout of the polygon's contents. If the shape didn't change,
+                // (e.g. when the user zooms or pans around), we'll just render
+                // the layout we prepared here.
+                prepare();
+              }
+
+              // Render the contents
+              render();
+
+              /**
+               * Lays out the custom content of the polygon. The layout is:
+               * owner's avatar in the top-left corner, short repository stats
+               * in the top-right corner and the repository full name in the
+               * bottom part of the polygon. If the polygon is very small,
+               * we'll only render the icon in the center.
+               */
+              function prepare() {
+                // Reference to the data object this polygon represents
+                var group = props.group;
+
+                // The center of the polygon
+                var cx = props.polygonCenterX;
+                var cy = props.polygonCenterY;
+
+                // Defines the alignment of the icon box relative to the polygon center
+                // See the documentation of CarrotSearchFoamTree.geometry.rectangleInPolygon
+                // for more details and examples.
+                var fx, fy;
+
+                // If the area of the polygon is less than 1024 pixels, we'll render only the icon.
+                group.fullInformationRendered = props.polygonArea >= 1024;
+                if (group.fullInformationRendered) {
+                  // Put the icon box's alignment point towards the bottom-right
+                  // of the box. This will shift the box towards top-left to
+                  // make some space for the stats and the repository name.
+                  fx = 1.2;
+                  fy = 0.75;
+                } else {
+                  // Put the icon box's alignment point in the center of the box,
+                  // it will make it centered exactly around the polygon's center.
+                  fx = 0.5;
+                  fy = 0.5;
+                }
+
+                // Keep the alignments for the future
+                group.fx = fx; group.fy = fy;
+
+                // Compute the rectangle into which we'll render the image. Icons are square,
+                // so the width-to-height ratio is 1.0.
+                var widthToHeightRatio = 1.0;
+
+                // Compute the largest box that is inside the polygon and meets the alignment
+                // criteria we set above. In the same call, scale the polygon down by 20% so that
+                // there is some padding between the icon and the polygon boundary
+                var iconBox = CarrotSearchFoamTree.geometry.rectangleInPolygon(
+                  props.polygon,      // fit inside our main polygon
+                  cx, cy,             // the reference point is the polygon's center
+                  widthToHeightRatio,
+                  0.8,                // scale down by 20% to ensure some padding
+                  fx, fy              // pass the alignment of the reference point
+                );
+
+                // Keep the box's coordinates for rendering
+                group.iconBox = iconBox;
+
+                // If we're displaying the full information, lay out the stats and repository name
+                if (group.fullInformationRendered) {
+                  // Compute how much height was left for the repository name.
+                  // This is the distance between the bottom edge of the polygon's box
+                  // and the bottom edge of the icon box we just computed.
+                  var heightLeftForName = props.boxTop + props.boxHeight - (iconBox.y + iconBox.h);
+
+                  // Lay out the repository name text.
+                  // Since we're only preparing the layout and not doing the actual drawing,
+                  // here we'll "draw" the label to a scratch buffer that the rendering function
+                  // will actually render.
+
+                  // Create and store the scratch buffer.
+                  group.nameCtx = props.context.scratch();
+
+                  // Layout the text and "draw" it to the scratch buffer
+                  var nameLabelInfo = group.nameCtx.fillPolygonWithText(
+                    props.polygon,               // lay out the text in the main polygon
+                    cx,                          // center the text horizontally around the polygon's center
+                    iconBox.y + iconBox.h * 1.1, // start the layout below the bottom edge of the icon
+                    props.group.name,            // the text to lay out, the full repository name
+                    {
+                      verticalAlign: "top",      // flow the text downwards
+                      verticalPadding: 0.15,     // lower the default vertical padding
+                      fontFamily: opts.groupLabelFontFamily, // use the font family we set for the whole FoamTree
+
+                      // Limit the maximum total height of the text. Since the height is in relation
+                      // to the main polygon and we're actually fitting inside the bottom part of the polygon,
+                      // we need to compute what fraction of the total polygon height our text should fit.
+                      // We'll set to to 50% of the bottom part we designed to be left for the text.
+                      maxTotalTextHeight: 0.5 * heightLeftForName / props.boxHeight,
+
+                      // If the geometry of the main polygon changes only sightly, we don't want to
+                      // re-layout the text (which is costly), but instead use the layout we already did.
+                      // To enable caching, we need to provide some cache object, which the text layout routine
+                      // use for its own purposes and the current area of the polygon.
+                      cache: group.cache,
+                      area: props.polygonArea
+                    }
+                  );
+                  group.nameLabelInfo = nameLabelInfo; // remember the text layout parameters for rendering
+
+                    // If name does not fit, center the icon and stats vertically.
+                    // This will happen very rarely, if at all.
+                  if (!nameLabelInfo.fit) {
+                    iconBox = CarrotSearchFoamTree.geometry.rectangleInPolygon(
+                      props.polygon, cx, cy, widthToHeightRatio, 0.8, fx,
+                      0.5 // this time we center the icon box vertically
+                    );
+                    group.iconBox = iconBox;
+                  }
+
+                  // Lay out the stats part (the top-right corner) into another scratch buffer
+                  group.statsCtx = props.context.scratch();
+
+                  // Draw the stats icons.
+                  var iconSize = isFirefox ? Math.round(iconBox.h * 0.35 / 2) * 2 : iconBox.h * 0.35;
+                  group.statsCtx.drawImage(eye,
+                    iconBox.x + iconBox.w * 1.2,  // put the icon to the right of the avatar icon box, with some extra padding
+                    iconBox.y + iconBox.h * 0.15, // the first row of stats
+                    iconSize, iconSize // size the stats icon based on the size of the avatar icon box
+                  );
+                  group.statsCtx.drawImage(fork,
+                    iconBox.x + iconBox.w * 1.3,
+                    iconBox.y + iconBox.h * 0.50, // the second row of stats
+                    iconSize, iconSize
+                  );
+
+                  // "Draw" the stats numbers to the scratch buffer
+                  group.statsCtx.fillStyle = "black";
+                  group.statsCtx.font = iconBox.h * 0.20 + "px " + opts.groupLabelFontFamily;
+                  group.statsCtx.fillText(
+                    props.group.item.watchers_count.toString(),
+                    iconBox.x + iconBox.w * 1.65,
+                    iconBox.y + iconBox.h * (0.15 + 0.25)
+                  );
+                  group.statsCtx.fillText(
+                    props.group.item.forks_count.toString(),
+                    iconBox.x + iconBox.w * 1.65,
+                    iconBox.y + iconBox.h * (0.50 + 0.25)
+                  );
+                }
+              }
+
+              /**
+               * Actually draws the layout we earlier computed.
+               */
+              function render() {
+                // The polygon's center
+                var cx = props.polygonCenterX;
+                var cy = props.polygonCenterY;
+                var group = props.group;
+
+                // The context we need to draw to
+                var ctx = props.context;
+
+                // The icon box alignment point we computed
+                var fx = group.fx, fy = group.fy;
+
+                // Draw the contents
+                if (group.fullInformationRendered) {
+                  if (group.nameLabelInfo.fit) {
+                    if (group.nameLabelInfo.fontSize * props.viewportScale >= 6) {
+                      // If the label fits and its font size is going to be legible,
+                      // draw the text we prepared earlier.
+                      group.nameCtx.replay(ctx);
+                    } else {
+                      // If the label fits, but the font would be too small at the
+                      // current zoom level, draw "dots" instead of the label.
+                      var box = group.nameLabelInfo.box;
+                      var dcx = box.x + box.w / 2;
+                      var dcy = box.y + box.h / 2;
+                      var dotSize = (box.w + box.h) / 40;
+                      var dotSize2 = dotSize / 2;
+                      var dotSpacing = dotSize * 3;
+                      ctx.fillRect(dcx - dotSize2, dcy - dotSize2, dotSize, dotSize);
+                      ctx.fillRect(dcx - dotSize2 - dotSpacing, dcy - dotSize2, dotSize, dotSize);
+                      ctx.fillRect(dcx - dotSize2 + dotSpacing, dcy - dotSize2, dotSize, dotSize);
+                    }
+                  }
+
+                  // Draw the stats
+                  group.statsCtx.replay(ctx);
+                }
+
+                // Draw the avatar image
+                var iconBox = group.iconBox;
+
+                if (group.image) {
+                  // If the image already loaded, fade-it in.
+                  group.iconCrossFadeFrame--;
+
+                  // Vary the alpha based on the cross-fade animation progress
+                  ctx.globalAlpha = 1 - group.iconCrossFadeFrame / iconCrossFadeFrames;
+
+                  // Draw the image
+                  ctx.drawImage(group.image, iconBox.x, iconBox.y, iconBox.w, iconBox.h);
+                }
+
+                // Draw the loading indicator animation
+                if (group.iconCrossFadeFrame > 0) {
+                  // Center of the spinner
+                  var ccx = cx + iconBox.w * (0.5 - fx);
+                  var ccy = cy + iconBox.h * (0.5 - fy);
+                  var spinnerRadius = iconBox.w * 0.25;
+                  var dots = 10;
+
+                  // Vary the alpha based on the cross-fade animation progress
+                  ctx.globalAlpha = group.iconCrossFadeFrame / iconCrossFadeFrames;
+
+                  // Draw the spinner
+                  for (var i = 0; i < dots; i++) {
+                    // Vary the actual radius based on the frame number. This creates the actual animation.
+                    var dotRadius = (0.3 + 0.7 * (1 - ((i + group.loadingAnimationFrame) % dots) / dots)) * spinnerRadius / 4;
+                    ctx.beginPath();
+                    ctx.arc(
+                      ccx + Math.cos(i * Math.PI * 2 / dots) * spinnerRadius,
+                      ccy - Math.sin(i * Math.PI * 2 / dots) * spinnerRadius,
+                      dotRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                  }
+
+                  // We draw the indicator animation only on fast devices
+                  if (!isMobile) {
+                    // Increment the frame number and trigger another
+                    // redraw to keep the animation going.
+                    group.loadingAnimationFrame++;
+
+                    // Add the current group to the refresh list. If there's
+                    // only a few icons that have not yet finished loading,
+                    // we won't need to redraw the whole visualizations, but
+                    // only the polygons in which the animation is running.
+                    toRedraw.push(group);
+                  }
+                }
+              }
+            },
+
+            // Customizes the title bar
+            titleBarDecorator: function (opts, props, vars) {
+              var group = props.group;
+              if (!group.item) { return; }
+
+              // Display the title bar if the full stats are not rendered in the polygon
+              // or when the font size is small at the current zoom level.
+              if (!group.fullInformationRendered || group.nameLabelInfo.fontSize * props.viewportScale < 10) {
+                vars.titleBarShown = true;
+
+                // Use the unbreakable space (\u00a0) to keep everything in one line
+                vars.titleBarText = group.name +
+                  "\u00a0\u00a0|\u00a0\u00a0" + count(group.item.watchers_count, "watcher") +
+                  "\u00a0\u00a0|\u00a0\u00a0" + count(group.item.forks_count, "fork");
+              }
+
+              function count(count, text) {
+                return count + " " + text + (count === 1 ? "" : "s");
+              }
+            }
+          });
+
+          // Initialize the relaxation progress indicator
+          CarrotSearchFoamTree.relaxationProgress(foamtree, document.getElementById("progress"));
+
+          // Resize FoamTree on orientation change
+          window.addEventListener("orientationchange", foamtree.resize);
+
+          // Resize on window size changes
+          window.addEventListener("resize", (function () {
+            var timeout;
+            return function () {
+              window.clearTimeout(timeout);
+              timeout = window.setTimeout(foamtree.resize, 300);
+            }
+          })());
+
+          initSearchForm();
+          initDetailsPanel();
+
+          // Load the initial static data.
+          var foamtreeLoader = CarrotSearchFoamTree.loader(foamtree,
+            "<div class='font'>Loading and preparing<br />the awesome...</div>");
+          foamtreeLoader.started();
+          JSONP.load("assets/data/github.js", "modelDataAvailable", setDataObject);
+
+          /**
+           * Initializes the search form.
+           */
+          function initSearchForm() {
+            var $form = $("form");
+
+            // On form submit, make a call to GitHub search API.
+            $form.on("submit", function (e) {
+              e.preventDefault();
+
+              // Show the loading message
+              foamtreeLoader.started();
+
+              // Make the API call
+              $.ajax({
+                url: "https://api.github.com/search/repositories",
+                type: "GET",
+                dataType: "jsonp",
+                cache: true,
+                data: {
+                  q: $form.find("[name=query]").val(),
+                  sort: $form.find("[name=sort]").val().split("|")[0],
+                  order: $form.find("[name=sort]").val().split("|")[1],
+                  per_page: $form.find("[name=results]").val()
+                },
+                success: function (data) {
+                  // Once the data loads, show it in FoamTree
+                  setDataObject(data.data);
+                }
+              });
+            });
+
+            // The example queries
+            $(".examples a").click(function (e) {
+              e.preventDefault();
+              $form.find("[name=query]").val(this.hash.substring(1)).end().trigger("submit");
+            });
+
+            // Changing the polygon sizing option
+            $("input[name='weighting']").change(function (e) {
+              e.preventDefault();
+
+              // Update group weights
+              var property = e.target.value;
+              var groups = foamtree.get("dataObject").groups;
+              if (!groups[0].item) { return; }
+
+              for (var i = 0; i < groups.length; i++) {
+                var group = groups[i];
+                group.weight = group.item[property];
+              }
+
+              // Trigger the visualization layout update.
+              // We do this in the timeout to let the form UI
+              // redraw before FoamTree stats its computations.
+              window.setTimeout(foamtree.update, 0);
+            });
+
+            // Changing the color scheme
+            $("input[name='colors']").change(function (e) {
+              e.preventDefault();
+              var property = e.target.value;
+              var dataObject = foamtree.get("dataObject");
+              var groups = dataObject.groups;
+              if (!groups[0].item) { return; }
+
+              // Compute the min and max timestamp
+              var min = groups.reduce(function (min, g) {
+                return Math.min(min, g.item[property]);
+              }, Number.MAX_VALUE);
+
+              var max = groups.reduce(function (max, g) {
+                return Math.max(max, g.item[property]);
+              }, 0);
+
+              // Set the new color decorator that uses the timestamps
+              foamtree.set("groupColorDecorator", function (opts, props, vars) {
+                vars.groupColor.h = 80 * (props.group.item[property] - min) / (max - min) - 20;
+                vars.groupColor.s = 60 + 25 * (props.group.item[property] - min) / (max - min);
+                vars.groupColor.l = 60 + 25 * (props.group.item[property] - min) / (max - min);
+              });
+
+              // Schedule a redraw to draw the new colors
+              window.setTimeout(foamtree.redraw, 0);
+            });
+
+            // When FoamTree data changes, reset the color decorator
+            foamtree.on("modelChanged", function(model) {
+              if (model) {
+                if (model.noResults) {
+                  // Remove color decorator for non-results data sets
+                  foamtree.set("groupColorDecorator", null);
+                } else {
+                  // Trigger handler to set the color model
+                  $("input[name='colors']:checked").trigger("change");
+                }
+              }
+            });
+          }
+
+          /**
+           * Handles the details panel.
+           */
+          function initDetailsPanel() {
+            var $details = $("#details");
+            var template = Template.make($("#details-template").get(0).innerHTML);
+
+            // When group selection changes, show the details panel
+            foamtree.on("groupSelectionChanged", function (e) {
+              if (e.groups.length > 0) {
+                if (!e.groups[0].item) {
+                  $details.toggleClass("showing", false);
+                  return;
+                }
+                $details.html(template(e.groups[0].item));
+              }
+              $details.toggleClass("showing", e.groups.length !== 0);
+            });
+
+            // Closing of the panel
+            $details.on("click", ".close", closePanel);
+            $(document).keydown(function (e) {
+              if (e.keyCode === 27) {
+                closePanel();
+              }
+            });
+
+            function closePanel() {
+              foamtree.set("selection", null);
+              $details.toggleClass("showing", false);
+            }
+          }
+
+          /**
+           * Converts the GitHub search API results to a FoamTree data object.
+           */
+          function setDataObject(github) {
+            var weightProperty =  $("input[name='weighting']:checked").val();
+
+            // Once the data loaded, hide the loading indicator and set the data.
+            foamtreeLoader.complete(
+              // If there are results, convert them to FoamTree format
+              github.items && github.items.length ?
+              {
+                groups: github.items.map(function (item, index) {
+                  // Sometimes home pages come without the http:// prefix
+                  if (item.homepage && item.homepage.indexOf("http") !== 0) {
+                    item.homepage = "http://" + item.homepage;
+                  }
+
+                  // Convert to time stamps
+                  item.created_at_time = new Date(item.created_at).getTime();
+                  item.updated_at_time =  new Date(item.updated_at).getTime();
+                  item.pushed_at_time = new Date(item.pushed_at).getTime();
+
+                  // Create the FoamTree group object for this item
+                  var group = {
+                    // Keep a reference to the original item, we'll use it in our custom drawing code
+                    item: item,
+
+                    // If the full name is long, insert zero-width spaces after / and -
+                    // so that the text layout engine can break lines if needed
+                    name: item.full_name.length > 14 ? item.full_name.split("/").join("/\u200b").split("-").join("\u00ad") : item.full_name,
+
+                    // Set the weight based on the the radio button selection
+                    weight: item[weightProperty]
+                  };
+
+                  // Initiate loading of the avatar image
+                  var img = new Image();
+                  img.onload = function () {
+                    // Once the image has been loaded,
+                    // put it in the group's data object
+                    group.image = img;
+
+                    // If we're on mobile, we're redrawing only
+                    // when an image loads, so schedule a redraw.
+                    if (isMobile) {
+                      toRedraw.push(group);
+                      foamtree.redraw();
+                    }
+                  };
+
+                  // Defer the actual loading of images a bit, so that the browser is not overwhelmed
+                  // by starting tens of downloads at the same time.
+                  setTimeout(function () {
+                    img.src = item.owner.avatar_url;
+                  }, index * 30);
+
+                  return group;
+                })
+              }
+              :
+
+              // The query returned no results
+              github.items && github.items.length === 0 ?
+              {
+                noResults: true,
+                groups: [
+                  { label: "No results match your search", weight: 3 },
+                  {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {} // some extra empty groups
+                ]
+              }
+              :
+
+              // The search limit has been exceeded
+              {
+                noResults: true,
+                groups: [
+                  { label: github.message.substring(0, github.message.indexOf(" (")), weight: 3 },
+                  {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+                ]
+              }
+            );
+          }
+        });
+
+        function createImage(url) {
+          var img = new Image();
+          img.src = url;
+          return img;
+        }
+      })();
+    </script>
+  </body>
+</html>

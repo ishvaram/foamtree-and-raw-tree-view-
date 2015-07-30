@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Carrot Search FoamTree: JavaScript Voronoi treemep demos</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="description" content="JavaScript library for hierarchical data visualization. Space-efficient non-rectangular treemaps, animated zooming and engaging transitions. Free demo."/>
+    <meta name="keywords" content="javascript, treemap, voronoi"/>
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+    <style>
+      .wf {
+        opacity: 0;
+        transition: opacity 1s;
+        -webkit-transition: opacity 1s;
+      }
+      .wf-active .wf {
+        opacity: 1;
+      }
+    </style>
+    <link href="../demos/assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="../demos/assets/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="assets/css/carrotsearch.foamtree.util.hints.css" rel="stylesheet" />
+    <link href="../demos/assets/css/site.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div class="jumbotron main">
+      <div class="container inset">
+        <nav class="navbar" role="navigation">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle wf" id="collapse-button">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="fa fa-bars"></span>
+            </button>
+            <a class="navbar-brand" href="../index.html">
+              <h1 class="hidden">FoamTree</h1>
+              <img class="logo" src="../demos/assets/img/foamtree.svg" alt="FoamTree logo"></img>
+              <strong class="tagline hidden-xs hidden-sm wf">Makes browsing hierarchical data efficient and fun.</strong>
+            </a>
+          </div>
+
+          <div class="collapse navbar-collapse wf" id="collapse-navbar">
+            <ul class="nav nav-pills navbar-nav navbar-right">
+              <li><a href="../download/index.html"><i class="fa fa-lg fa-download"></i> Download</a></li>
+              <li><a href="../api/index.html">Docs</a></li>
+              <li><a href="../demos/index.html">Demos</a></li>
+              <li><a href="http://carrotsearch.com/contact">Contact</a></li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+    <div class="jumbotron features shadow-clip">
+      <div class="container inset">
+        <div class="summary"></div>
+        <div class="row wf">
+          <div class="col-md-8 col-sm-12 summary">
+            FoamTree demos show examples of simple and advanced use of FoamTree API.
+          </div>
+        </div>
+
+        <div class="row wf">
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="quick-start.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/quick-start.jpg" alt="Quick start demo" />
+            <div>
+              <h4>Quick start</h4>
+              <p>A simple example of embedding FoamTree in a HTML page.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="settings.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/settings.jpg" alt="FoamTree settings panel" />
+            <div>
+              <h4>Tuning panel</h4>
+              <p>Interactive tweaking of all FoamTree options.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="github.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/github.jpg" alt="GitHub search and visualization in FoamTree" />
+            <div>
+              <h4>GitHub search &amp; visualization</h4>
+              <p>Visualization of GitHub search results, makes advanced usage of FoamTree APIs.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="large.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/large.jpg" alt="Visualizing 100k+ groups in FoamTree" />
+            <div>
+              <h4>Very large hierarchies</h4>
+              <p>Using FoamTree to browse Tree of Life data, 100k+ groups at 100+ levels.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="touch.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/touch.jpg" alt="FoamTree on touch & mobile" />
+            <div>
+              <h4>FoamTree on touch &amp; mobile</h4>
+              <p>Optimizing FoamTree for touch and mobile devices.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="images.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/images.jpg" alt="Drawing images inside polygons" />
+            <div>
+              <h4>Images inside polygons</h4>
+              <p>Drawing custom content, such as SVG images, inside FoamTree polygons.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="rectangular.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/rectangular.jpg" alt="Rectangular treemap in FoamTree" />
+            <div>
+              <h4>Rectangular treemaps</h4>
+              <p>Preserving the original order of groups in FoamTree using rectangular layouts.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="csv.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/csv.jpg" alt="Visualizing CSV data in FoamTree" />
+            <div>
+              <h4>CSV to FoamTree</h4>
+              <p>A simple conversion of tab-separated CSV data to FoamTree JSON.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="loading.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/loading.jpg" alt="Showing data loading progress message" />
+            <div>
+              <h4>Loading indicator</h4>
+              <p>Showing data loading and layout preparation indicator.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="lazy-loading.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/lazy-loading.jpg" alt="Lazy-loading of data" />
+            <div>
+              <h4>Lazy-loading of visualization data</h4>
+              <p>Fetching child groups only when the user opens the parent group for browsing.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="hints.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/hints.jpg" alt="Showing interaction guide and hints" />
+            <div>
+              <h4>Interaction guide &amp; hints</h4>
+              <p>Enabling FoamTree interaction guide and contextual gesture hints.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="relaxation-progress.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/relaxation-progress.jpg" alt="Showing the progress of layout relaxation" />
+            <div>
+              <h4>Layout relaxation progress</h4>
+              <p>Showing layout relaxation progress bar.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="coverage.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/coverage.jpg" alt="Visualizing code coverage" />
+            <div>
+              <h4>Visualizing unit test code coverage</h4>
+              <p>Showing Java code coverage statistics gathered by Atlassian Clover.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="tooltips.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/tooltips.jpg" alt="FoamTree with custom group tooltips" />
+            <div>
+              <h4>Custom per-group tooltips</h4>
+              <p>Displaying custom HTML-based tooltips with rich information about each group.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="accuracy.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/accuracy.jpg" alt="Polygon sizing accuracy" />
+            <div>
+              <h4>Polygon sizing accuracy</h4>
+              <p>Visualization of how closely polygon areas represent group weights.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="graph-navigation.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/graph-navigation.jpg" alt="Graph navigation" />
+            <div>
+              <h4>Graph navigation</h4>
+              <p>Using FoamTree to navigate a graph. Includes a bit more advanced API usage.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="legacy.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/legacy.jpg" alt="Settings for FoamTree 2.0.x look and feel" />
+            <div>
+              <h4>FoamTree 2.0.x look and feel</h4>
+              <p>Tuning FoamTree 3.x to look and behave like FoamTre 2.0.x.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="scrolling.html">
+            <img style="border: 2px solid #ddd" class="img-responsive img-rounded" src="assets/img/demos/scrollable.jpg" alt="FoamTree in scrollable content" />
+            <div>
+              <h4>FoamTree in scrollable content</h4>
+              <p>Allowing default browser actions for scroll and other events.</p>
+            </div>
+          </a>
+
+          <a class="col-md-4 col-sm-4 col-xs-6 demo" href="titlebar-details.html">
+            <img class="img-responsive img-rounded" src="assets/img/demos/titlebar-details.jpg" alt="Showing group details in title bar" />
+            <div>
+              <h4>Details in title bar</h4>
+              <p>Showing more details about a group in the title bar.</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="jumbotron navigation">
+      <div class="container inset">
+        <div class="row wf">
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-code"></i> Documentation</h4>
+
+            <a href="../api/index.html">FoamTree JavaScript API reference</a> contains
+            tens of executable code examples.
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-flask"></i> Experiments</h4>
+
+            Try the <a href="../demos/settings.html">settings panel</a> to tweak the parameters,
+            see the <a href="../demos/index.html">demos</a> for fun and advanced usage examples.
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-download"></i> Download</h4>
+
+            <a href="../download/index.html">Download branding-locked version</a> or
+            newest fully-brandable binaries for <a href="https://secure.carrotsearch.com">existing customers</a>.
+          </div>
+
+          <div class="col-md-3 col-sm-6 social">
+            <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en"
+               data-url="http://get.carrotsearch.com/foamtree"
+               data-via="carrotsearch"
+               data-text="FoamTree, interactive non-rectangular #treemap #visualization | ">Tweet</a>
+
+            <a href="https://twitter.com/carrotsearch" class="twitter-follow-button" data-show-count="true"
+               data-lang="en" data-show-screen-name="false">Follow</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="jumbotron footer text-center">
+      <div>
+        FoamTree 3.3.1 by <a href="http://carrotsearch.com">Carrot Search</a>
+        -
+        <a href="http://carrotsearch.com/foamtree/faq">FAQ</a>
+        -
+        <a href="http://carrotsearch.com/foamtree/how-to-order">How to order</a>
+      </div>
+
+      <div>
+        Check also:
+        <a href="http://carrotsearch.com/lingo3g">Lingo3G text clustering engine</a> -
+        <a href="http://carrotsearch.com/circles">Circles multi-level interactive pie-chart</a>
+      </div>
+    </div>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js"></script>
+    <script>
+      (function() {
+        WebFont.load({
+          google: {
+            families: [
+              'Open+Sans:300',
+              'Open+Sans:400',
+              'PT+Serif:400',
+              "Oxygen"
+            ]
+          }
+        });
+      })();
+    </script>
+    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-317750-2']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+  </body>
+</html>

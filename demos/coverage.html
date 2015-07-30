@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Unit test coverage visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+
+    <meta charset="utf-8"/>
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="assets/css/common.css" rel="stylesheet"/>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="visualization"></div>
+    </div>
+    
+
+    <script src="../carrotsearch.foamtree.js"></script>
+
+    <!-- Include Hammer.js for mobile interactions. Not required for desktop-only apps. -->
+    <script src="assets/js/hammer.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js"></script>
+
+    <!-- A simple static JSON-P loader -->
+    <script src="assets/js/carrotsearch.jsonp.js"></script>
+
+    <style id="font">.font { font-family: Roboto Condensed, sans-serif }</style>
+    <script>
+      // Once the content loads, initialize the demo
+      window.addEventListener("load", function () {
+        // Initialize web font loading
+        var font = document.getElementById("font").innerHTML.match(/font-family: (.*), sans-serif/)[1];
+        WebFont.load({
+          google: { families: [ font, "Roboto:700" ] },
+          active: function() {
+            // Once the fonts load, initialize FoamTree
+            var foamtree = new CarrotSearchFoamTree({
+              id: "visualization",
+              pixelRatio: window.devicePixelRatio || 1,
+
+              // We'll make the relaxation visible
+              relaxationVisible: true,
+              relaxationMaxDuration: 3000,
+              relaxationQualityThreshold: 0.1,
+              rolloutDuration: 0,
+
+              // Use the custom web font for FoamTree texts.
+              groupLabelFontFamily: font,
+
+              // Make the line spacing and the total height of the
+              // label smaller than the default to make space for
+              // the coverage value display
+              groupLabelLineHeight: 1.0,
+              groupLabelMaxTotalHeight: 0.6,
+
+              // Assign colors based on the coverage value
+              groupColorDecorator: function (opts, params, vars) {
+                var coverage = params.group.coverage;
+                if (coverage !== undefined && coverage >= 0) {
+                  // Coverage defined. 0% coverage will be red,
+                  // 100% coverage will be green.
+                  vars.groupColor.h = 120 * coverage / 100.0;
+                  vars.groupColor.s = 70;
+                  vars.groupColor.l = 50;
+                } else {
+                  // Coverage not defined, draw the group in grey.
+                  vars.groupColor.s = 0;
+                  vars.groupColor.l = 75;
+                }
+              },
+
+              // Draw the coverage value bar below the default label
+              groupContentDecorator: function (opts, params, vars) {
+                // Only draw if the coverage is defined
+                var coverage = params.group.coverage;
+                if (params.labelDrawn && coverage >= 0) {
+                  // Fit a box below the main label
+                  var box = CarrotSearchFoamTree.geometry.rectangleInPolygon(
+                    params.polygon, params.polygonCenterX, params.labelBoxTop + params.labelBoxHeight,
+                    10.0,   // width-to-height is 10.0, the box will be very wide and not very tall
+                    0.6,    // scale the box down to 60% of the maximum size that fits
+                    0.5, -1 // position the box slightly below the bottom edge of the label and center
+                            // horizontally. See the documentation of CarrotSearchFoamTree.geometry.rectangleInPolygon()
+                            // for a complete explanation of those parameters.
+                  );
+
+                  // Draw the box
+                  var ctx = params.context;
+                  var margin = box.h * 0.1;
+                  ctx.lineWidth = margin * 0.5;  // vary line width based on the box size
+                  ctx.globalAlpha = 0.5;
+                  ctx.roundRect(box.x, box.y, box.w, box.h, margin);
+                  ctx.stroke();
+                  if (coverage > 0) {
+                    // If coverage is > 0, draw the bar inside
+                    ctx.globalAlpha = 0.2;
+                    ctx.roundRect(box.x + margin, box.y + margin, box.w * coverage / 100 - 2 * margin, box.h - 2 * margin, margin);
+                    ctx.fill();
+                  }
+
+                  // Draw the label inside the bar. Some browsers draw ugly text when the font size is very small.
+                  // The workaround is to draw the text at a constant large size (100px in our case), but scale
+                  // the canvas appropriately so that the text appears at the size we really want.
+                  var s = box.h * 0.7 / 100;
+                  ctx.globalAlpha = 1.0;
+                  ctx.textAlign = "center";
+                  ctx.save();
+                  ctx.translate( box.x + box.w / 2, box.y + box.h * 0.75);
+                  ctx.scale(s, s);
+                  ctx.font = "bold 100px Roboto";
+                  ctx.fillText(coverage.toFixed(1) + "%", 0, 0);
+                  ctx.restore();
+                }
+              },
+
+              // Display coverage value in the title bar
+              titleBarDecorator: function (opts, params, vars) {
+                var coverageText = params.group.coverage >= 0 ? params.group.coverage.toFixed(1) + "%" : "n/r";
+                vars.titleBarText = params.group.label + " (" + coverageText + ")";
+                vars.titleBarShown = true;
+              }
+            });
+
+            // Resize FoamTree on orientation change
+            window.addEventListener("orientationchange", foamtree.resize);
+
+            // Resize on window size changes
+            window.addEventListener("resize", (function () {
+              var timeout;
+              return function () {
+                window.clearTimeout(timeout);
+                timeout = window.setTimeout(foamtree.resize, 300);
+              }
+            })());
+
+            // Load, convert and visualize the data
+            JSONP.load("assets/data/test.js", "modelDataAvailable", function (coverageData) {
+              foamtree.set("dataObject", {
+                groups: coverageData.children.map(function childToGroup(child) {
+                  var data = child.data;
+                  return {
+                    label: data.title.substring(0, data.title.indexOf(" "))
+                      .replace(/\./g, "\u200b.")             // allow word breaking on dots
+                      .replace(/(.)([A-Z])/g, "$1\u200b$2"), // allow breaking on CamelHumps
+                    weight: data.$area,
+                    coverage: data.$color,
+                    groups: child.children.map(childToGroup)
+                  }
+                })
+              })
+            });
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

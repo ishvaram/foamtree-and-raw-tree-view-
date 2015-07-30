@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Getting geometry information</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+
+    <meta charset="utf-8" />
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/common.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="container">
+      <!--
+           The canvas FoamTree draws to needs to be there, but may be set to visibility: hidden.
+           In this example we'll set its opacity to 0.2 for the original content to show through a little.
+        -->
+      <div id="visualization" style="opacity: 0.2"></div>
+
+      <!-- An extra canvas to which we'll draw the polygons just to show that the data is correct. -->
+      <div style="position: absolute; top: 10px; bottom: 10px; left: 10px; right: 10px">
+        <canvas id="canvas" style="width: 100%; height: 100%"></canvas>
+      </div>
+    </div>
+
+    <div id="side">
+      <h2>Getting geometry information</h2>
+
+      <p>
+        This example shows how to capture basic geometry and color information about each
+        polygon and store it in the data model of the polygon. The captured information can then
+        be used in many different ways. For the sake of example, we draw the captured polygons
+        to another canvas to show the data is correct.
+      </p>
+    </div>
+
+    <!-- Include FoamTree visualization code -->
+    <script src="../carrotsearch.foamtree.js"></script>
+
+    <script>
+      window.addEventListener("load", function () {
+        // Set up the temporary canvas and context
+        var canvas = document.getElementById("canvas");
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+        var ctx = canvas.getContext("2d");
+
+        // Initialize FoamTree
+        var foamtree = new CarrotSearchFoamTree({
+          id: "visualization",
+          pixelRatio: window.devicePixelRatio || 1,
+
+          // Disable rollout and pullback animations, use animated relaxation
+          rolloutDuration: 0,
+          pullbackDuration: 0,
+          fadeDuration: 0,
+          relaxationVisible: true,
+          relaxationMaxDuration: 5000,
+          relaxationQualityThreshold: 0.1,
+
+          // Prepare place-holders for colors.
+          onModelChanging: function visit(parent) {
+            if (!parent) {
+              return;
+            }
+
+            parent.color = {};
+
+            var groups = parent.groups;
+            if (groups) {
+              for (var i = 0; i < groups.length; i++) {
+                visit(groups[i]);
+              }
+            }
+          },
+
+          // A dummy color decorator that only stores current group colors in the data model
+          groupColorDecorator: function (opts, params, vars) {
+            var color = params.group.color;
+            color.h = vars.groupColor.h;
+            color.s = vars.groupColor.s;
+            color.l = vars.groupColor.l;
+            color.a = vars.groupColor.a;
+          },
+
+          // Capture geometry information on redraw. Copy the captured polygons to the
+          // temporary canvas, preserving the colors we captured above.
+          onRedraw: function(incremental) {
+            var root = foamtree.get("dataObject");
+            getPolygons(root);
+
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            draw(root);
+
+            function getPolygons(parent) {
+              if (!parent) {
+                return;
+              }
+
+              parent.polygon = foamtree.get("geometry", parent, true).polygon;
+
+              var groups = parent.groups;
+              if (groups) {
+                for (var i = 0; i < groups.length; i++) {
+                  getPolygons(groups[i]);
+                }
+              }
+            }
+
+            function draw(parent) {
+              if (!parent) {
+                return;
+              }
+
+              var polygon = parent.polygon;
+              if (polygon) {
+                ctx.beginPath();
+                ctx.moveTo(polygon[0].x, polygon[0].y);
+                for (var j = 1; j < polygon.length; j++) {
+                  var p = polygon[j];
+                  ctx.lineTo(p.x, p.y);
+                }
+                ctx.closePath();
+
+                var color = parent.color;
+                ctx.strokeStyle = "hsla(" + color.h + ", " + color.s + "%, " + color.l + "%, " + color.a + ")";
+                ctx.stroke();
+              }
+
+              var groups = parent.groups;
+              if (groups) {
+                for (var i = 0; i < groups.length; i++) {
+                  draw(groups[i]);
+                }
+              }
+            }
+          },
+
+          // Some dummy data object
+          dataObject: {
+            groups: [
+              { groups: [ { groups: [ {}, {}, {} ] }, { }, { }, { } ] },
+              { groups: [ { }, { }, { } ] },
+              { },
+              { },
+              { }
+            ]
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

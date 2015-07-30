@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>FoamTree with custom tooltips</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+
+    <meta charset="utf-8" />
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/common.css" rel="stylesheet" />
+    <link href="assets/css/tooltip.css" rel="stylesheet" />
+    <style>
+      small { color: #888; }
+    </style>
+  </head>
+
+  <body>
+    <div id="container"><div id="visualization"></div></div>
+    <div id="side">
+      <h2>FoamTree with custom tooltips</h2>
+      
+      <p>
+        Using the <code><a href="../api/index.html#onGroupHover">onGroupHover</a></code> event listener
+        you can integrate FoamTree with your favourite tooltip library and show richer details about each group.
+        Hold your mouse pointer over some group for a while to see the tooltip.
+      </p>
+
+      <h4>What's in the code?</h4>
+
+      <p>
+        <ul>
+          <li>
+            A simple utility for tracking mouse position and showing or hiding the
+            <a href="http://darsa.in/tooltip/">tooltip</a>.
+          </li>
+
+          <li>
+            Using <code><a href="../api/index.html#onGroupHover">onGroupHover</a></code> to get information
+            about the group being hovered over.
+          </li>
+
+          <li>
+            Setting <code><a href="../api/index.html#maxLabelSizeForTitleBar">maxLabelSizeForTitleBar</a></code> to
+            <code>0</code> to disable the default title bar.
+          </li>
+        </ul>
+      </p>
+    </div>
+
+    <script src="../carrotsearch.foamtree.js"></script>
+    <script src="assets/js/hammer.min.js"></script>
+    <script src="assets/js/tooltip.min.js"></script>
+
+    <script>
+      window.addEventListener("load", function() {
+        // A simple utility for tracking mouse position and showing/hiding the tooltip.
+        var tooltip = (function(element) {
+          var tip = new Tooltip("Test", { auto: true });
+          var shown = false;
+          var timeout;
+          var lastShownPageX, lastShownPageY;
+          var pageX, pageY;
+          var currentGroup;
+
+          function hide() {
+            tip.hide();
+            shown = false;
+          }
+
+          function show() {
+            if (currentGroup && currentGroup.label) {
+              // Set some example content on the tooltip.
+              tip.content(
+                "This is <button>" + currentGroup.label + "</button><br />" +
+                "Its weight is is <strong>" + currentGroup.weight + "</strong><br />" +
+                "Its value is <strong>" + currentGroup.value + "</strong>");
+              tip.position(pageX, pageY);
+              tip.show();
+              lastShownPageX = pageX;
+              lastShownPageY = pageY;
+              shown = true;
+            }
+          }
+
+          function group(g) {
+            currentGroup = g;
+          }
+
+          // Register a mouse move listener that will show and hide the tooltip.
+          document.body.addEventListener("mousemove", function(e) {
+            pageX = e.pageX;
+            pageY = e.pageY;
+
+            // Hide if the mouse pointer gets farther than 10px from the last tooltip location
+            if (shown && Math.sqrt(Math.pow(pageX - lastShownPageX, 2) + Math.pow(pageY - lastShownPageY, 2)) > 10) {
+              hide();
+            }
+
+            // Show the tooltip after the pointer stops for some time
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(show, 500)
+          });
+
+          return {
+            group: group,
+            hide: hide
+          };
+        })(document.getElementById("tooltip"));
+
+        // Initialize FoamTree
+        var foamtree = new CarrotSearchFoamTree({
+          id: "visualization",
+          pixelRatio: window.devicePixelRatio || 1,
+
+          onGroupHover: function (event) {
+            // Tell the tooltip which group is currently hovered on
+            tooltip.group(event.group);
+          },
+
+          // Hide the tooltip on zoom, open/close and expose
+          onGroupMouseWheel: tooltip.hide,
+          onGroupExposureChanging: tooltip.hide,
+          onGroupOpenOrCloseChanging: tooltip.hide,
+
+          // Never display the title bar
+          maxLabelSizeForTitleBar: 0,
+
+          // Generate some example data
+          dataObject: {
+            groups: (function() {
+              var groups = [];
+
+              for (var i = 1; i <= 100; i++) {
+                groups.push({
+                  label: "Group\u00a0" + i,
+                  weight: 5 + Math.round(Math.random() * 25),
+                  value: Math.round(Math.random() * 50)
+                })
+              }
+
+              return groups;
+            })()
+          }
+        });
+
+        // Resize FoamTree on orientation change
+        window.addEventListener("orientationchange", foamtree.resize);
+
+        // Resize on window size changes
+        window.addEventListener("resize", (function() {
+          var timeout;
+          return function() {
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(foamtree.resize, 300);
+          }
+        })());
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,40 @@
+<html>
+<script type="text/javascript">
+var movies = [
+    {"label": "Cluster1", "language": "English", "year": "2012"},
+    {"label": "Cluster2", "language": "French", "year": "2011"},
+    {"label": "Cluster3", "language": "German", "year": "2013"},
+    {"label": "Cluster1", "language": "German", "year": "2010"},
+    {"label": "Cluster2", "language": "hindi", "year": "2011"},
+    {"label": "Cluster2", "language": "spanish", "year": "2012"},
+    {"label": "Cluster1", "language": "Tamil", "year": "2013"}
+];
+function groupElements(input, label) {
+    var output = {};
+    var final = [];
+    if (input instanceof Array) {
+        input.forEach(function (data) {
+            var fieldlabel = data[label]
+            var obj = output[fieldlabel];
+            if (obj == undefined) {
+                obj = {};
+                obj.groups = [];
+                obj[label] = fieldlabel;
+                output[fieldlabel] = obj;
+            }
+            delete data[label];
+            obj.groups.push(data);
+        })
+    }
+    var keys = Object.keys(output);
+    if (keys != undefined && keys != null) {
+        keys.forEach(function (key) {
+            final.push(output[key]);
+        })
+    }
+    return final;
+}
+var output = groupElements(movies, "label");
+console.log(JSON.stringify(output));
+</script>
+</html>

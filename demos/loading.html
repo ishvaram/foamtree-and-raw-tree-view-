@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>FoamTree loading data and preparation indicator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+
+    <meta charset="utf-8" />
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/common.css" rel="stylesheet" />
+
+    <!-- The CSS for the loading indicator container-->
+    <link href="assets/css/carrotsearch.foamtree.util.loading.css" rel="stylesheet" />
+    <style>
+      /**
+       * Custom styles for the contents of the loading indicator.
+       */
+      .visualization-loading > div {
+        font-size: 36px;
+        position: absolute;
+        width: 100%;
+        top: 50%;
+        margin-top: -40px;
+        text-align: center;
+        line-height: 1.05;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="visualization"></div>
+    </div>
+
+    <div id="side">
+      <h2>Data loading indicator</h2>
+      
+      <p>
+        Loading of data for the visualization but also computation of the
+        diagram can take a while for larger data sets. You can use the
+        <code>CarrotSearchFoamTree.loader</code> utility to show a simple
+        <em>Loading...</em> message to the user.
+      </p>
+      
+      <h4>Experiments</h4>
+
+      <p>
+        Load data set:
+          <a href="assets/data/multilingual.js">tiny</a> |
+          <a href="assets/data/data-mining-100-topic-flat.js">small</a> |
+          <a href="assets/data/data-mining-500-topic-hierarchical.js">large</a><br />
+        Load data set with a 1500 ms delay:
+        <a href="assets/data/multilingual.js" data-delay="1500">tiny</a> |
+          <a href="assets/data/data-mining-100-topic-flat.js" data-delay="1500">small</a> |
+          <a href="assets/data/data-mining-500-topic-hierarchical.js" data-delay="1500">large</a><br />
+        Animations:
+          <a href="#animation-none">none</a> |
+          <a href="#animation-fade">fading</a> |
+          <a href="#animation-scaling">scaling</a><br />
+      </p>
+
+      <h4>What's in the code?</h4>
+
+      <ul>
+        <li>
+          Including the <code>carrotsearch.foamtree.loading.css</code> stylesheet
+          with default CSS for the loading indicator container.
+        </li>
+        <li>
+          CSS for the contents of the loading indicator.
+        </li>
+        <li>
+          Including the <code>CarrotSearchFoamTree.loader</code> script and using
+          it to show and hide the indicator when appropriate.
+        </li>
+      </ul>
+    </div>
+
+    <!-- Include FoamTree visualization code -->
+    <script src="../carrotsearch.foamtree.js"></script>
+
+    <!-- Include the loading indicator utility -->
+    <script src="../carrotsearch.foamtree.util.loading.js"></script>
+
+    <!-- Include Hammer.js for mobile interactions -->
+    <script src="assets/js/hammer.min.js"></script>
+
+    <!-- A simple static JSON-P loader, optional -->
+    <script src="assets/js/carrotsearch.jsonp.js"></script>
+
+    <script>
+      window.addEventListener("load", function () {
+        // Initialize FoamTree
+        var foamtree = new CarrotSearchFoamTree({
+          id: "visualization",
+          pixelRatio: window.devicePixelRatio || 1,
+          "rolloutDuration": 0,
+          "pullbackDuration": 0,
+          "fadeDuration": 0
+        });
+
+        // Create the loader instance. The utility will create the HTML container
+        // element for the indicator, we just need to provide its contents.
+        // We'll be the loader's methods in the loadDataSet() function below.
+        var foamtreeLoader = CarrotSearchFoamTree.loader(foamtree, "<div>Loading and preparing<br />the awesome...</div>");
+
+        // Loads a new data set
+        var loadDataSet = function (dataSetUrl, delay) {
+          // Show the loading indicator
+          foamtreeLoader.started();
+
+          // Initiate loading of the data
+          JSONP.load(dataSetUrl, "modelDataAvailable", function (dataObject) {
+            if (delay > 0) {
+              setTimeout(function () {
+                // Loading complete, set the new data on FoamTree
+                // and hide the indicator.
+                foamtreeLoader.complete(dataObject);
+              }, delay + foamtree.get("pullbackDuration") + foamtree.get("fadeDuration"));
+            } else {
+              // Loading complete, set the new data on FoamTree
+              // and hide the indicator.
+              foamtreeLoader.complete(dataObject);
+            }
+          });
+        };
+
+        // Resize FoamTree on orientation change
+        window.addEventListener("orientationchange", foamtree.resize);
+
+        // Resize on window size changes
+        window.addEventListener("resize", (function () {
+          var timeout;
+          return function () {
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(foamtree.resize, 300);
+          }
+        })());
+
+        // Load an initial data set.
+        loadDataSet("assets/data/multilingual.js");
+
+        // Handle other links of this example page
+        Array.prototype.slice.call(document.querySelectorAll("a[href ^= 'assets/data']"), 0).forEach(function (link) {
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            loadDataSet(this.href, parseInt(this.getAttribute("data-delay")) || 0);
+          });
+        });
+
+        Array.prototype.slice.call(document.querySelectorAll("a[href ^= '#animation']"), 0).forEach(function (link) {
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            var options;
+            switch (e.target.hash.substring('#animation-'.length)) {
+              case "none":
+                options = {
+                  "rolloutDuration": 0,
+                  "pullbackDuration": 0,
+                  "fadeDuration": 0
+                };
+                break;
+
+              case "fade":
+                options = {
+                  "rolloutDuration": 0,
+                  "pullbackDuration": 0,
+                  "fadeDuration": 700
+                };
+                break;
+
+              case "scaling":
+                options = {
+                  "rolloutDuration": 2000,
+                  "rolloutEasing": "squareInOut",
+                  "rolloutScalingStrength": -0.3,
+                  "rolloutRotationStrength": 0,
+                  "pullbackEasing": "squareInOut",
+                  "pullbackDuration": 2000,
+                  "pullbackScalingStrength": -0.3,
+                  "pullbackRotationStrength": 0,
+                  "pullbackPolygonDelay": 0.1,
+                  "fadeDuration": 0
+                };
+                break;
+            }
+            foamtree.set(options);
+
+            var currentData = foamtree.get("dataObject");
+            foamtreeLoader.started();
+            foamtreeLoader.complete(currentData);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

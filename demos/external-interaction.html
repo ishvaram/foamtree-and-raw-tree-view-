@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>FoamTree with externally-triggered interaction</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+
+    <meta charset="utf-8" />
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/common.css" rel="stylesheet" />
+  </head>
+  <style type="text/css">
+#visualization {
+        width: 2000px; height: 800px;
+        max-width: 150%;
+        max-height: 100%;
+      }
+  </style>
+
+  <body>
+    <div id="container"><div id="visualization"></div></div>
+    <script src="../carrotsearch.foamtree.js"></script>
+    <script src="assets/js/carrotsearch.jsonp.js"></script>
+
+    <script src="assets/js/hammer.min.js"></script>
+    <script>
+      window.addEventListener("load", function () {
+        // Get the element FoamTree will be embedded in
+        var element = document.getElementById("visualization");
+
+        // Initialize FoamTree
+        var foamtree = new CarrotSearchFoamTree({
+          element: element,
+          pixelRatio: window.devicePixelRatio || 1,
+
+          // Use externally-triggered interaction events
+          interactionHandler: "external"
+        });
+
+        // Bind Hammer to the visualization element
+        var hammer = Hammer(element);
+
+        // For each Hammer.js event, make the appropriate foamtree.trigger() call.
+        hammer.on("tap",            createFoamTreeEventTrigger("click"));
+        hammer.on("doubletap",      createFoamTreeEventTrigger("doubleclick"));
+        hammer.on("hold",           createFoamTreeEventTrigger("hold"));
+        hammer.on("touch",          createFoamTreeEventTrigger("mousedown"));
+        hammer.on("dragstart",      createFoamTreeEventTrigger("dragstart"));
+        hammer.on("drag",           createFoamTreeEventTrigger("drag"));
+        hammer.on("dragend",        createFoamTreeEventTrigger("dragend"));
+        hammer.on("transformstart", createFoamTreeEventTrigger("transformstart"));
+        hammer.on("transform",      createFoamTreeEventTrigger("transform"));
+        hammer.on("transformend",   createFoamTreeEventTrigger("transformend"));
+
+        // Resize FoamTree on orientation change
+        window.addEventListener("orientationchange", foamtree.resize);
+
+        // Resize on window size changes
+        window.addEventListener("resize", (function() {
+          var timeout;
+          return function() {
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(foamtree.resize, 300);
+          }
+        })());
+
+        // Load some example data set
+        JSONP.load("assets/data/testinputbackup.js", "modelDataAvailable", function (dataObject) {
+          foamtree.set("dataObject", dataObject)
+        });
+
+        // Returns a function that calls foamtree.trigger() with
+        // the requested event type and event details created based
+        // on the Hammer.js event object.
+        function createFoamTreeEventTrigger(type) {
+          return function (hammerEvent) {
+            var gesture = hammerEvent["gesture"];
+            var center = gesture["center"];
+
+            // Heads up! Hammer calls the properties pageX/Y, but they actually contain clientX/Y.
+            var eventDetails = pageToElementRelative(element, center.pageX, center.pageY);
+            eventDetails.scale = gesture["scale"];
+            eventDetails.secondary = gesture.touches.length > 1;
+            eventDetails.touches = gesture.touches.length;
+            gesture.preventDefault();
+            foamtree.trigger(type, eventDetails);
+          };
+
+          // FoamTree requires element-relative coordinates.
+          // Here is a simple conversion from page-relative ones.
+          function pageToElementRelative(element, clientX, clientY) {
+            var target = {};
+            var rect = element.getBoundingClientRect();
+            target.x = clientX - rect["left"];
+            target.y = clientY - rect["top"];
+            return target;
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

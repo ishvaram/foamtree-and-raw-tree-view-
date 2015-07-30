@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="assets/css/reset.css" />
+    <style type="text/css"> 
+      html, body, #visualization {
+        height: 100%;
+      }
+
+      #titlebar {
+        position: fixed;
+        top:    20px;
+        width:  50%;
+        left:  -50%;
+
+        background-color: rgba(0,0,0,0.2);
+        color: white;
+        font-family: sans-serif;
+        font-size: 40px;
+        padding: 20px;
+
+        -webkit-transition: left 1s ease, right 1s ease;
+           -moz-transition: left 1s ease, right 1s ease;
+             -o-transition: left 1s ease, right 1s ease;
+                transition: left 1s ease, right 1s ease;
+      }
+
+      #titlebar.shown {
+        left: 0px;
+      }
+    </style>
+
+    <script src="../carrotsearch.circles.js"></script>
+    <script src="../carrotsearch.circles.asserts.js"></script>
+    <script src="assets/js/carrotsearch.examples.onresizehook.js"></script>
+    <script src="assets/js/carrotsearch.examples.viewport.js"></script>
+    <script src="assets/js/jquery-1.8.2.min.js"></script>
+  </head>
+
+  <body>
+    <div id="visualization"></div>
+    <div id="titlebar">Title bar</div>
+
+    <script>
+      // Defer until everything is loaded (fonts, scripts, models). Simplifies the demo.
+      $(window).load(function() {
+        var circles = new CarrotSearchCircles({
+          id: "visualization",
+          pixelRatio: Math.min(1.5, window.devicePixelRatio || 1),
+          dataObject: {
+            groups:[
+              { label: "Blah!", full: "Yes, blah blah." },
+              { label: "Foo", full: "FooBar, obviously." },
+              { label: "Trabants", full: "Trabants of the world, unite!" }
+            ]
+          }
+        });
+
+        var labelUpdate = function(group) {
+          if (!group) {
+            var selection = circles.get("selection").groups;
+            if (selection.length > 0) {
+              group = selection[0];
+            }
+          }
+
+          if (group) {
+            $("#titlebar").addClass("shown").text(group.full);
+          } else {
+            $("#titlebar").removeClass("shown");
+          }
+        };
+
+        // An example of appending an onGroupHover listener to any existing callbacks (none here, obviously).
+        circles.set("onGroupHover", circles.get("onGroupHover").concat([
+          function(evt) {
+            labelUpdate(evt.group);
+          }]));
+
+        // We will update on selection too because hovering is not supported
+        // on ipads, for example.
+        circles.set("onGroupSelectionChanged", circles.get("onGroupSelectionChanged").concat([
+            function() {
+              labelUpdate();
+            }
+        ]));
+
+        // Install on-resize update handler.
+        installResizeHandlerFor(circles, 0);
+      });
+    </script>
+  </body>
+</html>

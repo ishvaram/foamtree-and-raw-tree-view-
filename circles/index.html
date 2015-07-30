@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1100" />
+
+    <link rel="stylesheet" href="demos/assets/css/reset.css" />
+    <style type="text/css"> 
+      html, body {
+        height: 100%;
+        width: 100%;
+        font-family: Calibri, "Lucida Grande", "Helvetica Neue", "Helvetica", "Lucida Sans Unicode", Arial, Verdana, sans-serif;
+      }
+
+      #container {
+        width: 1120px;
+        margin: 0 auto;
+      }
+
+      #tablet, #tablet-back, #tablet-glow {
+        padding: 0;
+        margin: 0;
+        width: 706px;
+        height: 598px;
+      }
+
+      #tablet {
+        position: relative;
+        margin-top: 40px;
+      }
+
+      #tablet-back, #tablet-glow {
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+      }
+
+      #visualization, #loading {
+        position: absolute;
+        left: 54px;
+        top: 115px;
+        width: 586px;
+        height: 483px;
+        background-color: transparent;
+      }
+
+      #loading {
+        background: #185a69 ;
+        background-image: url('demos/assets/img/loading.gif');
+        background-repeat: no-repeat;
+      }
+
+      body.ready #loading {
+        display: none;
+      }
+
+      body.ready #visualization {
+        background-color: #F1F0F0;
+        background-repeat: repeat-x;
+        background-image: url('demos/assets/img/texture.png');
+      }
+
+      #tablet-back {
+        background: url("demos/assets/img/tablet.png");
+      }
+
+      #tablet-glow {
+        background: url("demos/assets/img/tablet-glow.png");
+      }
+
+      #jumbotron {
+        float: right;
+        margin-right: 10px;
+        margin-top: 100px;
+        width: 380px;
+      }
+
+      #jumbotron > strong {
+        font-size: 50px;
+        font-weight: bold;
+      }
+
+      #jumbotron > div {
+        margin-top: 40px;
+        font-size: 30px;
+        color: #ababab;
+        text-align: left;
+        font-weight: lighter;
+      }
+
+      hr {
+        border: 0; padding: 0; margin: 0;
+        border-top:    1px solid #eeeeee;
+        border-bottom: 1px solid #f5f5f5;
+      }
+
+      #links {
+        background: url("demos/assets/img/tablet-dropline.jpg");
+        background-repeat: no-repeat;
+        height: 200px;
+        position: relative;
+        padding-top: 40px;
+      }
+
+      #links section {
+        float: left;
+        width: 240px;
+        color: rgb(102, 102, 102);
+        padding-top: 5px;
+        padding-bottom: 5px;
+        text-align: center;
+      }
+
+      #links h1 {
+        font-size: 25px;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+      }
+
+      #links ul {
+        margin-top: 20px;
+      }
+
+      #links section + section {
+        border-left: 1px solid #d3d3d3;
+        padding-left: 20px;
+        margin-left: 20px;
+      }
+
+      ul.inline, ol.inline {
+        list-style: none;
+      }
+
+      ul.inline > li, ol.inline > li {
+        display: inline-block;
+        padding-right: 5px;
+      }
+
+      #version {
+        font-size: small;
+        color: gray;
+
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+        border-radius: 3px;
+        display: inline-block;
+        padding: 2px 4px;
+        font-weight: bold;
+        line-height: 14px;
+        color: #ffffff;
+        white-space: nowrap;
+        vertical-align: baseline;
+        background-color: #e0e0e0;
+      }
+
+      @media (max-height: 850px) {
+        #tablet {
+          margin-top: 0px;
+        }
+
+        #links {
+          padding-top: 5px;
+        }
+
+        #links h1 {
+          margin-bottom: 5px;
+        }
+
+        #links ul {
+          margin-top: 5px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="jumbotron">
+        <strong>Carrot Search Circles
+          <span id="version"></span></strong>
+
+        <div>
+          Circles is a <span class="caps">HTML5</span>
+          visualization of hierarchical data sets. It resembles
+          "pie-charts" but offers an interactive interface
+          and lots of customization options. Happy hacking.
+        </div>
+
+        <img style="margin-top: 20px; margin-left: -40px;" src="demos/assets/img/tryit.png" />
+      </div>
+
+      <div id="tablet">
+        <div id="tablet-back"></div>
+        <div id="visualization"></div>
+        <div id="loading"></div>
+        <div id="tablet-glow"></div>
+      </div>
+
+      <div id="links">
+        <section>
+          <h1>Pure HTML5</h1>
+          <p>Compatible with modern browsers, no flash or other plugins required.</p>
+          <ul class="inline">
+            <li><a href="http://carrotsearch.com/foamtree">FoamTree</a></li>
+            <li><a href="http://carrotsearch.com/circles">Circles</a></li>
+          </ul>
+        </section>
+
+        <section>
+          <h1>Code</h1>
+          <p>Extensive documentation and API reference with executable examples.</p>
+          <ul class="inline">
+            <li><a href="api/index.html">Documentation</a></li>
+            <li><a href="api/index.html">API</a></li>
+            <li><a href="changes.html">Rel. notes</a></li>
+          </ul>
+        </section>
+
+        <section>
+          <h1>Examples</h1>
+          <p>Lots of options to tweak and tune. <a href="demos/infographics.html">Programmable hooks</a>.
+            <a href="demos/tweakpanel.html">Tweak panel</a>.</p>
+          <ul class="inline">
+            <li><a href="demos/index.html">List of all examples</a></li>
+          </ul>
+        </section>
+
+        <section>
+          <h1>Licensing</h1>
+          <p>Brand-locked version free for use. Contact us for full version.</p>
+          <ul class="inline">
+            <li><a href="http://carrotsearch.com/circles-how-to-order">Order</a></li>
+            <li><a href="http://carrotsearch.com">Carrot Search</a></li>
+          </ul>
+        </section>
+      </div>
+    </div>
+
+    <!-- Load visualization scripts, with assertions. -->
+    <script src="carrotsearch.circles.js"></script>
+    <script src="carrotsearch.circles.asserts.js"></script>
+
+    <!-- jquery simplifies things but is not strictly required. -->
+    <script src="demos/assets/js/jquery-1.8.2.min.js"></script>
+
+    <!-- Load utility functions and parts of the model shared by more than one example. -->
+    <script src="demos/assets/js/carrotsearch.examples.colordecorators.js"></script>
+    <script src="demos/assets/js/carrotsearch.examples.helpers.js"></script>
+    <script src="demos/assets/js/carrotsearch.examples.features.js"></script>
+    <script src="demos/assets/js/carrotsearch.examples.evtdelegation.js"></script>
+    <script>
+      // Embed the visualization.
+      var embed = function () {
+        window.circles = new CarrotSearchCircles({
+          id: "visualization",
+          pixelRatio: Math.min(1.5, window.devicePixelRatio || 1),
+          centerx: 170,
+          centery: "100%",
+          diameter: 430 * 2,
+          angleStart: 0,
+          angleWidth: -120,
+          deferLabelRedraws: 0,
+          labelRedrawFadeInTime: 0,
+          ringScaling: 1.2,
+          attributionPositionX: "98%",
+          attributionPositionY: "2%",
+          rolloutTime: 2,
+          rolloutAnimation: "implode",
+          groupFontFamily: "Calibri Bold, Helvetica Neue, Helvetica, sans-serif",
+          groupMaxFontSize: 20,
+          groupMinFontSize: 15,
+          captureMouseEvents: false,
+
+          // Wire up events
+          onGroupClick: function(e) { clickOn(e.group.id); },
+          onBeforeZoom: function(e) { return false; },
+          onBeforeSelection: function(e) { return false; },
+
+          // Our data model.
+          dataObject: assignIds({
+            open: true,
+            groups: [
+              featureModel.transitions,
+              featureModel.misc,
+              featureModel.colors,
+              {
+                label: "Fonts",
+                onClick: toggleZoom,
+                groups: [
+                  { label: "Size",
+                    onClick: rotateOptions([
+                      {
+                        label: "small",
+                        groupMinFontSize: "15",
+                        groupMaxFontSize: "15"
+                      },
+                      {
+                        label: "medium",
+                        groupMinFontSize: "5",
+                        groupMaxFontSize: "25"
+                      },
+                      {
+                        label: "large",
+                        groupMinFontSize: "15",
+                        groupMaxFontSize: "50"
+                      }
+                    ], function(current) {
+                      this.label = "[" + current.label + "]";
+                      circles.set(current);
+                    })
+                  },
+                  { label: "Family",
+                    onClick: rotateOptions([
+                      {
+                        familyName: "Courier",
+                        groupFontFamily: "Courier New, Courier New, Courier, monospace"
+                      },
+                      {
+                        familyName: "Georgia",
+                        groupFontFamily: "Georgia, serif"
+                      },
+                      {
+                        familyName: "Arial",
+                        groupFontFamily: "Arial, sans-serif"
+                      },
+                      {
+                        familyName: "Times",
+                        groupFontFamily: "Times New Roman, Times, serif"
+                      }
+                    ], function(current) {
+                      this.label = "[" + current.familyName + "]";
+                      circles.set(current);
+                    })
+                  }
+                ]
+              }
+            ]
+          })
+        });
+        clickOn("candy");
+
+        $("#version").text(window.circles.version().version);
+
+        $("body").addClass("ready");
+      };
+
+      // Give Atari bootup screen some time ;)
+      var loadStart = new Date().getTime();
+      $(window).load(function() {
+        var bootup = 500 - (new Date().getTime() - loadStart);
+        setTimeout(embed, Math.max(0, bootup));
+      });
+
+      // Patch overlay layer events for internet explorer.
+      $(window).load(function() {
+        eventPassthru($("#tablet-glow"));
+      });
+    </script>
+  </body>
+</html>

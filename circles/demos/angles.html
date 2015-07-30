@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="assets/css/reset.css" />
+    <link rel="stylesheet" href="assets/css/bootstrap.css" />
+
+    <style type="text/css"> 
+      html, body {
+        padding: 5px;
+      }
+      
+      #visualization {
+        position: fixed;
+        top: 0;
+        left: 0;  
+        width: 400px;
+        height: 400px;
+        visibility: hidden;
+      }
+
+      img {
+        border: 1px solid gray;
+        padding: 0; margin: 0;
+      }
+
+      div.span3 + div.span3 {
+        border-left: 1px solid #a9a9a9;
+        padding-left: 9px;
+        margin-left: 10px;
+      }
+
+      #snaps {
+        font-size: x-small;
+        font-family: monospace;
+      }
+    </style>
+
+    <script src="../carrotsearch.circles.js"></script>
+    <script src="assets/js/jquery-1.8.2.min.js"></script>
+    <script src="assets/js/carrotsearch.examples.onresizehook.js"></script>
+    <script src="assets/js/carrotsearch.examples.viewport.js"></script>
+  </head>
+
+  <body>
+    <div id="visualization"></div>
+
+    <div class="container">
+      <div class="row">
+        <div class="span12" style="line-height: 1; margin-bottom: 1em;">
+          This example shows various combinations of <a href="../api/index.html#angleStart">angleStart</a>
+          and <a href="../api/index.html#angleWidth">angleWidth</a> attributes. It takes a lot of screenshots
+          so the rendering time may be longer on slow/ mobile devices.
+        </div>
+      </div>
+      <div class="row" id="snaps"></div>
+    </div>
+
+    <script>
+      function embed() {
+        // We respin until the visualization container has non-zero area (there are race 
+        // conditions on Chrome which permit that) and the visualization class is loaded.
+        var container = document.getElementById("visualization");
+        if (container.clientWidth <= 0 || container.clientHeight <= 0 || !window["CarrotSearchCircles"]) {
+          window.setTimeout(embed, 250);
+          return;
+        }
+
+        // Use the defaults for all parameters.
+        var circles = new CarrotSearchCircles({
+          id: "visualization",
+          pixelRatio: Math.min(2, window.devicePixelRatio || 1),
+          angleStart: 0,
+          angleWidth: 45,
+          rolloutTime: 0,
+          pullbackTime: 0,
+          deferLabelRedraws: 0,
+          labelRedrawFadeInTime: 0,
+          visibleGroupCount: 3,
+          attributionPositionX: "50%",
+          attributionPositionY: "50%",
+          dataObject: {
+            groups:[
+              { label:"Group 1", groups:[
+                { label:"Group 1.1" },
+                { label:"Group 1.2" },
+                { label:"Group 1.3" }
+              ]},
+              { label:"Group 2", zoomed: true, groups:[
+                { label:"Group 2.1" },
+                { label:"Group 2.2" },
+                { label:"Group 2.3" }
+              ]},
+              { label:"Group 3", groups:[
+                { label:"Group 3.1" },
+                { label:"Group 3.2" },
+                { label:"Group 3.3", selected: true }
+              ]},
+              { label:"Group 4", groups:[
+                { label:"Group 4.1" },
+                { label:"Group 4.2" },
+                { label:"Group 4.3" }
+              ]}
+            ]
+          },
+          onRolloutComplete: function() {
+            var queue = [];
+            $.each([45, -45, 270, -270], function(index, angleWidth) {
+              var $row = $("<div class='span3'>").appendTo($("#snaps"));
+              for (var angleStart = 0; angleStart <= 360; angleStart += 360 / 8) {
+                queue.push({
+                  angleStart: angleStart,
+                  angleWidth: angleWidth,
+                  $row: $row
+                });
+              }
+            });
+
+            function processElement() {
+              if (queue.length > 0) {
+                var entry = queue.shift();
+                circles.set({
+                  angleStart: entry.angleStart,
+                  angleWidth: entry.angleWidth
+                });
+
+                var label = $("<span>")
+                  .append("<span class='icon-arrow-down'></span>")
+                  .append("angleStart=" + entry.angleStart + ", angleWidth=" + entry.angleWidth);
+
+                var thumbnail = $("<img>").attr('src', circles.get("imageData"));
+
+                entry.$row
+                  .append(label)
+                  .append(thumbnail);
+
+                window.setTimeout(processElement, 0);
+              }
+            }
+            processElement();
+          }
+        });
+
+        installResizeHandlerFor(circles, 0);
+      }
+      embed();
+    </script>
+  </body>
+</html> 

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="assets/css/reset.css" />
+  <link rel="stylesheet" href="assets/css/bootstrap.css" />
+
+  <style type="text/css">
+    html, body, #container {
+      height: 100%;
+      width: 100%;
+    }
+
+    #container {
+      position: relative;
+    }
+
+    #visStates {
+      position: absolute;
+      left: 100px;
+      right: 50%;
+      top: 0px;
+      bottom: 0px;
+
+      background-color: #f0f0f0;
+    }
+
+    #arrow {
+      position: absolute;
+      left: 50%;
+      width: 0px;
+      height: 0px;
+      border-style: solid;
+      border-color: transparent transparent transparent #f0f0f0;
+    }
+
+    #label {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+    }
+
+    #details {
+      position: absolute;
+      left: 50%;
+      right: 0;
+      top: 0; bottom: 0;
+    }
+
+    #visByStateDetails {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 51%;
+    }
+
+    #visByEthnicGroupDetails {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top:  51%;
+      bottom: 0;
+    }
+
+    #help {
+      position: absolute;
+      left: 100px;
+      right: 50px;
+      top:  100px;
+      bottom: 0;
+    }
+
+    #rotatedLabel {
+      position: relative;
+      font-family: sans-serif;
+      font-weight: bold;
+      font-size: 50px;
+      line-height: 100px;
+      white-space: nowrap;
+      color: #707070;
+      top: -80px;
+      -transform: rotate(90deg);
+      -transform-origin: 0% 100%;
+      -ms-transform: rotate(90deg);
+      -ms-transform-origin: 0% 100%;
+      -moz-transform: rotate(90deg);
+      -moz-transform-origin: 0% 100%;
+      -webkit-transform: rotate(90deg);
+      -webkit-transform-origin: 0% 100%;
+    }
+
+    p {
+      line-height: 20px;
+    }
+  </style>
+
+  <script src="../carrotsearch.circles.js"></script>
+  <script src="../carrotsearch.circles.asserts.js"></script>
+  <script src="assets/js/jquery-1.8.2.min.js"></script>
+  <script src="assets/js/carrotsearch.examples.onresizehook.js"></script>
+</head>
+
+<body>
+  <div id="container">
+    <div id="label"><div id="rotatedLabel">STATE DEMOGRAPHICS</div></div>
+    <div id="visStates"></div>
+    <div id="arrow"></div>
+    <div id="details">
+      <div id="visByStateDetails"></div>
+      <div id="visByEthnicGroupDetails"></div>
+      <div id="help">
+        <h1>U.S.A. demographics by state</h1>
+
+        <p>Ethnic demographics normalized per-state are on the left. The "inside" ring shows major
+        ethnic group's ratio within the state.</p>
+
+        <p><span class="label label-warning">Tip!</span>
+          Click on a state to display detail panels.
+          To select more than one state press and hold
+            the control (command) key.</p>
+
+        <p><span class="label label-warning">Tip!</span>
+          On touch devices tap a group to select it or
+          tap-and-hold to add a new group to the current selection.</p>
+
+        <p>Once selection is made, the upper panel shows ethnic group proportions
+          for each state. The bottom panel shows relative size of each group with
+          respect to each state's global population.</p>
+
+        <p><small>Data source: <a href="http://usatoday.com">http://api.usatoday.com</a>.</small></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // The raw data model.
+    var rawModel;
+
+    // Main census data model: ethnic diversity by state, with synthetic zoom groups
+    // and ethnic subdivision proportions.
+    var divByState;
+
+    // Ethnic groups (properties of each state).
+    var ethnicGroups = {
+      "PctHisp":        { label: "Hispanic",        color: "#eabe73" },
+      "PctWhite":       { label: "White",           color: "#eee" },
+      "PctBlack":       { label: "Black",           color: "#999" },
+      "PctAmInd":       { label: "Native American", color: "#ea7070" },
+      "PctAsian":       { label: "Asian",           color: "#e9ea74" },
+      "PctNatHawOth":   { label: "Native Hawaiian", color: "#a6ea74" },
+      "PctOther":       { label: "Other",           color: "#74a0ea" }
+    };
+
+    // Unique ID sequencer.
+    var idSeq = 0;
+
+    //
+    // JSONP callback. Preprocess the raw model data to make it more suitable
+    // for our needs later on.
+    //
+    function modelDataAvailable(m, info) {
+      rawModel = m;
+      divByState = $.extend(true, {}, m);
+      $.each(divByState.groups, function(i, state) {
+        // Copy labels and weights.
+        state.id     = idSeq++;
+        state.label  = state.Placename;
+        state.weight = 1; // /* use weight by population? */ state.Pop;
+        state.index = i;
+
+        // We want to put a ring of equal size for each state, where relative
+        // proportions of sub-rings would indicate ethnic population diversity.
+        var total = 0;
+        $.each(ethnicGroups, function(key) { total += Number(state[key]); });
+
+        // For each state, create subgroups with a "normalized" ethnic factor.
+        var flatModel = state.flatModel = [];
+        var parent = state;
+        var cumulative = 0;
+        $.each(ethnicGroups, function(key, details) {
+          var current = {
+            id: idSeq++,
+            label: details.label,
+            gcolor: details.color,
+            weight: Number(state[key]) / total,
+            weightCumulative: cumulative / total,
+            state: state
+          };
+          flatModel.push($.extend({}, current));
+          cumulative += Number(state[key]);
+          parent.groups = [current];
+          parent = current;
+        });
+      });
+
+      // Sort by name
+      divByState.groups.sort(function(a,b) {
+        return -b.label.localeCompare(a.label);
+      });
+
+      // Add synthetic top-level zoom groups.
+      var allStates = divByState.groups;
+      divByState.groups = [];
+      var zoomGroups = 4;
+      var elementsPerZoomGroup = Math.floor(allStates.length / zoomGroups);
+      for (var i = 1; i <= zoomGroups; i++) {
+        divByState.groups.push({
+          id: idSeq++,
+          label: "ZOOM",
+          groups: allStates.splice(0, i == zoomGroups ? allStates.length : elementsPerZoomGroup),
+          zoomGroup: true
+        });
+      }
+    }
+
+    //
+    // Wait until everything finishes loading and visual elements have a non-zero size.
+    //
+    window.onload = function() {
+      // Install details visualizations with an empty model.
+      var visByStateDetails = new CarrotSearchCircles({
+        id: "visByStateDetails",
+
+        pixelRatio: window.devicePixelRatio || 1,
+        visibleGroupCount: 0,
+        angleStart: 360 - 90,
+        angleWidth: 360,
+        ringScaling: 1,
+        captureMouseEvents: false,
+
+        rolloutTime: 1,
+        rolloutAnimation: "rollout",
+        pullbackTime: 1,
+
+        groupLabelDecorator: function(opts, props, vars) {
+          if (props.group.state) {
+            vars.labelText = props.group.label + " " + Number(props.group.weight * 100).toFixed(0) + "%";
+          }
+        },
+
+        groupColorDecorator: function(opts, params, vars) {
+          if (params.group.gcolor) {
+            vars.groupColor = params.group.gcolor;
+            vars.labelColor = "auto";
+          }
+        },
+
+        centerx: "50%",
+        centery: "50%",
+
+        attributionPositionX: "99%",
+        attributionPositionY: "99%",
+        attributionFadeInTime: 0,
+        attributionStayOnTime: undefined,
+
+        noTexturingCurvature: 1,
+        radialTextureStep: 15,
+        angularTextureStep: 15,
+
+        onBeforeSelection: function() { return false; },
+        onGroupClick: function(info) {
+          // Zoom on single click.
+          this.set("zoom", {
+            groups: [info.group.id],
+            zoomed: !info.group.zoomed
+          });
+        },
+
+        dataObject: null
+      });
+
+      var visByEthnicGroupDetails = new CarrotSearchCircles({
+        id: "visByEthnicGroupDetails",
+
+        pixelRatio: window.devicePixelRatio || 1,
+        visibleGroupCount: 0,
+        angleStart: 360 - 90,
+        angleWidth: 360,
+        ringScaling: 1,
+        captureMouseEvents: false,
+
+        rolloutTime: 1,
+        pullbackTime: 1,
+
+        groupColorDecorator: function(opts, params, vars) {
+          if (params.group.gcolor) {
+            vars.groupColor = params.group.gcolor;
+            vars.labelColor = "auto";
+          }
+        },
+
+        centerx: "50%",
+        centery: "50%",
+
+        attributionPositionX: "99%",
+        attributionPositionY: "99%",
+        attributionFadeInTime: 0,
+        attributionStayOnTime: undefined,
+
+        noTexturingCurvature: 1,
+        radialTextureStep: 15,
+        angularTextureStep: 15,
+
+        onBeforeSelection: function() { return false; },
+        onGroupClick: function(info) {
+          // Zoom on single click.
+          this.set("zoom", {
+            groups: [info.group.id],
+            zoomed: !info.group.zoomed
+          });
+        },
+
+        dataObject: null
+      });
+
+      // The main logic taking place when the selection of states
+      // changes on the master visualization.
+      function updateSelection(visualization, groups) {
+        // Remove the help if present. We could use css transitions but go with the lazy way.
+        $("#help").fadeOut();
+
+        // We don't want to select any of the ethnic details groups, only states.
+        // Change the current selection to reflect this.
+        var selectedStates = {};
+        $.each(groups, function(i, group) {
+          if (group.state) { group = group.state; }
+          if (!group.zoomGroup) {
+            selectedStates[group.id] = group;
+          }
+        });
+
+        // Adjust current selection to leave only states. If there
+        // are any states selected, build detail models and display them.
+        visualization.set("selection", {selected: false, all: true});
+        var keys = $.map(selectedStates, function(v,k) {return k;});
+        if (keys.length > 0) {
+          visualization.set("selection", {selected: true, groups: keys});
+
+          // By-state model is simpler since we only attach precalculated
+          // data.
+          var byStateModel = $.map(selectedStates, function(state,k) {
+            return {
+              id:     state.id,     // Propagate ID from the master model.
+              label:  state.label,  // Propagate label from the master model.
+              gcolor: state.gcolor, // Propagate color from the master model.
+              groups: state.flatModel
+            };
+          });
+
+          visByStateDetails.set("dataObject", {
+            groups: byStateModel
+          });
+
+          // Build by-ethnic group model from the current selection.
+          var byEthnicGroupModel = {};
+          $.map(selectedStates, function(state,k) {
+            $.each(state.flatModel, function(i, ethnicGroup) {
+              var newGroup = byEthnicGroupModel[ethnicGroup.label];
+              if (!newGroup) {
+                newGroup = byEthnicGroupModel[ethnicGroup.label] = $.extend({}, ethnicGroup);
+                newGroup.groups = [];
+                newGroup.weight = 1;
+              }
+
+              newGroup.groups.push({
+                id: idSeq++,
+                label:  state.label,
+                gcolor: state.gcolor,
+                weight: ethnicGroup.weight
+              });
+            });
+          });
+
+          visByEthnicGroupDetails.set("dataObject", {
+            groups: $.map(byEthnicGroupModel, function(v,k) { return v; })
+          });
+        } else {
+          visByStateDetails.set("dataObject", null);
+          visByEthnicGroupDetails.set("dataObject", null);
+        }
+      }
+
+      // Install by-state visualization (master).
+      var radius;
+      var gap = 5;
+      var innerRing = {
+        r_inner: 0,
+        r_outer: 50
+      };
+      var ethnicRing, stateRing, zoomRing;
+      var visStates = new CarrotSearchCircles({
+        id: "visStates",
+
+        pixelRatio: window.devicePixelRatio || 1,
+        visibleGroupCount: 0,
+        angleStart: 360 - 90,
+        angleWidth: 180,
+        captureMouseEvents: false,
+
+        rolloutTime: 1,
+        rolloutAnimation: "rollout",
+        labelColorThreshold: 0,
+        groupSelectionColor: "rgba(255, 255, 255, 0.5)",
+        groupSelectionOutlineColor: "rgba(255, 255, 255, 1)",
+
+        groupFontFamily: "sans-serif",
+        groupMaxFontSize: 14,
+        groupMinFontSize: 5,
+        minAngularPadding: 1,
+        ratioAngularPadding: 0,
+
+        groupLabelDecorator: function(opts, props, vars) {
+          if (props.group.state) {
+            vars.labelText = "";
+          } else {
+            vars.labelText = props.group.label.toUpperCase();
+          }
+        },
+
+        groupColorDecorator: function(opts, params, vars) {
+          if (params.group.gcolor) {
+            vars.groupColor = params.group.gcolor;
+            vars.labelColor = "auto";
+          } else {
+            if (!params.group.zoomGroup) {
+              vars.groupColor.h = Math.round(360 * params.group.index / rawModel.groups.length);
+              vars.groupColor.l = 50;
+              vars.groupColor.s = 100;
+              vars.groupColor.a = 0.7;
+
+              params.group.gcolor = vars.groupColor;
+            }
+          }
+        },
+
+        diameter: function(box) {
+          var maxDiameter = Math.min(box.width * 2, box.height) - 2 * gap;
+          radius = maxDiameter / 2;
+          var zoomRingRadius = Math.min(30, Math.abs(radius * 0.3));
+
+          ethnicRing = {
+            r_inner: innerRing.r_outer,
+            r_outer: radius * 0.5
+          };
+          ethnicRing.r = ethnicRing.r_outer - ethnicRing.r_inner;
+          stateRing = {
+            r_inner: radius * 0.5 + gap,
+            r_outer: radius - zoomRingRadius
+          };
+          zoomRing = {
+            r_inner: stateRing.r_outer + gap,
+            r_outer: radius
+          };
+
+          return maxDiameter;
+        },
+
+        ringShape: function(attrs) {
+          var group = attrs.group;
+          if (group.state) {
+            // Cumulative ethnic group: variable
+            attrs.r_inner = ethnicRing.r_inner + ethnicRing.r *  group.weightCumulative;
+            attrs.r_outer = ethnicRing.r_inner + ethnicRing.r * (group.weightCumulative + group.weight);
+          } else if (group.zoomGroup) {
+            attrs.r_inner = zoomRing.r_inner;
+            attrs.r_outer = zoomRing.r_outer;
+          } else {
+            // All the others: fixed.
+            attrs.r_inner = stateRing.r_inner;
+            attrs.r_outer = stateRing.r_outer;
+          }
+        },
+
+        centerx: "0%",
+        centery: "50%",
+
+        attributionPositionX: "99%",
+        attributionPositionY: "99%",
+        attributionFadeInTime: 0,
+        attributionStayOnTime: undefined,
+
+        onBeforeZoom: function(info) {
+          // Allow zooming on zoom groups tap-and-hold.
+          return !!info.group.zoomGroup;
+        },
+        onBeforeSelection: function(info) {
+          // Don't select zoom groups.
+          return !info.group.zoomGroup;
+        },
+        onGroupClick: function(info) {
+          var group = info.group;
+          if (group.zoomGroup) {
+            this.set("zoom", {groups: group.id, zoomed: !group.zoomed});
+          }
+        },
+        onGroupDoubleClick: function(info) {
+          var group = info.group;
+          if (group.zoomGroup) return;
+
+          var selection = this.get("selection");
+
+          // If already selected, do nothing.
+          for (var i = 0; i < selection.groups.length; i++) {
+            if (selection.groups[i] === group) {
+              return;
+            }
+          }
+
+          this.set("selection", group.id);
+          updateSelection(this, this.get("selection").groups);
+        },
+        onGroupSelectionChanged: function(info) {
+          updateSelection(this, info.groups);
+        },
+
+        dataObject: divByState
+      });
+
+      // Install visualization resize handler.
+      installResizeHandlerFor(visStates);
+      installResizeHandlerFor(visByStateDetails);
+      installResizeHandlerFor(visByEthnicGroupDetails);
+
+      // Install update handler on resize for misc. elements.
+      function onResizeUpdateHandler() {
+        var height = $("#container").height() / 2;
+        $("#arrow").css("border-width", height + "px 0 " + height + "px 50px");
+        return arguments.callee;
+      }
+      window.addEventListener("resize", onResizeUpdateHandler());
+    };
+  </script>
+  <script src="assets/data/census-raw.jsonp"></script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Customizing FoamTree attribution group</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+
+    <meta charset="utf-8"/>
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="assets/css/common.css" rel="stylesheet"/>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="visualization"></div>
+    </div>
+    <div id="side">
+      <h2 class="font">Customized attribution</h2>
+
+      <p>
+        With licensed FoamTree binaries you can customize the way the attribution group looks. This example code
+        uses uses an SVG image as the attribution logo, so that the attribution looks well in all zoom levels
+        (in all browsers except Firefox).
+      </p>
+
+      <p id="branding-info" class="hide">
+        <strong>Warning: </strong> this code example will not work with thee limited demo version of FoamTree. Please
+        <a target="_blank" href="http://carrotsearch.com/foamtree-how-to-order">contact Carrot Search</a> for
+        licensing of a fully customizable distribution.
+      </p>
+
+      <h4 class="font">What's in the code?</h4>
+
+      <ul>
+        <li>
+          Loading of an SVG attribution logo, setting the data object on FoamTree once the logo loads.
+        </li>
+
+        <li>
+          Customizing the <code><a href="../api/index.html#attributionLogoScale">attributionLogoScale</a></code>,
+          so that the logo takes the whole available polygon width.
+        </li>
+
+        <li>
+          Customizing the color of the attribution polygon with a
+          <code><a href="../api/index.html#groupContentDecorator">groupContentDecorator</a></code>.
+        </li>
+      </ul>
+    </div>
+
+    <script src="../carrotsearch.foamtree.js"></script>
+
+    <!-- Include Hammer.js for mobile interactions. Not required for desktop-only apps. -->
+    <script src="assets/js/hammer.min.js"></script>
+
+    <script>
+      // Show some information for non-brandable binaries.
+      if (!CarrotSearchFoamTree.version.brandingAllowed) {
+        document.getElementById("branding-info").className = "";
+      }
+
+      // Once the content loads, initialize the demo
+      window.addEventListener("load", function () {
+        // Load the attribution SVG image
+        var logo = new Image();
+        logo.addEventListener("load", function() {
+          if (!logo.width) {
+            // Set the width of the logo if the browser could not determine it
+            // automatically. Without the dimensions, FoamTree will not draw the logo.
+            logo.width = 431;
+            logo.height = 113;
+          }
+
+          // Generate some random data to show
+          foamtree.set("dataObject", generateGroups(32, 0.1));
+        });
+        logo.src = "assets/svg/carrot-search-horizontal.svg";
+
+        // Initialize FoamTree
+        var foamtree = new CarrotSearchFoamTree({
+          id: "visualization",
+          pixelRatio: window.devicePixelRatio || 1,
+
+          relaxationInitializer: "ordered",
+          layoutByWeightOrder: false,
+
+          // We'll make the relaxation visible
+          relaxationVisible: true,
+          relaxationMaxDuration: 3000,
+          relaxationQualityThreshold: 0.1,
+
+          rolloutDuration: 0,
+          pullbackDuration: 0,
+          fadeDuration: 0,
+
+          groupColorDecorator: function (opts, params, vars) {
+            if (params.attribution) {
+              // Make the attribution group polygon ligher
+              vars.groupColor.l = 95;
+            }
+          },
+
+          // Pass our attribution image to display
+          attributionLogo: logo,
+
+          // Use the full available width for the logo
+          attributionLogoScale: 1.0
+        });
+
+        // Resize FoamTree on orientation change
+        window.addEventListener("orientationchange", foamtree.resize);
+
+        // Resize on window size changes
+        window.addEventListener("resize", (function () {
+          var timeout;
+          return function () {
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(foamtree.resize, 300);
+          }
+        })());
+
+        function generateGroups(count, balance) {
+          var groups = [];
+          for (var i = 1; i <= count; i++) {
+            groups.push({label: i.toString(), weight: balance + (1 - balance) * Math.random()});
+          }
+          return {groups: groups};
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>FoamTree loading data and preparation indicator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+
+    <meta charset="utf-8" />
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/common.css" rel="stylesheet" />
+
+    <style>
+      /**
+       * We'll position the progress indicator absolutely,
+       * above the visualization and make it 5px high.
+       */
+      #progress {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="visualization"></div>
+
+      <!-- The element to use as the progress indicator -->
+      <div id="progress"></div>
+    </div>
+
+    <div id="side">
+      <h2>Relaxation progress indicator</h2>
+      
+      <p>
+        You can use the <code>CarrotSearchFoamTree.relaxationProgress</code>
+        utility to show the progress of visualization layout computation.
+        You will need to pass a reference to the HTML element to be used
+        as the progress indicator. The utility will vary the width of the element
+        from <code>0%</code> to <code>100%</code> to reflect the relaxation progress.
+      </p>
+
+      <p>
+        Observe that the relaxation progress is not always monotonous, the progress
+        bar can retract several times, but it should finally reach 100%.
+        Currently, relaxation progress is only reported when relaxation is made visible
+        by setting the <code><a href="../api/index.html#relaxationVisible">relaxationVisible</a></code>
+        option to <code>true</code>.
+      </p>
+      
+      <h4>Experiments</h4>
+
+      <p>
+        Load data set:
+          <a href="assets/data/multilingual.js">tiny</a> |
+          <a href="assets/data/data-mining-100-topic-flat.js">small</a> |
+          <a href="assets/data/data-mining-500-topic-hierarchical.js">large</a> |
+          <a href="assets/data/data-mining-500-url-hierarchical.js">unbalanced</a><br />
+        Maximum relaxation duration:
+          <a href="#relaxation-60">60s</a> |
+          <a href="#relaxation-10">10s</a> |
+          <a href="#relaxation-3">3s</a>.
+      </p>
+
+      <h4>What's in the code?</h4>
+
+      <ul>
+        <li>
+          HTML and CSS for the relaxation progress indicator.
+        </li>
+        <li>
+          Including the <code>CarrotSearchFoamTree.relaxationProgress</code> script
+          and using it to initialize the relaxation progress indicator.
+        </li>
+        <li>
+          Setting FoamTree to show the relaxation process.
+        </li>
+      </ul>
+    </div>
+
+    <!-- Include FoamTree visualization code -->
+    <script src="../carrotsearch.foamtree.js"></script>
+
+    <!-- Include the loading indicator utility -->
+    <script src="../carrotsearch.foamtree.util.relaxationprogress.js"></script>
+
+    <!-- A simple static JSON-P loader, optional -->
+    <script src="assets/js/carrotsearch.jsonp.js"></script>
+
+    <!-- Include Hammer.js for mobile interactions. Not required for desktop-only apps. -->
+    <script src="assets/js/hammer.min.js"></script>
+
+    <script>
+      window.addEventListener("load", function () {
+        // Initialize FoamTree
+        var foamtree = new CarrotSearchFoamTree({
+          id: "visualization",
+          pixelRatio: window.devicePixelRatio || 1,
+
+          // Disable rollout and pullback animations, use simple fading
+          rolloutDuration: 0,
+          pullbackDuration: 0,
+          fadeDuration: 1000,
+
+          // Make relaxation visible, use highest quality
+          relaxationVisible: true,
+          relaxationQualityThreshold: 0
+        });
+
+        // Initialize the relaxation progress indicator
+        CarrotSearchFoamTree.relaxationProgress(foamtree, document.getElementById("progress"));
+
+        // Loads a new data set
+        var loadDataSet = function (dataSetUrl) {
+          // Initiate loading of the data
+          JSONP.load(dataSetUrl, "modelDataAvailable", function (dataObject) {
+            foamtree.set("dataObject", dataObject);
+          });
+        };
+
+        // Resize FoamTree on orientation change
+        window.addEventListener("orientationchange", foamtree.resize);
+
+        // Resize on window size changes
+        window.addEventListener("resize", (function () {
+          var timeout;
+          return function () {
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(foamtree.resize, 300);
+          }
+        })());
+
+        // Load an initial data set.
+        loadDataSet("assets/data/multilingual.js");
+
+        // Handle other links of this example page
+        Array.prototype.slice.call(document.querySelectorAll("a[href ^= 'assets/data']"), 0).forEach(function (link) {
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            loadDataSet(this.href);
+          });
+        });
+        Array.prototype.slice.call(document.querySelectorAll("a[href ^= '#relaxation']"), 0).forEach(function (link) {
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            foamtree.set("relaxationMaxDuration", 1000 * parseInt(e.target.hash.substring('#relaxation-'.length)));
+
+            // Restart relaxation by loading the current data model again
+            foamtree.set("dataObject", foamtree.get("dataObject"));
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

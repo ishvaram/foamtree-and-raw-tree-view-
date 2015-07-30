@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Carrot Search FoamTree: JavaScript Voronoi treemep download</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="description" content="JavaScript library for hierarchical data visualization. Space-efficient non-rectangular treemaps, animated zooming and engaging transitions. Free demo."/>
+    <meta name="keywords" content="javascript, treemap, voronoi"/>
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+    <style>
+      .wf {
+        opacity: 0;
+        transition: opacity 1s;
+        -webkit-transition: opacity 1s;
+      }
+      .wf-active .wf {
+        opacity: 1;
+      }
+    </style>
+    <link href="../demos/assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="../demos/assets/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="../demos/assets/css/carrotsearch.foamtree.util.hints.css" rel="stylesheet" />
+    <link href="../demos/assets/css/site.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div class="jumbotron main">
+      <div class="container inset">
+        <nav class="navbar" role="navigation">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle wf" id="collapse-button">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="fa fa-bars"></span>
+            </button>
+            <a class="navbar-brand" href="../index.html">
+              <h1 class="hidden">FoamTree</h1>
+              <img class="logo" src="../demos/assets/img/foamtree.svg" alt="FoamTree logo"></img>
+              <strong class="tagline hidden-xs hidden-sm wf">Makes browsing hierarchical data efficient and fun.</strong>
+            </a>
+          </div>
+
+          <div class="collapse navbar-collapse wf" id="collapse-navbar">
+            <ul class="nav nav-pills navbar-nav navbar-right">
+              <li><a href="../download/index.html"><i class="fa fa-lg fa-download"></i> Download</a></li>
+              <li><a href="../api/index.html">Docs</a></li>
+              <li><a href="../demos/index.html">Demos</a></li>
+              <li><a href="http://carrotsearch.com/contact">Contact</a></li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+    <div class="jumbotron features shadow-clip">
+      <div class="container inset">
+        <div class="summary"></div>
+        <div class="row wf">
+          <div class="col-md-6 col-sm-12">
+            <div class="summary">Downloading FoamTree 3.3.1...</div>
+            <small id="download-link" style="position: absolute">If the download does not start automatically, <a id="download" href="../foamtree-3.3.1-demo.zip">click here</a>.</small>
+
+            <p style="margin-top: 40px">After the download completes:</p>
+
+            <ol class="spacing">
+              <li>Unpack the archive.</li>
+              <li>Open <code>index.html</code> in your browser.</li>
+              <li>
+                <p>
+                  Some examples require that the demo is accessed through the HTTP protocol.
+                  If you have Java installed, you can start up a local HTTP daemon by running:
+                </p>
+
+                <p>
+                  <code>bin/nhttpd.sh  -p 8080</code> <small>(Linux, Max)</small>
+                </p>
+
+                <p>
+                  <code>bin\nhttpd.bat  -p 8080</code> <small>(Windows)</small>
+                </p>
+
+                <p>
+                  Then, open <a href="http://localhost:8080">http://localhost:8080</a> in your browser.
+                </p>
+              </li>
+            </ol>
+
+            <p>
+              <strong>Existing customers:</strong> The package available from this page contains FoamTree with
+              locked branding options. If you hold a FoamTree license, you can download the newest unlimited version of FoamTree from
+              <a href="https://secure.carrotsearch.com">https://secure.carrotsearch.com</a>.
+            </p>
+          </div>
+          <div class="col-md-6 col-sm-12">
+            <div class="summary">What's new?</div>
+
+            <p style="margin-top: 40px">
+              <strong>FoamTree 3.3.0</strong> makes it possible to <a href="../demos/large.html">display
+              traditional rectangular treemaps</a> and lay out groups in left-to-right order
+              (<a target="_blank" href="../api/index.html#release-3.3.0">release notes</a>).
+            </p>
+
+            <p>
+              <strong>FoamTree 3.2.0</strong> makes it possible to <a href="../demos/large.html">browse
+              hierarchies of 100k+ groups on 100+ levels</a> without noticeable performance degradation
+              (<a target="_blank" href="../api/index.html#release-3.2.0">release notes</a>).
+            </p>
+
+            <p>
+              <a href="../demos/github.html"><img src="../demos/assets/img/github-thumb.jpg"
+              alt="GitHub search and visualization" class="img-rounded pull-right" style="margin: 0 0 10px 10px" /></a>
+              <strong>FoamTree 3.1.0</strong> makes it possible to draw arbitrary content inside each polygon,
+              allows dynamic updates of group weights and adds a number of new <a href="../demos/index.html">demos</a>
+              (<a target="_blank" href="../api/index.html#release-3.1.0">release notes</a>).
+            </p>
+
+            <p>
+              <strong>FoamTree 3.0.0</strong> is a major new release with the layout and display engines
+              rebuilt from the ground up. New features include:
+            </p>
+
+            <ul>
+              <li>New polygon layout engine</li>
+              <li>The ability to <em>expose</em> groups</li>
+              <li>Zooming and panning around the visualization area</li>
+              <li>Better and faster label fitting algorithm</li>
+              <li>New polygon decoration options, such as stroke and drop shadow</li>
+              <li>The ability to create your own data rollout and pullback effects</li>
+              <li>JavaScript API improvements for more streamlined code</li>
+              <li>
+                Utility scripts for handling common tasks, such as data
+                loading progress reporting or contextual interaction hints.
+              </li>
+            </ul>
+
+            <p>
+              Please see the demo on the <a href="../index.html">main page</a> to see
+              the new features in action. See the <a href="../api/index.html#releases">release notes</a>
+              for a detailed list of changes.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="jumbotron navigation">
+      <div class="container inset">
+        <div class="row wf">
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-code"></i> Documentation</h4>
+
+            <a href="../api/index.html">FoamTree JavaScript API reference</a> contains
+            tens of executable code examples.
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-flask"></i> Experiments</h4>
+
+            Try the <a href="../demos/settings.html">settings panel</a> to tweak the parameters,
+            see the <a href="../demos/index.html">demos</a> for fun and advanced usage examples.
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <h4><i class="fa fa-fw fa-download"></i> Download</h4>
+
+            <a href="../download/index.html">Download branding-locked version</a> or
+            newest fully-brandable binaries for <a href="https://secure.carrotsearch.com">existing customers</a>.
+          </div>
+
+          <div class="col-md-3 col-sm-6 social">
+            <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en"
+               data-url="http://get.carrotsearch.com/foamtree"
+               data-via="carrotsearch"
+               data-text="FoamTree, interactive non-rectangular #treemap #visualization | ">Tweet</a>
+
+            <a href="https://twitter.com/carrotsearch" class="twitter-follow-button" data-show-count="true"
+               data-lang="en" data-show-screen-name="false">Follow</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="jumbotron footer text-center">
+      <div>
+        FoamTree 3.3.1 by <a href="http://carrotsearch.com">Carrot Search</a>
+        -
+        <a href="http://carrotsearch.com/foamtree/faq">FAQ</a>
+        -
+        <a href="http://carrotsearch.com/foamtree/how-to-order">How to order</a>
+      </div>
+
+      <div>
+        Check also:
+        <a href="http://carrotsearch.com/lingo3g">Lingo3G text clustering engine</a> -
+        <a href="http://carrotsearch.com/circles">Circles multi-level interactive pie-chart</a>
+      </div>
+    </div>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js"></script>
+    <script>
+      (function() {
+        var downloadUrl = document.getElementById("download").href;
+        var canDownload = downloadUrl.indexOf("http") === 0 && downloadUrl.indexOf("://localhost") < 0;
+        if (!canDownload) {
+          document.getElementById("download-link").className = "hidden";
+        }
+
+        WebFont.load({
+          google: {
+            families: [
+              'Open+Sans:300',
+              'Open+Sans:400',
+              'PT+Serif:400',
+              "Oxygen"
+            ]
+          },
+          active: function() {
+            if (canDownload) {
+              window.setTimeout(function() {
+                document.location.href = downloadUrl;
+              }, 1100);
+            }
+          }
+        });
+      })();
+    </script>
+    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-317750-2']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+  </body>
+</html>

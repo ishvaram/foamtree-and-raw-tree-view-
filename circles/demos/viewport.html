@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script type="text/javascript" src="assets/js/jquery-1.8.2.min.js"></script>
+
+    <style type="text/css">
+      html, body, #container {
+        height: 100%;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+      }
+
+      #container {
+        position: relative;
+      }
+
+      #content {
+        position: absolute;
+        border: 1px solid red;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="content"></div>
+    </div>
+
+    <script>
+      function update() {
+        var data = [];
+        data.push("TS: " + Date.now());
+        data.push("devicePixelRatio: " + window.devicePixelRatio);
+        data.push("window.orientation: " + window.orientation);
+        data.push("screen.width/height: " + screen.width + " " + screen.height);
+        data.push("document.width/height: " + document.width + " " + document.height);
+        data.push("window.innerWidth/innerHeight: " + window.innerWidth + " " + window.innerHeight);
+        data.push("window.outerWidth/outerHeight: " + window.outerWidth + " " + window.outerHeight);
+        data.push("window.screenLeft/screenTop: " + window.screenLeft + " " + window.screenTop);
+
+        $("#content").html(data.join("<br/>"));
+      }
+      window.onload = update;
+
+      window.addEventListener("resize", update);
+      window.addEventListener("orientationchange", update);
+      window.addEventListener("touchstart", update);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="assets/css/reset.css" />
+  <style type="text/css">
+    html, body, #visualization {
+      height: 100%;
+    }
+    
+    #info {
+      position: fixed;
+      left: 10px; top: 10px;
+    }
+  </style>
+
+  <script src="../carrotsearch.circles.js"></script>
+  <script src="../carrotsearch.circles.asserts.js"></script>
+</head>
+
+<body>
+  <div id="visualization"></div>
+  <div id="info">This is an abuse of the API but fun.</div>
+
+  <script>
+    // Wait until everything finishes loading and visual elements have a non-zero size.
+    var model = {
+      groups: (function() {
+        var groups = [];
+        for (var i = 0; i < 100; i++) {
+          groups.push({label: "G" + i, index: i });
+        }
+        return groups;
+      })()
+    };
+
+    window.onload = function() {
+      var circles = new CarrotSearchCircles({
+        id: "visualization",
+
+        pixelRatio: window.devicePixelRatio || 1,
+        visibleGroupCount: 0,
+        angleStart: 0,
+        angleWidth: 360 * 3,
+
+        groupOutlineWidth: 1,
+        groupOutlineColor: "#000",
+        
+        rolloutAnimation: "implode",
+        rolloutTime: 2,
+
+        deferLabelRedraws: 0,
+        labelRedrawFadeInTime: 0,
+        
+        zoomedFraction: 0.1,
+
+        ringShape: function(attrs) {
+          var r = attrs.maxRadius / 4;
+          attrs.r_inner = 20 + attrs.group.index * (attrs.maxRadius - r) / model.groups.length;
+          attrs.r_outer = attrs.r_inner + r - 5;
+        },
+
+        dataObject: model
+      });
+    };
+  </script>
+</body>
+</html>

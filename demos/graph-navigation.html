@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Navigating graph structures with FoamTree</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/common.css" rel="stylesheet" />
+
+    <!-- Include the default style for the interaction hints and guide -->
+    <link href="assets/css/carrotsearch.foamtree.util.hints.css" rel="stylesheet"/>
+
+    <!-- Modify the styles a bit to make space for the click history. -->
+    <style type="text/css">
+      #container {
+        bottom: 85px;
+        top: 0;
+      }
+
+      #status {
+        position: absolute;
+        bottom: 0;
+        right: 450px;
+        left: 0;
+        height: 80px;
+      }
+
+      #location {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 80px;
+        width: 160px;
+
+        text-align: center;
+        font-size: 14px;
+        line-height: 80px;
+        background-color: #7497bd;
+      }
+
+      #history {
+        position: absolute;
+        top: 0;
+        left: 160px;
+        height: 80px;
+        right: 0;
+
+        overflow: hidden;
+        white-space: nowrap;
+        padding: 0;
+        font-size: 0;
+      }
+
+      #history li {
+        display: table-cell;
+        list-style-type: none;
+        white-space: normal;
+        vertical-align: middle;
+        text-align: center;
+        margin: 0;
+        padding: 0 0 0 0;
+
+        font-size: 16px;
+        height: 80px;
+      }
+
+      #history li + li {
+        border-left: 1px solid darkgray;
+        padding-left: 5px;
+        padding-right: 5px;
+      }
+
+      #history li:first-child + li {
+        border-left: 0;
+        padding-left: 5px;
+      }
+
+      #history li img {
+        cursor: pointer;
+      }
+
+      #history li:first-child {
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 40px 0 40px 30px;
+        border-color: transparent transparent transparent #7497bd;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="visualization"></div>
+    </div>
+
+    <div id="status">
+      <div id="location">
+        <span class="label label-danger">You're at...</span>
+      </div>
+
+      <ul id="history">
+        <li id="breadcrumbs"></li>
+        <li><span class="label label-info">Home</span></li>
+      </ul>
+    </div>
+
+    <div id="side">
+      <h2>Navigating graph structures</h2>
+
+      <p>
+        This example shows that FoamTree can be used to navigate graph structures
+        in general (not just single-rooted trees). The demo uses a single-layer sub-graph
+        of the "current" node and navigates through the graph, leaving a breadcrumb of
+        (clickable) previous states.
+      </p>
+
+      <h4>What's in the code?</h4>
+
+      <ul>
+        <li>
+          An example of navigating a graph using a single-level tree view.
+        </li>
+        <li>
+          A way to utilize the <code><a href="../api/index.html#imageData">imageData</a></code> option to create
+          a snapshot of the current visualization state.
+        </li>
+      </ul>
+    </div>
+
+    <!-- Include FoamTree visualization code -->
+    <script src="../carrotsearch.foamtree.js"></script>
+
+    <!-- Include Hammer.js for mobile interactions. Not required for desktop-only apps. -->
+    <script src="assets/js/hammer.min.js"></script>
+
+    <script src="assets/js/jquery-2.0.3.min.js"></script>
+
+    <script>
+      window.addEventListener("load", function() {
+        // Initialize FoamTree
+        var foamtree = new CarrotSearchFoamTree({
+          id: "visualization",
+          pixelRatio: window.devicePixelRatio || 1
+        });
+
+        // Prepare the input graph structure.
+        var home  = { color: "#eabe73", label: "Home" },
+            bar   = { color: "#eeeeee", label: "Bar"  },
+            work  = { color: "#ea7070", label: "Work" },
+            gym   = { color: "#e9ea74", label: "Gym"  },
+            food  = { color: "#a6ea74", label: "Food" },
+            beach = { color: "#74a0ea", label: "Beach"};
+
+        home.to  = [      bar, work, gym, food, beach];
+        bar.to   = [home,                 food];
+        work.to  = [home, bar,       gym, food, beach];
+        gym.to   = [           work,      food, beach];
+        food.to  = [home, bar, work,            beach];
+        beach.to = [home, bar,            food];
+
+        var neighborsOf = function(node, label) {
+          return {
+            label: label,
+            groups: node.to
+          }
+        };
+
+        // Set up foamtree to navigate the graph.
+        foamtree.set({
+          dataObject: {
+            groups: [neighborsOf(home, "Where to go next?")]
+          },
+          exposeDuration: 250,
+          pullbackDuration: 0,
+          fadeDuration: 250,
+          groupColorDecorator: function(opts, params, vars) {
+            vars.groupColor = params.group.color;
+          },
+          onGroupClick: function(e) {
+            if (!e.group.to) {
+              foamtree.open(e.group);
+            } else {
+              foamtree.expose(e.group).then(function() {
+                var pixelRatio = window.devicePixelRatio || 1;
+
+                // Update breadcrumbs trail.
+                var $tileImg = $("<img/>");
+                $tileImg.attr({
+                  src: foamtree.get("imageData", {
+                    format: "image/png",
+
+                    // Make the image 80 pixels high
+                    pixelRatio: pixelRatio * 80 / foamtree.get("element").clientHeight
+                  }),
+                  height: 80
+                });
+                $tileImg.on("mousedown", function() {
+                  foamtree.set("dataObject", neighborsOf(e.group));
+                });
+                var $item = $("<li/>");
+                $item.append($tileImg);
+                $("#breadcrumbs").after($item);
+
+                // And reload the model of the current node's neighborhood.
+                foamtree.set("dataObject", neighborsOf(e.group));
+              });
+            }
+          }
+        });
+
+        // Resize FoamTree on orientation change
+        window.addEventListener("orientationchange", foamtree.resize);
+
+        // Resize on window size changes
+        window.addEventListener("resize", (function() {
+          var timeout;
+          return function() {
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(foamtree.resize, 300);
+          }
+        })());
+      });
+    </script>
+  </body>
+</html>

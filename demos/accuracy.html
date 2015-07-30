@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>FoamTree weight representation accuracy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+
+    <meta charset="utf-8" />
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/common.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="container"><div id="visualization"></div></div>
+    <div id="side">
+      <h2>Polygon sizing accuracy</h2>
+
+      <p>
+        FoamTree tries to ensure that the areas of polygons
+        correspond to the weights defined in the input groups.
+        More specifically, the ratio of polygon area to the parent
+        polygon area should be as close as possible to the ratio
+        of group weight to the sum of weights of the sibling groups.
+      </p>
+
+      <p>
+        This example uses a custom group label decorator to
+        show how closely the polygon area matches the corresponding
+        group weight. A value of <code>+5.2%</code>, for example,
+        means that the polygon area is 5.2% larger than it,
+        ideally, should be based on the group's weight.
+        Additionally, a group color decorator is used that assigns
+        colors on a red-yellow-green scale depending on the size
+        difference.
+      </p>
+
+      <p>
+        Group sizing errors are fairly small for weight-balanced
+        data sets, that is when the differences in weights are
+        not very large. When weight differences get very large,
+        FoamTree currently tends to render small-weight groups much larger
+        than they should be.
+      </p>
+
+      <h4>Experiments</h4>
+
+      <p>
+        Generate new data with
+          <a href="#data-uniform">uniform</a> |
+          <a href="#data-balanced">balanced</a> |
+          <a href="#data-unbalanced">unbalanced</a> weights.
+        <br />
+        Set initializer to
+          <a href="#initializer-treemap">treemap</a> |
+          <a href="#initializer-fisheye">fisheye</a> |
+          <a href="#initializer-blackhole">black hole</a> |
+          <a href="#initializer-order">order</a> |
+          <a href="#initializer-random">random</a>.
+        <br />
+        Set relaxation quality to
+          <a href="#relaxation-highest">highest</a> |
+          <a href="#relaxation-standard">standard</a> |
+          <a href="#relaxation-low">low</a> |
+          <a href="#relaxation-none">none</a>.
+      </p>
+
+
+      <h4>What's in the code?</h4>
+
+      <p>
+        <ul>
+          <li>Advanced use of <code><a href="../api/index.html#groupLabelDecorator">groupLabelDecorator</a></code></li>
+          <li>Processing of the data object to add extra properties</li>
+          <li>Customization of group rendering</li>
+        </ul>
+      </p>
+    </div>
+
+    <script src="../carrotsearch.foamtree.js"></script>
+
+    <!-- Include Hammer.js for mobile interactions. Not required for desktop-only apps. -->
+    <script src="assets/js/hammer.min.js"></script>
+
+    <script src="assets/js/jquery-2.0.3.min.js"></script>
+    <script src="assets/js/carrotsearch.visualization.utils.datasets.js"></script>
+    <script>
+      $(window).load(function() {
+
+        // Initialize FoamTree
+        var foamtree = new CarrotSearchFoamTree({
+          id: "visualization",
+          pixelRatio: window.devicePixelRatio || 1,
+          dataObject: CarrotSearchVisualizationDatasets.generate({}).dataObject,
+
+          // Allow a lot of time for relaxation
+          relaxationMaxDuration: 30000,
+
+          relaxationInitializer: "fisheye",
+          relaxationVisible: true,
+          rolloutDuration: 0,
+          pullbackDuration: 0,
+
+          // Non-zero borders make the polygon's
+          // areas smaller in a systematic way.
+          // We use zero borders here.
+          groupBorderWidth: 0,
+          groupInsetWidth: 0,
+          groupBorderRadius: 0,
+
+          // Draw group outlines in white
+          groupStrokePlainLightnessShift: 100,
+          groupFillType: "plain",
+
+          // Always draw group labels
+          wireframeLabelDrawing: "always",
+
+          groupColorDecorator: function (opts, props, vars) {
+            var thisArea = props.polygonArea;
+            var parentArea = this.get("geometry", props.parent).polygonArea;
+            var thisWeight = props.group.weight + 1;
+            var parentWeightSum = props.parent.weightSum;
+
+            var idealArea = parentArea * thisWeight / parentWeightSum;
+            var difference = (thisArea - idealArea) / idealArea;
+
+            vars.groupColor.h = (Math.max(0, Math.min(1, difference)) + 1) * 0.5 * 120;
+            vars.groupColor.s = 50 + (Math.max(-2, Math.min(2, difference)) + 2) * 0.25 * 50;
+            vars.groupColor.l = 80 - (Math.max(-5, Math.min(5, difference)) + 5) * 0.10 * 40;
+
+            // Store the difference for the label decorator to use
+            // (label decorator is processed after group color decorator).
+            props.group.diff = difference;
+          },
+
+          // Computes the sizing accuracy and
+          // displays it as the group's label.
+          groupLabelDecorator: function (opts, props, vars) {
+            var difference = props.group.diff;
+            vars.labelText = (difference > 0 ? "+" : "") + (difference * 100).toFixed(1) + "%";
+          },
+
+          // Enhance the default model a bit. The extra properties
+          // are used by the approximation reporting label decorator.
+          onModelChanged: function(dataObject) {
+            enhance(dataObject);
+
+            function enhance(parent) {
+              if (parent && parent.groups) {
+                for (var i = parent.groups.length - 1; i >= 0; i--) {
+                  enhance(parent.groups[i]);
+                }
+
+                // The sum of weights
+                parent.weightSum = parent.groups.reduce(function (sum, group) {
+                  return sum + group.weight;
+                }, 0);
+
+                // Add the weight of the attribution group
+                if (!CarrotSearchFoamTree.version.brandingAllowed) {
+                  parent.weightSum *= 1.025;
+                }
+              }
+            }
+          }
+        });
+
+        // Resize FoamTree on orientation change
+        window.addEventListener("orientationchange", foamtree.resize);
+
+        // Resize on window size changes
+        window.addEventListener("resize", (function() {
+          var timeout;
+          return function() {
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(foamtree.resize, 300);
+          }
+        })());
+
+        // React on link clicks
+        $(document).on("click", "a[href ^= '#']", function (e) {
+          e.preventDefault();
+
+          var action = this.hash.substring(1).split("-");
+
+          switch (action[0]) {
+            case "data":
+              var params;
+              switch (action[1]) {
+                case "uniform":
+                  params = {
+                    label: "weight",
+                    weightDeviation: 0
+                  };
+                  break;
+
+                case "balanced":
+                  params = {
+                    label: "weight",
+                    weightMean: 50,
+                    weightDeviation: 40
+                  };
+                  break;
+
+                case "unbalanced":
+                  params = {
+                    label: "weight",
+                    weightMean: 500,
+                    weightDeviation: 499,
+                    weightBalance: 3
+                  };
+                  break;
+              }
+              foamtree.set("dataObject", CarrotSearchVisualizationDatasets.generate(params).dataObject);
+              break;
+
+            case "initializer":
+              foamtree.set("relaxationInitializer", action[1]);
+              foamtree.set("dataObject", foamtree.get("dataObject"));
+              break;
+
+            case "relaxation":
+              switch (action[1]) {
+                case "highest":
+                  foamtree.set("relaxationQualityThreshold", 0);
+                  break;
+
+                case "standard":
+                  foamtree.set("relaxationQualityThreshold", 1);
+                  break;
+
+                case "low":
+                  foamtree.set("relaxationQualityThreshold", 4);
+                  break;
+
+                case "none":
+                  foamtree.set("relaxationQualityThreshold", Number.MAX_VALUE);
+                  break;
+              }
+              foamtree.set("dataObject", foamtree.get("dataObject"));
+              break;
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

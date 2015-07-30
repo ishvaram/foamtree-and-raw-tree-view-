@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="assets/css/reset.css" />
+    <style type="text/css"> 
+      html, body, #visualization {
+        height: 100%;
+      }
+    </style>
+
+    <script src="../carrotsearch.circles.js"></script>
+    <script src="../carrotsearch.circles.asserts.js"></script>
+    <script src="assets/js/carrotsearch.examples.onresizehook.js"></script>
+    <script src="assets/js/carrotsearch.examples.viewport.js"></script>
+    <script src="assets/js/jquery-1.8.2.min.js"></script>
+  </head>
+
+  <body>
+    <div id="visualization"></div>
+
+    <script>
+      // Defer until everything is loaded (fonts, scripts, models). Simplifies the demo.
+      $(window).load(function() {
+        var circles = new CarrotSearchCircles({
+          id: "visualization",
+          pixelRatio: Math.min(1.5, window.devicePixelRatio || 1),
+          dataObject: {
+            groups:[
+              { label: "Blah!", full: "Yes, blah blah." },
+              { label: "Foo", full: "FooBar, obviously." },
+              { label: "Trabants", full: "Trabants of the world, unite!" }
+            ]
+          },
+          diameter: function(box) {
+            return Math.min(box.height - 2 * (5 + 20 + 20 + 40), box.width);
+          },
+          titleBar: "topbottom",
+          titleBarBackgroundColor: "rgba(0,0,0,.3)",
+          titleBarTextColor: "#fff",
+          titleBarTextPaddingTopBottom: 20,
+          titleBarMaxFontSize: 40,
+          titleBarLabelDecorator: function(attrs) {
+            if (attrs.hoverGroup) {
+              // If we're hovering over a group, display the full title instead
+              // of just the label shown in the circle.
+              attrs.label = attrs.hoverGroup.full;
+            }
+          }
+        });
+
+        installResizeHandlerFor(circles, 0);
+      });
+    </script>
+  </body>
+</html>

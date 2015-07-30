@@ -1,0 +1,3506 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Carrot Search Circles, API reference</title>
+
+    <!-- Le styles -->
+    <link href="../demos/assets/css/bootstrap.css" rel="stylesheet" />
+    <link href="../demos/assets/css/bootstrap-responsive.css" rel="stylesheet" />
+    <link href="../demos/assets/css/docs.css" rel="stylesheet" />
+    <link href="../demos/assets/css/prettify.css" rel="stylesheet" />
+    <style type="text/css">
+      body {
+        padding-top: 20px;
+        padding-bottom: 40px;
+      }
+      
+      pre + div.executable-buttons {
+        margin-top: -10px;
+        margin-bottom: 20px;
+      }
+
+      @media print {
+        .executable-buttons, .bs-docs-sidebar {
+          display: none;
+        }
+        
+        .pre-scrollable {
+          max-height: 10000px;
+          overflow-y: auto;
+        }
+      }
+
+      #example-overlay {
+        position:fixed;
+        height:100%;
+        width:100%;
+        left:0;
+        top:0;
+        z-index: 255 !important;
+        background-color: rgba(0,0,0,.2);
+        cursor: pointer;
+      }
+
+      #example-overlay-help {
+        position:fixed;
+        width:100%;
+        left:0;
+        top: 10px;
+        text-align: center;
+        pointer-events: none;
+      }
+
+      #visualization {
+        position: absolute;
+        top: 50px;
+        bottom: 50px;
+        left: 50px;
+        right: 50px;
+        background-color: rgba(0,0,0,.2);
+        cursor: auto;
+      }
+
+      .hidden {
+        visibility: hidden;
+      }
+
+      .inline > li {
+        font-size: x-small;
+      }
+      
+      .inline > li > a {
+        padding: 0;
+        margin:  0;
+      }
+
+      div.api > h3 {
+        font-family: monospace;
+        font-weight: bold;
+      }
+
+      div.api > h3 > div {
+        font-size: small;
+        color: #777;
+        font-weight: bold;
+        margin: 0;
+        padding: 0;
+        line-height: 1;
+      }
+
+      div.api {
+        margin-top: 50px;
+      }
+
+      div.page-header + div.api,
+      div.page-header + div.api-group > h2 + div.api {
+        margin-top: 0;
+      }
+
+      div.api-group > h2 {
+        /* display: none won't work because we want to link up these elements. */
+        visibility: hidden;
+        height: 0; width: 0;
+      }
+
+      .nav-list > .active > a,
+      .nav-list > .active > a:hover {
+        color: #0088cc;
+        background-color: #f0f0f0;
+        text-shadow: 0 0 0 black;
+      }
+
+      body.touchdev a:hover {
+        background-color: inherit !important;
+        color: #0088cc !important;
+      }
+
+      @media (min-width: 768px) {
+        .bs-docs-sidenav {
+          position: fixed;
+          margin-top: 0px;
+          top: 0px;
+          bottom: 0px;
+          overflow-y: auto;
+          overflow-x: auto;
+          padding-right: 5px;
+        }
+
+        .bs-docs-sidenav > li:first-child {
+          margin-top: 10px;
+        }
+      }
+
+      .bs-docs-sidenav ul.inline {
+        line-height: 0;
+        padding-top: 5px;
+        padding-bottom: 10px;
+      }
+
+      .bs-docs-sidenav ul.inline li,
+      .bs-docs-sidenav ul.inline li > a {
+        line-height: 1;
+        padding: 1px;
+        margin: 0;
+      }
+
+      .bs-docs-sidenav ul.inline li > a {
+        padding: 0 1px 0 1px;
+      }
+
+      /* itemized/flat toggle. */
+      body.navitemized ul.inline > li,
+      body.navitemized ol.inline > li {
+        display: block;
+      }
+
+      body.navitemized ul.inline > li.nav-header {
+        margin-top: 5px;
+      }
+
+      /* font size toggles */
+      body.navnormal #toc .inline li {
+        font-size: 12px;
+        margin-bottom: 5px;
+      }
+
+      body.navlarge #toc .inline li {
+        font-size: 20px;
+        margin-bottom: 8px;
+      }
+
+      /* scrollbar */
+      #toc {
+        -webkit-overflow-scrolling: touch;
+      }
+
+      #toc::-webkit-scrollbar {
+        width: 12px;
+        height: 16px;
+        background-color: rgba(0,0,0,0);
+      }
+
+      #toc::-webkit-scrollbar:hover {
+        background-color: rgba(0,0,0,0.05);
+      }
+
+      #toc::-webkit-scrollbar-thumb {
+        background-color: rgba(0,0,0,0.2);
+        -webkit-box-shadow: inset 1px 1px 0 rgba(0,0,0,0.10),inset 0 -1px 0 rgba(0,0,0,0.07);
+      }
+
+      #toc::-webkit-scrollbar-button {
+        width: 0;
+        height: 0;
+        display: none;
+      }
+
+      #toc::-webkit-scrollbar-corner {
+        background-color: transparent;
+      }
+
+      body.fullVersion .showInDemoVersion {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body data-spy="scroll" data-target=".bs-docs-sidebar">
+    <div id="example-overlay" class="hidden">
+      <div id="visualization"></div>
+      <div id="example-overlay-help">
+        <span class="label label-warning"><i class="icon-remove icon-white"></i> Press ESC or click outside to exit.</span>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="span3 bs-docs-sidebar">
+          <ul class="nav nav-list bs-docs-sidenav" id="toc">
+            <li style="margin-bottom: 8px;">
+              <div class="btn-group">
+                <a class="btn btn-mini" id="toggle-layout"><i class="icon-align-justify"></i><span>Layout</span></a>
+                <a class="btn btn-mini" id="toggle-font"><i class="icon-text-height"></i><span>Font</span></a>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="span9">
+          <div class="jumbotron">
+            <h1>Carrot Search Circles</h1>
+            <p id="buildinfo" class="lead">API reference</p>
+          </div>
+
+          <section class="notoc" id="introduction">
+            <p>Carrot Search Circles is a modern, in-browser, interactive visualization of hierarchical data sets. It may resemble what is known as "pie-charts" in statically rendered software but the visualization can be interactive, allowing drill-downs or adjustments at runtime.</p>
+
+            <p>Technically, Circles is an HTML5 application, all modern desktop and mobile browsers supporting the
+            canvas specification will be able to display the visualization. Circles can be
+            integrated into a HTML page using a simple JavaScript API.</p>
+
+            <div class="alert alert-info">
+              <p>Release notes with a list of bug fixes and new features are in
+                <a href="../changes.html"><code>changes.html</code></a> file at the top of the
+                distribution bundle. An up-to-date version for the latest stable release of Circles is always at:
+                <a href="http://download.carrotsearch.com/circles/api"><code>http://download.carrotsearch.com/circles/api</code></a>.</p>
+            </div>
+          </section>
+
+          <section id="api-overview">
+            <div class="page-header"><h1>Quick overview</h1></div>
+
+            <p><em class="brand">Carrot Search HTML5 Circles</em> is a HTML5 application that requires
+              an up-to-date technology in the browser. Circles is checked and supported on the following browsers:</p>
+            <ul>
+              <li>Chrome: two latest versions</li>
+              <li>Firefox: two latest versions</li>
+              <li>Internet Explorer: version 9 and later</li>
+              <li>Mac OS Safari: version 5 and later</li>
+              <li>iOS Safari: version 4.2 and later</li>
+            </ul>
+
+            <p>The visualization code will most likely work on other modern browsers (such as Opera), though support
+              for these is not a priority. For older browsers the previous (Adobe Flash based)
+              version of Circles can serve as a fallback.</p>
+
+            <p>The entire implementation and API of the visualization is contained in the
+              <code>carrotsearch.circles.js</code> file. It handles all your code's
+              interactions with the visualization, including embedding, changing various properties,
+              loading new data and listening to events. The entry point to the API is an instance
+              of the <code>CarrotSearchCircles</code> class created <a href="#simple-embedding">during embedding</a>.</p>
+
+            <div class="row">
+              <div class="span5">
+                <h3 id="options">Options</h3>
+                <p>After embedding, all further interaction with the visualization is by changing options that control such aspects as the current data model, colors, font sizes and event listeners. Options can be changed using the <code>set</code> method as shown in the code examples.</p>
+    
+                <p>The easiest way to start is by using the <a href="../demos/tweakpanel.html">parameters demo</a> and tuning the visual options to suit your needs. Once done, copy the option values from the <strong>Options as JavaScript</strong> panel directly to the embedding code.</p>
+                  
+                <h3 id="positioning">Positioning</h3>
+                <p>By default Circles will be positioned in the center of the container's area, with the default
+                  diameter equal to the width or height of the container (whichever value is smaller). All
+                  of these settings can be adjusted so that the visualization appears somewhere else in the container
+                  area or with a different size. This can be used to achieve effects such as a
+                  semi-circle glued to one of the container sides, for example. The following attributes
+                  are relevant for positioning: <code>centerx</code>, <code>centery</code>, <code>diameter</code>.</p>
+                
+                <h3 id="resizing">Resizing</h3>
+                <p>In case the Circles HTML element changes its size, either as part of flexible layout or programmatically, the visualization needs to be resized and redrawn explicitly using the <code>resize</code> method. See <a href="#adjusting-size">Adjusting Size</a> section for more information.</p>
+              </div>
+              <div class="span4">
+                <h3 id="data-format">Data format</h3>
+                <p>Input data passed to Circles need to be as a JavaScript object defining the whole hierarchy of groups and their properties. Please see the <code>dataObject</code> option for detailed documentation and examples.</p>
+                  
+                <h3 id="colors">Colors</h3>
+                <p>Many options of <em class="brand">Circles</em> involve specifying colors, such as the global background color, colors of specific groups and labels. In all such cases, Circles accepts CSS3-compliant color strings, such as:
+                <code>#fff</code>, 
+                <code>#1d1d1d</code>, 
+                <code>rgba(200, 100, 0, 0.5)</code>, or
+                <code>hsla(120, 50%, 50%, 0.8)</code>.</p>
+
+                <h3 id="printing">Printing</h3>
+                <p>Circles is a regular printable element of the page. You may want to customize the printing style sheets to hide non-relevant elements.</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="first-steps">
+            <div class="page-header"><h1>First steps</h1></div>
+
+            <h3 id="simple-embedding">Simple embedding</h3>
+            <p>Use standard script loading mechanisms to load <code>carrotsearch.circles.js</code> or concatenate this with other JavaScript files. The visualization needs to be fully loaded before it can be embedded. Also, <strong>embedding requires a container element with non-zero size (width and height).</strong> It is thus preferred that the embedding takes place after the page has completed loading.</p>
+
+            <pre class="example">
+&lt;div id=&quot;visualization&quot;&gt;&lt;/div&gt;
+&lt;script src=&quot;carrotsearch.circles.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+  window.addEventListener("load", function() {
+    // Call visualization embedding code.
+  });
+&lt;/script&gt;
+            </pre>
+
+            <p>The embedding code should inspect the static <code>supported</code> property of the visualization class to make sure the browser supports all the requirements. The following example shows a typical embedding code with a minimal data model. This will also be our baseline for examples where the embedding isn't explicit.</p>
+
+            <pre class="executable example">
+if (CarrotSearchCircles.supported) {
+  var circles = new CarrotSearchCircles({
+    id: "visualization",
+    dataObject: {
+      groups: [
+        { label:"Group 1", groups: [
+          { label:"Group 1.1" },
+          { label:"Group 1.2" }
+        ]},
+        { label:"Group 2", groups: [
+          { label:"Group 2.1" },
+          { label:"Group 2.2" }
+        ]}
+      ]
+    }
+  });
+} else {
+  console.log("Visualization not supported.");
+}
+            </pre>
+            
+            <p>The reference to the returned instance (the <code>circles</code> variable) can be used to load new data model or change settings of the visualization. The instance is ready to handle method calls as soon as the constructor invocation returns. The following example sets the background color to fully opaque white. See the reference for a list of available methods and options.</p>
+
+            <pre class="partial executable example">
+circles.set({
+  backgroundColor: "rgba(255,255,255,1)"
+});
+            </pre>
+
+
+            <h3 id="data-model">Data model</h3>
+
+            <p>A data model can be loaded, optionally replacing the current model, by passing the <code>dataObject</code> parameter either during embedding or by calling the <code>set</code> method, as in the example below.</p>
+
+            <pre class="partial executable example">
+circles.set({
+  dataObject: {
+    groups: [
+      { label:"Group 1", groups: [
+        { label:"Group 1.1" },
+        { label:"Group 1.2" },
+        { label:"Group 1.3" }
+      ]},
+      { label:"Group 2", groups: [
+        { label:"Group 2.1" },
+        { label:"Group 2.2" }
+      ]},
+      { label:"Group 3" }
+    ]
+  }
+});
+            </pre>
+
+            <p>Data models not in the format presented above need to be converted prior to visualization. In this example we will load JSON data from USA Today API, convert it to Circles format and visualize. We use jQuery to make Ajax requests, but any other library should work equally well. Note how the model changes after a short pause (fetching model data dynamically, network connection is required).</p>
+
+            <pre class="partial executable example">
+circles.set({dataObject: {groups: [
+  {}, {label: "loading..." }, {},
+  {}, {label: "Please wait" }, {}
+]}});
+
+$.ajax({
+  url: "http://api.usatoday.com/open/census/loc?api_key=nqjr52fpvsu8gs97tgnkyzfx",
+  dataType: "jsonp",
+  jsonpCallback: "callback",
+  success: function(data) {
+    var groups = [ ];
+    var states = data.response;
+    var pow = 0.7;
+    for (var i = 0; i &lt; states.length; i++) {
+      var s = states[i];
+      groups.push({
+        label: s.Placename,
+        weight: s.Pop,
+        groups: [
+          // Ethnic data is very varied, we rise it to the power of 0.8 to 
+          // make the differences less pronounced.
+          { label: "Hispanic", weight: Math.pow(s.PctHisp, pow) },
+          { label: "White",    weight: Math.pow(s.PctNonHispWhite, pow) },
+          { label: "Black",    weight: Math.pow(s.PctBlack, pow) },
+          { label: "Indian",   weight: Math.pow(s.PctAmInd, pow) },
+          { label: "Asian",    weight: Math.pow(s.PctAsian, pow) },
+          { label: "Hawaiian", weight: Math.pow(s.PctNatHawOth, pow) }
+        ]
+      })
+    }
+
+    circles.set("dataObject", { open: true, groups: groups });
+  }
+});
+            </pre>
+
+            <p>To clear the visualization model load a <code>null</code> <code>dataObject</code>. The example below sets a pullback animation for the existing model and then clears it after 2 seconds. Note the sequence of two parameter calls: changes to <code>pullbackAnimation</code> and <code>pullbackTime</code> need to be applied to the previous model (not the <code>null</code> model).</p>
+
+            <pre class="partial executable example">
+window.setTimeout(function() {
+  circles.set({
+    pullbackAnimation: "explode",
+    pullbackTime: 2
+  });
+  circles.set({
+    dataObject: null
+  });
+}, 1000);
+            </pre>
+
+
+            <h3 id="adjusting-size">Adjusting size</h3>
+            <p>If the visualization container element changes size the visualization will be scaled proportionally. To redraw it from scratch taking the new size into consideration use the code that periodically polls the container's dimensions and updates the visualization accordingly. Or attach a resize event listener to the <code>window</code> object as shown below.</p>
+
+            <pre class="example">
+window.addEventListener("resize", function() {
+  circles.resize();
+});
+            </pre>
+
+            <!-- These hooks are used throughout the code! -->
+            <pre class="hidden" id="installResizeHook">
+window["_resizeHook"] = function() { circles.resize(); };
+window.addEventListener("resize", window["_resizeHook"]);
+            </pre>
+
+            <pre class="hidden" id="removeResizeHook">
+window.removeEventListener("resize", window["_resizeHook"]);
+delete window["_resizeHook"]
+            </pre>
+
+            <p>Compare the behavior of visualization with and without the resize listener (resize the browser window once the example is visible).</p>
+
+            <div class="row">
+              <div class="span4">
+                <pre class="partial executable example" data-runbefore="installResizeHook" data-runafter="removeResizeHook">
+// With the resize listener installed.
+circles.set("onLayout", function(attrs) {
+  console.log("Layout.", attrs);
+});
+                </pre>
+              </div>
+              <div class="span4">
+                <pre class="partial executable example">
+// Without the resize listener.
+circles.set("onLayout", function(attrs) {
+  console.log("Layout.", attrs);
+});
+                </pre>
+              </div>
+            </div>
+
+            <p>On mobile devices one should resize and redraw the visualization after the orientation of a mobile device changes:</p>
+
+            <pre class="example">
+window.addEventListener("orientationchange", function() {
+  circles.resize();
+});
+            </pre>
+
+            <p>Resizing and redrawing may be costly. You may consider throttling calls to <code>resize</code> using a delayed timer function or deferring label redrawing using <code>deferLabelRedraws</code> attribute.</p>
+
+
+            <h3 id="visualization-events">Visualization events</h3>
+
+            <p><a href="#events">Event callbacks</a> are functions invoked by the visualization code when certain conditions or triggers are met. Some of these callbacks are invoked only for user-related actions (for example <code>onGroupZoom</code>), others may be a result of internal state changes (like <code>onRolloutComplete</code>).</p>
+
+            <p>Starting with version <code>2.2.0</code> all event callback attributes can be either a single <code>function</code> reference or an array of functions to be invoked. For reasons of backwards compatibility a function or array of callback functions
+              will replace any existing callbacks. To attach a new function to the set of existing ones <code>get</code> the array
+              of existing callbacks first, as the example below shows.</p>
+
+            <pre class="partial executable example">
+// Set the first callback, replacing any existing ones.
+circles.set("onGroupHover", function(hover) {
+  console.log("onGroupHover (callback 1)");
+});
+
+// Attach another callback to the existing set.
+circles.set("onGroupHover", circles.get("onGroupHover").concat(function(hover) {
+  console.log("onGroupHover (callback 2)");
+}));
+            </pre>
+
+
+            <h3 id="color-models">Color models</h3>
+            <p>The default way of assigning colors to groups and labels in a model
+              is the "rainbow" color model. This model works by first assigning colors from the provided range of hue
+              values to first-level groups. The color assigned to the first group is taken from
+              <code>rainbowStartColor</code>, the last group's color will be <code>rainbowEndColor</code>
+              and all groups in between will be assigned a hue value in proportion to the weights
+              of preceding groups.</p>
+
+            <p>The example below shows a set of groups covering a full spectrum of hues (angles between 0 and 360).</p>
+            <pre class="partial executable example">
+circles.set({
+  backgroundColor: "#fff",
+  visibleGroupCount: 0,
+  rainbowStartColor: "hsla(  0, 100%, 50%, 1)",
+  rainbowEndColor:   "hsla(360, 100%, 50%, 1)",
+  groupColorDecorator: function(opts, params, vars) {
+    params.group.label = "Hue: " + Math.round(vars.groupColor.h);
+  },
+  dataObject: {
+    groups: (function() {
+      var arr = [];
+      for (var i = 0; i &lt; 100; i++) {
+        arr.push({label: ""});
+      }
+      return arr;
+    })()
+  }
+});
+            </pre>
+
+            <p>Children groups are recursively assigned with colors that introduce a gradient to the
+               saturation and lightness components of their parent's color, as demonstrated in the example below,
+              which shows HSL color values assigned to each group.</p>
+
+            <pre class="partial executable example">
+function modelGen(subgroups) {
+  var arr = [];
+  for (var i = subgroups.pop(); i > 0; i--) {
+    arr.push({label: ""});
+  }
+  if (subgroups.length > 0) {
+    for (var i = arr.length; --i >= 0;) {
+      arr[i].groups = modelGen(subgroups.slice());
+    }
+  }
+  return arr;
+}
+
+circles.set({
+  backgroundColor: "#fff",
+  visibleGroupCount: 0,
+  rainbowStartColor: "hsla(  0, 100%, 50%, 1)",
+  rainbowEndColor:   "hsla(360, 100%, 50%, 1)",
+  groupColorDecorator: function(opts, params, vars) {
+    params.group.label = "" +
+              Math.round(vars.groupColor.h) + ", " +
+              Math.round(vars.groupColor.s) + "%, " +
+              Math.round(vars.groupColor.l) + "%";
+  },
+  dataObject: modelGen([3, 5, 10, 1])[0]
+});
+            </pre>
+
+            <p>If the default color model does not suit your needs you can customize group colors to your liking by using
+            the <code>groupColorDecorator</code> callback.</p>
+
+            <h3 id="debugging">Debugging</h3>
+            <p>By default the visualization code does not verify whether input options are valid, this is done to minimize the size of the
+            code required at runtime. During development, however, it is strongly recommended to turn on assertions by including
+            <code>carrotsearch.circles.asserts.js</code> file. This automatically enables assertion checking for
+              attributes passed to the visualization via the <code>set</code> method.</p>
+
+            <p>The example below shows invalid values of certain options and how they result in console warnings.</p>
+            <pre class="partial executable example">
+circles.set({
+  id: undefined,
+  backgroundColor: "foo",
+  diameter: "95px",
+  onLayout: "fooBar",
+  imageData: "newImage.png",
+  showZeroWeightGroups: "true",
+  rolloutAnimation: "invalid-value",
+  visibleGroupCount: 1.5,
+  angleStart: -10
+});
+            </pre>
+
+            <h3 id="carrot2-models">Carrot2 data models</h3>
+
+            <p>If you are using Carrot2 or Lingo3G clustering engine, you can convert the JSON and XML data formats using the following jQuery snippet (for simplicity, a similar conversion could be done manually of course).</p>
+
+            <pre class="executable example requireshttp">
+// Convert clusters to groups from Carrot2/Lingo3G JSON format.
+function convert(clusters) {
+  return clusters.map(function(cluster) {
+    return {
+      id:     cluster.id,
+      label:  cluster.phrases.join(", "),
+      weight: cluster.attributes && cluster.attributes["other-topics"] ? 0 : cluster.size,
+      groups: cluster.clusters ? convert(cluster.clusters) : []
+    }
+  });
+};
+
+$.ajax({
+  url: "../demos/assets/data/carrot2/ben-and-jerry.json",
+  dataType: "json",
+  success: function(data) {
+    new CarrotSearchCircles({
+      id: "visualization",
+      dataObject: {
+        groups: convert(data.clusters)
+      }
+    });
+  }
+});
+            </pre>
+
+            <p>And a similar conversion from the XML format.</p>
+
+            <pre class="executable example requireshttp">
+// Convert clusters to groups from Carrot2/Lingo3G XML format.
+function convert(clusters) {
+  return $(clusters).map(function(index, cluster) {
+    cluster = $(cluster).detach(); // destroys the model, simplifies processing.
+    var subgroups = cluster.children("group").size() > 0 ? convert(cluster.children("group")) : [];
+    return {
+      id:     cluster.attr("id"),
+      label:  cluster.find("group &gt; title &gt; phrase").map(asText).toArray().join(", "),
+      weight: cluster.attr("score") ? cluster.attr("score") : 0,
+      groups: subgroups
+    }
+  }).toArray();
+};
+
+// Convert a node to text.
+function asText(i, e) { return $(e).text(); }
+
+$.ajax({
+  url: "../demos/assets/data/carrot2/ben-and-jerry.xml",
+  dataType: "xml",
+  success: function(data) {
+    new CarrotSearchCircles({
+      id: "visualization",
+      dataObject: {
+        groups: convert($(data).find("searchresult &gt; group"))
+      }
+    });
+  }
+});
+            </pre>
+
+          </section>
+
+
+          <section id="methods">
+            <div class="page-header"><h1>Methods</h1></div>
+
+            <div class="api">
+              <h3 id="get">get(*)</h3>
+
+              <dl class="dl-horizontal">
+                <dt>get()</dt>
+                <dd>
+                  <p>Returns an object containing current values of all options. Properties of the returned object correspond to option names, values are option values.</p>
+                  <pre class="partial executable example">
+console.log(circles.get());
+                  </pre>
+                </dd>
+
+                <dt>get(option)</dt>
+                <dd>
+                  <p>Returns the current value of the requested <code>option</code>. If the provided
+                  string does not correspond to any option name, the result is undefined.</p>
+                  <pre class="partial executable example">
+console.log(circles.get("dataObject"));
+                  </pre>
+                </dd>
+              </dl>
+            </div>
+
+            <div class="api">
+              <h3 id="set">set(*)</h3>
+
+              <dl class="dl-horizontal">
+                <dt>set(option, value)</dt>
+                <dd>
+                  <p>Sets the provided <code>option</code> to the desired <code>value</code>. If the provided
+                    <code>option</code> string does not correspond to any option, the call is ignored.</p>
+                  <pre class="partial executable example">
+circles.set("backgroundColor", "rgba(255,255,255,1)");
+                  </pre>
+                </dd>
+
+                <dt>set(options)</dt>
+                <dd>
+                  <p>Sets new values for all options included in the provided <code>options</code> object.
+                    Properties of the object should correspond to attribute names, values of the object
+                    will be treated as values to be set. Any properties of the options object that do
+                    not correspond to any attributes of the visualization will be ignored.</p>
+                  <pre class="partial executable example">
+circles.set({
+  backgroundColor: "#fff",
+  centery: "25%",
+  angleWidth: 180
+});
+                  </pre>
+                </dd>
+              </dl>
+
+              <div class="alert alert-info">
+                <strong>Heads up!</strong>
+                <p>Setting certain options may enforce label redrawing or even reloading the full model. This may be expensive. Try to aggregate all options in one call to <code>set</code>. However, this may not always be possible, especially when a new data model is also set in one call. For example setting a pullback animation for the currently loaded model needs to be done before a new model is loaded to be effective, as shown in this snippet.</p>
+                <pre class="partial executable example">
+// We want the explode animation lasting 2 seconds so we need
+// to apply these options to the current model.
+circles.set({
+  pullbackAnimation: "explode",
+  pullbackTime: 2
+});
+
+// And then we can load a new model and apply the remaining options.
+circles.set({
+  rolloutAnimation: "rollout",
+  rolloutTime: 2,
+  dataObject: {
+    groups: [
+      { label:"Group 1" }, { label:"Group 2" },
+      { label:"Group 3" }, { label:"Group 4" }
+    ]
+  }
+});
+                </pre>
+              </div>
+            </div>
+
+            <div class="api">
+              <h3 id="redraw">redraw()</h3>
+
+              <dl class="dl-horizontal">
+                <dt>redraw()</dt>
+                <dd>
+                  <p>Triggers a complete redraw of the visualization. This may be a costly operation depending on the complexity of the model and current settings (label redrawing).</p>
+                </dd>
+              </dl>
+            </div>
+
+            <div class="api">
+              <h3 id="resize">resize()</h3>
+
+              <dl class="dl-horizontal">
+                <dt>resize()</dt>
+                <dd>
+                  <p>If the size of the HTML container element has changed, resizes and redraws the visualization to accommodate to the new size. See <a href="#adjusting-size">Adjusting Size</a> section for code snippets related to this function.</p>
+                </dd>
+              </dl>
+            </div>
+
+            <div class="api">
+              <h3 id="layout-method">layout()</h3>
+
+              <dl class="dl-horizontal">
+                <dt>layout()</dt>
+                <dd>
+                  <p>Performs full layout of the component, including redrawing of text labels. It is preferable not to use this method directly and rely calls to <code>resize</code> instead.</p>
+                  <p>See <code>layout</code> attribute for read-only access to the most recent layout state if on-changed updates
+                  are not needed.</p>
+                </dd>
+              </dl>
+            </div>
+
+            <div class="api">
+              <h3 id="groupShape" alt="groupShape()">groupShape(gid)
+                <div>@since 2.2.0</div>
+              </h3>
+
+              <p>Retrieves the information about the shape of a group with the <code class="nolink">id</code> attribute
+                equal to <code>gid</code>. The returned object can be undefined, but in general will be
+                a hash with the following properties:</p>
+
+              <dl class="dl-horizontal">
+                <dt>x</dt><dd>The group arc's horizontal center reference.</dd>
+                <dt>y</dt><dd>The group arc's vertical center reference.</dd>
+                <dt>angle_from</dt><dd>The starting angle for the group's circle slice (radians).</dd>
+                <dt>angle_to</dt><dd>The end angle for the group's circle slice (radians).</dd>
+                <dt>r_inner</dt><dd>Inner radius of the group's slice.</dd>
+                <dt>r_outer</dt><dd>Outer radius of the group's slice.</dd>
+              </dl>
+
+              <p>The properties above are sufficient to locate the group on screen. In combination with the
+              <code>onRedraw</code> callback this can be used to create special effects like overlays on
+              groups, as shown in <a target="_blank" href="../demos/connections.html">this demo snippet</a>.</p>
+
+              <p>The example below tracks the reference x and y position for group 2 (note how these variables are changing
+              during the rollout transition, even though the visualization's center is constant).</p>
+
+              <pre class="partial executable example">
+circles.set({
+  rolloutTime: 2,
+  rolloutAnimation: "implode",
+  dataObject: {
+    groups: [
+      { label: "Group 1", id: 1 }, { label:"Group 2", id: 2 },
+      { label: "Group 3", id: 3 }, { label:"Group 4", id: 4 }
+    ]
+  },
+  onRedraw: function() {
+    var shape = circles.groupShape(2);
+    if (shape) {
+      console.log("X: " + shape.x + ", Y: " + shape.y);
+    }
+  }
+});
+              </pre>
+            </div>
+          </section>
+
+
+          <section id="events">
+            <div class="page-header"><h1>Event callbacks</h1></div>
+
+            <div class="api">
+              <h3 id="onModelChanged">onModelChanged</h3>
+
+              <p>Called after the visualization has parsed the new data model provided in the <code>dataObject</code> option, but before the new data has been rendered. Callback functions receive one argument <code>newDataObject</code>, it is the new data object the visualization is about to show.</p>
+
+              <p>In the context of each callback, <code>this</code> points to the involved instance of <code>CarrotSearchCircles</code>.</p>
+
+              <pre class="partial executable example">
+// Attach a pair of listeners.
+circles.set("onModelChanged", [
+  function(newDataObject) {
+    alert("Model changed.", newDataObject);
+  },
+  function(newDataObject) {
+    console.log("Model changed.", newDataObject);
+  }]
+);
+
+// Set a new data model to verify it works.
+circles.set("dataObject", { groups: [{ label:"Group 1" }]});
+
+// Dump the number of listeners to the console.
+console.log("Listeners: " + circles.get("onModelChanged").length);
+              </pre>
+            </div>
+
+            <div class="api">
+              <h3 id="onRolloutStart">onRolloutStart</h3>
+
+              <p>Called just before the visualization starts the animated rollout. If the application implements some sort of loading indicator, the indicator should be hidden once this event is fired.</p>
+
+              <p>In the context of the callback, <code>this</code> points to the involved instance of <code>CarrotSearchCircles</code>.</p>
+            </div>
+
+            <div class="api">
+              <h3 id="onRolloutComplete">onRolloutComplete</h3>
+
+              <p>Called after the rollout animation has completed.</p>
+
+              <p>In the context of the callback, <code>this</code> points to the involved instance of <code>CarrotSearchCircles</code>.</p>
+            </div>
+
+            <div class="api">
+              <h3 id="onRedraw">onRedraw</h3>
+
+              <p>Called after the internal- or API-triggered redraw of the visualization.</p>
+
+              <p>In the context of the callback, <code>this</code> points to the involved instance of <code>CarrotSearchCircles</code>.</p>
+
+              <p>Any code in this callback should be minimal and ultra fast to keep the transition animations smooth.</p>
+
+              <pre class="partial executable example">
+var redraws = 0;
+circles.set({
+  rolloutTime: 2,
+  pullbackTime: 2,
+  pullbackAnimation: "explode",
+  rolloutAnimation: "rollout",
+  onRedraw: function() {
+    redraws++;
+  },
+  onRolloutComplete: function() {
+    console.log("Rollout complete, redraws: " + redraws);
+  }
+});
+// Force model reload to get some redraws.
+var m = circles.get("dataObject");
+circles.set("dataObject", null);
+circles.set("dataObject", m);
+              </pre>
+            </div>
+
+            <div class="api">
+              <h3 id="onLayout">onLayout</h3>
+
+              <p>Called after the internal- or API-triggered layout of the visualization. The callback function receives a single <code>layoutData</code> object with several properties that describe the shape of the visualization on screen. This can be used to position additional custom components, for example (such as the selected group's title).</p>
+
+              <p>In the context of the callback, <code>this</code> points to the involved instance of <code>CarrotSearchCircles</code>.</p>
+
+              <pre class="partial executable example">
+circles.set("onLayout", function(layoutData) {
+  console.log("Layout data.", layoutData);
+});
+circles.layout();
+              </pre>
+            </div>
+
+            <div class="api">
+              <h3 id="onGroupHover">onGroupHover</h3>
+
+              <p>Called after the mouse pointer enters the area covered by a group or leaves the visualization area completely. The callback will be passed one parameter: an object containing the <code>group</code> property with a reference to the data model object representing the group the cursor hovers above or <code>null</code> if the mouse pointer is not over any group.</p>
+
+              <p>To not display the hover outline, set <code>groupHoverColor</code>
+              and <code>groupHoverOutlineColor</code> to a transparent color.</p>
+
+              <p>In the context of the callback, <code>this</code> points to the involved instance of <code>CarrotSearchCircles</code>.</p>
+
+              <pre class="partial executable example">
+circles.set("onGroupHover", function(hover) {
+  console.log("onGroupHover.", hover.group ? hover.group.label : "(none)");
+});
+              </pre>
+            </div>
+
+            <div class="api">
+              <h3 id="onGroupOpenOrClose">onGroupOpenOrClose</h3>
+
+              <p>
+                Called after a collapsed group has been opened or after an expanded group was closed. This event is
+                only emitted if expanders are shown and if the number of children groups exceeds the
+                threshold set in <code>visibleGroupCount</code> option. For each involved group, the callback
+                function will be invoked with one parameter containing the following properties.
+              </p>
+
+              <dl class="dl-horizontal">
+                <dt>group</dt>
+                <dd>Reference to the data object representing the group
+                  that has just been opened or closed.</dd>
+
+                <dt>open</dt>
+                <dd><code>true</code> if the group has just been opened for
+                  browsing of child groups, <code>false</code> if the group has just been closed</dd>
+              </dl>
+
+              <p>In the context of the callback, <code>this</code> points to the involved instance of <code>CarrotSearchCircles</code>.</p>
+              <p>The callback is <strong>not</strong> invoked for API-initiated open state changes, only for user interactions.</p>
+
+              <pre class="partial executable example">
+circles.set({
+  visibleGroupCount: 1,
+  onGroupOpenOrClose: function(info) {
+    console.log("onGroupOpenOrClose.", info);
+  }
+});
+console.log("Expand/contract closed groups to invoke the callback.");
+              </pre>
+            </div>
+
+            <div class="api">
+              <h3 id="onGroupZoom">onGroupZoom</h3>
+
+              <p>
+                Called after a group has been zoomed in or its zoom status was reset back to normal. For each
+                involved group, the callback will be invoked with one parameter
+                containing the following properties:
+              </p>
+
+              <dl class="dl-horizontal">
+                <dt>group</dt>
+                <dd>Reference to the data object which is subject to zoom state change.</dd>
+
+                <dt>zoomed</dt>
+                <dd><code>true</code> if the group has just been zoomed, <code>false</code> otherwise</dd>
+              </dl>
+
+              <p>In the context of the callback, <code>this</code> points to the involved instance of <code>CarrotSearchCircles</code>.</p>
+              <p>The callback is <strong>not</strong> invoked for API-initiated state changes, only for user interactions.</p>
+
+              <pre class="partial executable example">
+circles.set({
+  onGroupZoom: function(info) {
+    console.log("onGroupZoom.", info);
+  }
+});
+
+// Zoom-in group with identifier '1.1' programmatically.
+circles.set("zoom", "1.1");
+console.log("Double click or tap-and-hold on the zooomed group.");
+              </pre>
+            </div>
+
+            <div class="api">
+              <h3 id="onGroupSelectionChanging">onGroupSelectionChanging</h3>
+
+              <p>Called during group selection changes. For each selected or deselected group, the callback will be invoked with one parameter containing the following properties:</p>
+
+              <dl class="dl-horizontal">
+                <dt>group</dt>
+                <dd>Reference to the data object which is subject to selection state change.</dd>
+
+                <dt>selected</dt>
+                <dd><code>true</code> if the group has just been selected, <code>false</code> otherwise</dd>
+              </dl>
+
+              <p>In the context of the callback, <code>this</code> points to the involved instance of <code>CarrotSearchCircles</code>.</p>
+              <p>The callback is <strong>not</strong> invoked for API-initiated state changes, only for user interactions.</p>
+              <p>When multiple callbacks are present the entire set will be invoked, even if one or more callbacks changes
+              the selection via an API call.</p>
+
+              <p>
+                Note that one user action may result in many events (deselection of currently selected groups and selection of another group, for example). A global selection state is easier to track using <code>onGroupSelectionChanged</code> event.</p>
+
+              <pre class="partial executable example">
+circles.set({
+  onGroupSelectionChanging: function(info) {
+    console.log("onGroupSelectionChanging.", info);
+  },
+  onGroupSelectionChanged: function(info) {
+    console.log("onGroupSelectionChanged.", info);
+  }
+});
+
+console.log("Select and deselect groups.");
+              </pre>
+            </div>
+
+            <div class="api">
+              <h3 id="onGroupSelectionChanged">onGroupSelectionChanged</h3>
+
+              <p>Called once after the selection has changed. The callback receives
+                one parameter: an object containing the <code>groups</code>
+                property with an array of references to the data objects representing the
+                groups that are currently selected.</p>
+
+              <p>For tracking selection changes on individual groups, <code>onGroupSelectionChanging</code> event should be used. See code snippet there for an example.</p>
+
+              <p>In the context of the callback, <code>this</code> points to the involved instance of <code>CarrotSearchCircles</code>.</p>
+              <p>The callback is <strong>not</strong> invoked for API-initiated state changes, only for user interactions.</p>
+              <p>When multiple callbacks are present the entire set will be invoked, even if one or more callbacks changes
+                the selection via an API call.</p>
+            </div>
+
+            <div class="api">
+              <h3 id="onBeforeSelection">onBeforeSelection</h3>
+
+              <p>Called right after some user interaction which would affect the model's selection (mouse click on a group for example), but before the changes are applied. The callback will be invoked with one object parameter containing a <code>group</code> property with the data model group affected.</p>
+
+              <p>If <strong>any</strong> callback function returns <code>false</code>, the default behavior of adjusting selection is not invoked. This can be used to prevent the display of selection entirely, as in this example.</p>
+
+              <pre class="partial executable example">
+circles.set("onBeforeSelection", [
+  function() { return true; },
+  function() { return false; }
+]);
+              </pre>
+
+              <p>In the context of the callback, <code>this</code> points to the involved instance of <code>CarrotSearchCircles</code>.</p>
+              <p>The callback is <strong>not</strong> invoked for API-initiated state changes, only for user interactions.</p>
+            </div>
+
+            <div class="api">
+              <h3 id="onBeforeZoom">onBeforeZoom</h3>
+
+              <p>Called right after some user interaction which would affect the model's zoom state, but before the changes are applied. The callbacks will be invoked with one object parameter containing a <code>group</code> property with the data model group affected.</p>
+
+              <p>If <strong>any</strong> callback function returns <code>false</code>, the default behavior of adjusting zoom state is not invoked. This can be used to prevent the feature of zooming groups entirely, as in this example.</p>
+
+              <pre class="partial executable example">
+circles.set("onBeforeZoom", function() { return false });
+              </pre>
+
+              <p>In the context of the callback, <code>this</code> points to the involved instance of <code>CarrotSearchCircles</code>.</p>
+              <p>The callback is <strong>not</strong> invoked for API-initiated state changes, only for user interactions.</p>
+            </div>
+
+
+            <div class="api">
+              <h3 id="onGroupClick">onGroupClick</h3>
+
+              <p>Called after a mouse click (or tap gesture) was detected on a group. The callback will be invoked with an object containing the following properties:</p>
+              <dl class="dl-horizontal">
+                <dt><code>group</code></dt>
+                <dd>property with the data model group affected.</dd>
+
+                <dt><code>metaKey</code></dt>
+                <dd>A copy of the original event's <code>metaKey</code>. Note that this key modifier is known not to work
+                in Windows-based browsers.</dd>
+
+                <dt><code>ctrlKey</code></dt>
+                <dd>A copy of the original event's <code>ctrlKey</code>.</dd>
+
+                <dt><code>shiftKey</code></dt>
+                <dd>A copy of the original event's <code>shiftKey</code>.</dd>
+              </dl>
+              <p>In the context of the callback, <code>this</code> points to the involved instance of <code>CarrotSearchCircles</code>.</p>
+              <p>The callback is <strong>not</strong> invoked for API-initiated state changes, only for user interactions.</p>
+
+              <pre class="partial executable example">
+circles.set("onGroupClick", function(info) {
+  console.log("onGroupClick.", info);
+});
+              </pre>
+            </div>
+
+
+            <div class="api">
+              <h3 id="onGroupDoubleClick">onGroupDoubleClick</h3>
+
+              <p>Called after a double click (or tap-and-hold gesture) was detected on a group. The callback will be invoked with an object containing the following properties:</p>
+              <dl class="dl-horizontal">
+                <dt><code>group</code></dt>
+                <dd>property with the data model group affected.</dd>
+
+                <dt><code>metaKey</code></dt>
+                <dd>A copy of the original event's <code>metaKey</code>. Note that this key modifier is known not to work
+                  in Windows-based browsers.</dd>
+
+                <dt><code>ctrlKey</code></dt>
+                <dd>A copy of the original event's <code>ctrlKey</code>.</dd>
+
+                <dt><code>shiftKey</code></dt>
+                <dd>A copy of the original event's <code>shiftKey</code>.</dd>
+              </dl>
+
+              <pre class="partial executable example">
+// Prevent the default behavior and toggle selection on double click.
+circles.set({
+  onBeforeZoom:       function() { return false; },
+  onBeforeSelection:  function() { return false; },
+  onGroupDoubleClick: function(info) {
+    var state = info.group.selected ? true : false;
+    this.set("selection", {
+      groups: [info.group.id],
+      selected: !state
+    });
+    console.log((state ? "Deselected" : "Selected") + " group " + info.group.id);
+  }
+});
+              </pre>
+
+              <p>In the context of the callback, <code>this</code> points to the involved instance of <code>CarrotSearchCircles</code>.</p>
+              <p>The callback is <strong>not</strong> invoked for API-initiated state changes, only for user interactions.</p>
+            </div>
+          </section>
+
+
+          <section id="attributes">
+            <div class="page-header"><h1>Attributes</h1></div>
+
+            <div class="api-group">
+              <h2 id="options-general">General</h2>
+
+              <div class="api">
+                <h3 id="supported" class="nodefault">supported</h3>
+
+                <p>A static property on <code>CarrotSearchCircles</code> equal to <code>true</code> if visualization is supported on the current browser environment.</p>
+
+                <div class="alert alert-info">
+                  <strong>Heads up!</strong>
+                  <p>This property is static and must be accessed directly on <code>CarrotSearchCircles</code> class, as shown in this example:</p>
+                  <pre class="executable example nooverlay">
+  if (CarrotSearchCircles.supported) {
+    // Put embedding code here.
+    console.log("Visualization supported.");
+  } else {
+    // Display a warning or skip visualization.
+    console.log("Visualization not supported.");
+  }
+                  </pre>
+                </div>
+              </div>
+
+              <div class="api">
+                <h3 id="id">id</h3>
+
+                <p>Identifier of the DOM element into which the visualization is to
+                  be embedded.</p>
+
+                <div class="alert alert-info">
+                  <strong>Heads up!</strong>
+                  <p>The DOM element have a non-zero width and height before embedding. The visualization will allocate a canvas of exactly the same size (client size) and will stretch proportionally when the element's size changes. The visualization must be resized manually (see <code>resize</code> method) to update to new element's dimensions.</p>
+                </div>
+              </div>
+
+              <div class="api">
+                <h3 id="dataObject">dataObject</h3>
+
+                <p>The data model to visualize in JSON format. The top-level object is a root group
+                  and must contain a non-empty <code>groups</code> property pointing to an array of objects
+                  representing individual first-level groups (this array can be empty). An <code>null</code> model
+                  object clears the visualization (removes any current model).</p>
+
+                <p>Each group can contain the following properties:</p>
+                <dl class="dl-horizontal">
+                  <dt>id</dt>
+                  <dd>(optional, String) unique identifier of the group. Group
+                    identifiers are required only for programmatic changes of certain
+                    group attributes such as <code>selection</code>, <code>zoom</code> state
+                    or <code>open</code> state.</dd>
+
+                  <dt>label</dt>
+                  <dd>(required, String) textual description of the
+                    group. For best results, use short labels. <code>groupLabelDecorator</code> callback
+                    can also be used to modify labels before they are drawn on the visualization when
+                    the model is retrieved from a source that cannot be altered.</dd>
+
+                  <dt>weight</dt>
+                  <dd><p>(optional, Number >= 0) weight of the group relative
+                    to other groups. The larger the weight, the more space the group's
+                    polygon will occupy on the screen. Good values for the weight property
+                    could be e.g. the number of documents in a cluster or the score of
+                    the cluster.</p>
+                    <p>Group weights must be non-negative. Zero-weight groups can receive
+                      special treatment, see the <code>showZeroWeightGroups</code> option.</p>
+                    <p>If a group's weight is not specified, Circles will assume the weight
+                      is <code>1.0</code>.</p>
+                  </dd>
+
+                  <dt>groups</dt>
+                  <dd>(optional, Array) an array of subgroups of the group.</dd>
+
+                  <dt>open</dt>
+                  <dd>(optional, boolean) if <code>true</code>, all of this group's subgroups
+                    will be shown initially. By default a maximum of <code>visibleGroupCount</code> subgroups is
+                    shown and then the user needs to click on an expander symbol to open up a group.</dd>
+
+                  <dt>zoomed</dt>
+                  <dd>(optional, boolean) if <code>true</code>, the group is in zoomed state by default.
+                    Zoomed groups take proportionally larger amount of space of
+                    the parent group's circle slice (see <code>zoomedFraction</code> parameter).</dd>
+
+                  <dt>selected</dt>
+                  <dd>(optional, boolean) if <code>true</code>, the group will be initially in
+                    selected state. This can be useful to visually highlight a certain group (or groups) as the model
+                    is loaded.</dd>
+                </dl>
+
+                <p>The data object (and groups) can contain user properties, not required or interpreted by the
+                  visualization. These properties may be used in callback hooks (for example for color model tuning).
+                  The following example shows a data object with various values of the above properties.</p>
+
+                <pre class="partial executable example">
+circles.set({
+  visibleGroupCount: 2,       // display an expander after the first 2 groups.
+  dataObject: {
+    open: false,              // keep the the top-level group closed.
+    groups: [
+      { label: "Bad news", groups: [
+        { label: "Last penny lost", sentiment: -0.5 },
+        { label: "Bazinga doomed",  sentiment: -1 }
+        ]},
+      { label: "Good news", zoomed: true, groups: [
+        { label: "iPads under $100",      sentiment: 0.5, selected: true },
+        { label: "Martians are friendly", sentiment: 1 }
+        ]},
+      { label: "Other news", groups: [
+        { label: "Vampires on the loose", sentiment: -2 },
+        { label: "Van Helsing to the rescue", sentiment: -3 }
+        ]}
+    ]
+  }
+});
+                </pre>
+
+                <p>See <a href="#carrot2-models">this section</a> for hints on how to convert data models that are not in the required format.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="pixelRatio">pixelRatio</h3>
+
+                <p>
+                  The physical-to-display pixel count ratio to assume when drawing the final
+                  visualization. On modern devices with high-density screens (such as the
+                  Retina display) one logical pixel can be mapped to more than one physical pixel.
+                  You can use this option to increase the resolution at which the visualization
+                  is drawn to make the image clearer and labels more legible. You can also decrease this
+                  resolution to make rendering faster at the cost of quality.
+                </p>
+
+                <p>
+                  By default, <code>pixelRatio</code> is 1. In such cases, the width and
+                  height of the canvas on which the visualization is drawn will be equal to the
+                  pixel dimensions of the HTML container element. For
+                  <code>pixelRatio</code> values greater/smaller than 1, the pixel dimensions of the canvas
+                  will be smaller/larger than the dimensions of the enclosing HTML element and the canvas
+                  will be stretched to fit in the container's client area.
+                  For example, if you set <code>pixelRatio</code> to 2 and if the size of the
+                  enclosing HTML element is 400x400 pixels, the size of the canvas will
+                  be 800x800 pixels. Such a configuration will better utilize the extra pixels
+                  available on Retina displays, for example.
+                </p>
+
+                <p>
+                  On most modern browsers you can retrieve the device-specific
+                  pixel ratio from the <code>window.devicePixelRatio</code> property.
+                </p>
+
+                <p>The following examples demonstrate the difference between a pixel ratio higher and lower than the pixel resolution. Note the performance drop when pixel ratio is set to a large value.</p>
+
+                <div class="row">
+                  <div class="span3">
+                      <pre class="partial executable example">
+circles.set({
+  dataObject: largeDataSet,
+  titleBar: "inscribed",
+  pixelRatio: 0.5
+});
+                      </pre>
+                  </div>
+                  <div class="span3">
+                      <pre class="partial executable example">
+circles.set({
+  dataObject: largeDataSet,
+  titleBar: "inscribed",
+  pixelRatio: 1
+});
+                      </pre>
+                  </div>
+                  <div class="span3">
+                      <pre class="partial executable example">
+circles.set({
+  dataObject: largeDataSet,
+  titleBar: "inscribed",
+  pixelRatio: 2
+});
+                      </pre>
+                  </div>
+                </div>
+
+                <div class="alert alert-info" id="ipad-with-retina-performance">
+                  <strong>Heads up!</strong>
+                  <p>To boost the performance on iPads with Retina display set <code>pixelRatio</code> to 2 and the width of the HTML container element to be at least one pixel less than the total screen width. Yes, we know it's weird but it speeds up rendering a lot.</p>
+
+                  <p>When setting <code>pixelRatio</code> to a value larger
+                    than 1 on mobile devices, make sure to correctly set the size of the
+                    page's viewport. The default viewport may be very large, leading to a
+                    very large canvas. Refer to the <a href="../demos/mobile-demo.html">mobile demo's</a> source code for examples.</p>
+                </div>
+              </div>
+
+              <div class="api">
+                <h3 id="captureMouseEvents">captureMouseEvents</h3>
+
+                <p>
+                  The visualization by default captures all mouse events and prevents them from
+                  bubbling up the DOM hierarchy. This helps avoid interactions with system features
+                  such as scrolling or zooming on touch-based devices. In scenarios where such
+                  features should be available to the user this option should be set to
+                  <code>false</code>.
+                </p>
+
+                <p>Let's capture all mouse events happening on the body object (a parent of the visualization
+                  example in the DOM hierarchy).</p>
+
+                <pre class="example" id="installMouseLoggingHook">
+var hook = window["_loggingHook"] = function(evt) {
+  console.log("Mouse event: " + evt.type);
+};
+$("body").on("mousedown mouseup", hook);
+                </pre>
+
+                <pre class="hidden" id="removeMouseLoggingHook">
+$("body").off("mousedown mouseup", window["_loggingHook"]);
+                </pre>
+
+                <p>Compare the following two visualization setups (hover over the visualization and note
+                  events printed to the console when mouse buttons are pressed or released).</p>
+
+                <div class="row">
+                  <div class="span4">
+                      <pre class="partial executable example" data-runbefore="installMouseLoggingHook" data-runafter="removeMouseLoggingHook">
+circles.set({
+  captureMouseEvents: false
+});
+                      </pre>
+                  </div>
+                  <div class="span4">
+                      <pre class="partial executable example" data-runbefore="installMouseLoggingHook" data-runafter="removeMouseLoggingHook">
+circles.set({
+  captureMouseEvents: true
+});
+                      </pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+
+            <div class="api-group">
+              <h2 id="appearance">Appearance</h2>
+
+              <div class="api">
+                <h3 id="backgroundColor">backgroundColor</h3>
+
+                <p>The background color for the canvas behind the visualization. Visualizations with fully opaque
+                  or fully-transparent backgrounds may be slightly faster to draw. See <a href="#colors">Colors</a> section
+                  for color specifications.</p>
+
+                <div class="row">
+                  <div class="span3">
+                    <pre class="partial executable example">circles.set("backgroundColor", "#fff");</pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example">circles.set("backgroundColor", "rgba(0,0,255,.2)");</pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example">circles.set("backgroundColor", "hsla(120, 50%, 50%, 0.8)");</pre>
+                  </div>
+                </div>
+              </div>
+
+              <div class="api">
+                <h3 id="centerx">centerx</h3>
+
+                <p>Horizontal position of the big circle's center. The position can be expressed in any
+                of the following ways:</p>
+                <ul>
+                  <li>a percentage (string) of available container width, where '50%' indicates the center of the container,</li>
+                  <li>an absolute value (number) interpreted as pixels from the left side of the container,</li>
+                  <li>a function accepting an object (<code>{width: _, height: _ }</code> and returning a number interpreted as above.</li>
+                </ul>
+
+                <div class="row">
+                  <div class="span3">
+                    <pre class="partial executable example">circles.set("centerx", "25%");</pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example">circles.set("centerx", 20);</pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example">
+
+circles.set({
+  centerx: function(box) {
+    return box.width * 0.75;
+  }});
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              <div class="api">
+                <h3 id="centery">centery</h3>
+
+                <p>Vertical position of the big circle's center. The position can be expressed in any
+                  of the following ways:</p>
+                <ul>
+                  <li>a percentage (string) of available container height, where '50%' indicates the center of the container,</li>
+                  <li>an absolute value (number) interpreted as pixels from the top side of the container,</li>
+                  <li>a function accepting an object (<code>{width: _, height: _ }</code> and returning a number interpreted as above.</li>
+                </ul>
+
+                <div class="row">
+                  <div class="span3">
+                    <pre class="partial executable example">circles.set("centery", "25%");</pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example">circles.set("centery", 20);</pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example">
+circles.set({
+  centery: function(box) {
+    return box.height * 0.75;
+  }});
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              <div class="api">
+                <h3 id="layout">layout</h3>
+
+                <p>Returns the most recent layout state. The format is identical to the object passed to the
+                callback function in <code>onLayout</code> method. The returned value may be <code>undefined</code>
+                if no model is displayed or if the layout data is not yet available.</p>
+
+                <pre class="partial executable example">
+console.log("Current layout.", circles.get("layout"));
+                </pre>
+              </div>
+
+              <div class="api">
+                <h3 id="diameter">diameter</h3>
+
+                <p>Diameter of the big circle (outer ring). The diameter can be expressed in any
+                  of the following ways:</p>
+                <ul>
+                  <li>a percentage (string) of available container width or height (whichever is smaller),</li>
+                  <li>an absolute value (number) interpreted as pixels,</li>
+                  <li>a function accepting an object (<code>{width: _, height: _ }</code> and returning a number interpreted as above.</li>
+                </ul>
+
+                <div class="row">
+                  <div class="span3">
+                    <pre class="partial executable example">circles.set("diameter", "50%");</pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example">circles.set("diameter", 400);</pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example">
+circles.set({
+  diameter: function(box) {
+    return Math.max(box.height, box.width);
+  }});
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              <div class="api">
+                <h3 id="ringScaling">ringScaling</h3>
+
+                <p>Child ring sizing multiplier. Each ring's size will be the size of its
+                  parent, multiplied by <code>ringScaling</code>. The center space counts
+                  as an "invisible" ring in these calculations.</p>
+
+                <div class="row">
+                  <div class="span3">
+                    <pre class="partial executable example">circles.set("ringScaling", 0.5);</pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example">circles.set("ringScaling", 1);</pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example">circles.set("ringScaling", 1.5);</pre>
+                  </div>
+                </div>
+
+                <p>See <code>ringShape</code> attribute for defining custom ring shapes.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="ringShape">ringShape</h3>
+
+                <p>While <code>ringScaling</code> gives gives pretty good control over ring sizes, sometimes
+                  a more fine-grained control is needed. The <code>ringShape</code> attribute lets one
+                  use a callback function to modify each group's inner and outer ring properties (and possibly
+                  other ring shape properties in the future). The callback function
+                  receives an associative array with the following properties.</p>
+
+                <dl class="dl-horizontal">
+                  <dt>group</dt>
+                  <dd>The group for which the ring size should be calculated.</dd>
+
+                  <dt>maxRadius</dt>
+                  <dd>A hint about the maximum radius of the circle. This value can but needs not to be respected.</dd>
+
+                  <dt>centerx</dt>
+                  <dd>The current horizontal center of the circle.</dd>
+
+                  <dt>centery</dt>
+                  <dd>The current vertical center of the circle.</dd>
+
+                  <dt>r_inner</dt>
+                  <dd>The inner radius for the group, as calculated by the default algorithm.</dd>
+
+                  <dt>r_outer</dt>
+                  <dd>The outer radius for the group, as calculated by the default algorithm.</dd>
+                </dl>
+
+                <p>The callback function is expected to modify (or leave unchanged)
+                  <code>r_inner</code> and <code>r_outer</code> properties. Any return value returned
+                  by the callback is ignored.
+                  Model groups are traversed in-depth, in post-order (parent first).</p>
+
+                <p>The callback function is called once per layout call for performance reasons.</p>
+
+                <p>A combination of <code>ringShape</code> and <code>isGroupVisible</code> callbacks
+                  can be used to create a "wedge" effect, as the following example shows.</p>
+
+                <pre class="partial executable example">
+circles.set({
+  visibleGroupCount: 0,
+  isGroupVisible: function(group) { return !group.gap; },
+  ringShape: function(attrs) {
+    if (attrs.group.wedge) {
+      attrs.r_inner -= 40;
+      attrs.r_outer += 40;
+    }
+  },
+  dataObject: { groups: [
+    {label: "1"},
+    {label: "2"},
+    {gap: true, weight: 0.1},
+    {label: "3", wedge: true},
+    {gap: true, weight: 0.1},
+    {label: "4"},
+    {label: "5"}
+  ]}
+});
+                </pre>
+
+                <p>More complex customizations are of course possible. The following example
+                  stacks up groups on top of one another, creating a spiky shape that
+                  lies pretty far from visualization's defaults.</p>
+
+                <pre class="partial executable example">
+// Link up groups with their parents. We will need this
+// in the callback hook. Calculate max depth as we go.
+var model = dataSets["full-3-level.jsonp"].data;
+var depth = 0;
+var assignParent = function(parent, level) {
+  depth = Math.max(level, depth);
+  parent.groups && parent.groups.forEach(function(e) {
+    e.parent = parent;
+    assignParent(e, level + 1);
+  });
+};
+assignParent(model, 0);
+
+var variance = 30;  // Randomize each group's ring by this value.
+circles.set({
+  dataObject: model,
+  rolloutTime: 2,
+  rolloutAnimation: "implode",
+  visibleGroupCount: 8,
+  // Decrease the diameter by max. ring size variation
+  diameter: function(box) {
+    return Math.min(box.height, box.width) - 2 * variance * depth;
+  },
+  // Calculate ring sizes varying them randomly and stacking each
+  // on top of its parent (relies on depth-first preorder traversal).
+  ringShape: function(attrs) {
+    var group = attrs.group;
+    if (group.parent) {
+      var r_width = attrs.r_outer - attrs.r_inner;
+      group.r_inner = attrs.r_inner = group.parent.r_outer;
+      group.r_outer = attrs.r_outer = group.r_inner + r_width + Math.random() * variance;
+    } else {
+      group.r_inner = attrs.r_inner;
+      group.r_outer = attrs.r_outer;
+    }
+  }
+});
+                </pre>
+              </div>
+
+              <div class="api">
+                <h3 id="angleStart">angleStart</h3>
+
+                <p>Start angle of the big circle's first group. The angles are expressed
+                  in degrees, clockwise, starting from zero angle on the right,
+                  as shown in the illustration below.</p>
+
+                <div class="pagination pagination-centered">
+                  <img class="well" src="../demos/assets/img/circles-angles.png" />
+                </div>
+
+                <p>The following examples show groups laid out in semi-circles. Note the direction
+                indicated by <code>angleWidth</code>.</p>
+                <div class="row">
+                  <div class="span4">
+                    <pre class="partial executable example">
+circles.set({
+  angleStart: 0,
+  angleWidth: 180
+});
+                    </pre>
+                  </div>
+                  <div class="span4">
+                    <pre class="partial executable example">
+circles.set({
+  angleStart: 180,
+  angleWidth: -180
+});
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              <div class="api">
+                <h3 id="angleWidth">angleWidth</h3>
+
+                <p>Maximum angular "width" assigned for all top-level groups. A full clockwise
+                circle will have a width of <code>360</code>, a counterclockwise layout will have
+                a width of <code>-360</code>. The following example animates both
+                <code>angleStart</code> and <code>angleWidth</code></p>
+
+                <pre class="hidden example" id="removeAnimHook">
+window.clearTimeout(window['_animHookId']);
+delete window['_animHookId'];
+                </pre>
+
+                <pre class="partial executable example" data-runafter="removeAnimHook">
+var angleStart = 0;
+var angleWidth = 0;
+var hook = function() {
+  angleStart = (angleStart + 10) % 360;
+  angleWidth = (angleWidth + 15) % (360 * 2);
+  circles.set({
+    angleStart: angleStart,
+    angleWidth: angleWidth - 360
+  });
+  window['_animHookId'] = window.setTimeout(hook, 200);
+};
+hook();
+                </pre>
+              </div>
+
+              <div class="api">
+                <h3 id="angleEnd">angleEnd</h3>
+
+                <p>An attribute providing the end angle of the big circle's first level groups. When
+                  this attribute is provided the groups will always start at <code>angleStart</code> and end
+                  at <code>angleEnd</code>, always clockwise. If <code>angleEnd</code> is smaller than
+                  <code>angleStart</code> their values are swapped. For this reason it is not
+                  possible to render certain shapes with <code>angleEnd</code>, for instance display groups
+                  in counter-clockwise order. This constraint is lifted when <code>angleWidth</code>
+                  is used. Compare the following examples and their group order.</p>
+
+                <div class="row">
+                  <div class="span3">
+                    <pre class="partial executable example">
+circles.set({
+  angleStart: 30,
+  angleEnd:   330
+});
+                    </pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example">
+circles.set({
+  angleStart: 330,
+  angleEnd:   30
+});
+                    </pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example">
+circles.set({
+  angleStart: 330,
+  angleWidth: -300
+});
+                    </pre>
+                  </div>
+                </div>
+
+                <div class="alert alert-info">
+                  <strong>Heads up!</strong>
+                  <p>This attribute is deprecated and is kept for backwards compatibility only.
+                    It is highly recommended that new code uses <code>angleWidth</code> which is more
+                    flexible and allows creating layouts impossible with <code>angleEnd</code>.
+                </div>
+              </div>
+
+              <div class="api">
+                <h3 id="showZeroWeightGroups">showZeroWeightGroups</h3>
+
+                <p>If <code>true</code>, groups whose weight is zero will be visible, with their
+                  weight slightly smaller than the smallest non-zero weight of the sibling groups.</p>
+
+                <div class="row">
+                  <div class="span4">
+                    <pre class="partial executable example">
+circles.set({
+  showZeroWeightGroups: true,
+  dataObject: {
+    groups: [
+      { label: "Group 1", weight: 1 },
+      { label: "Group 2", weight: 1 },
+      { label: "Group 3", weight: 1 },
+      { label: "Group 4", weight: 0 },
+    ]
+  },
+});
+                    </pre>
+                  </div>
+                  <div class="span4">
+                    <pre class="partial executable example">
+circles.set({
+  showZeroWeightGroups: false,
+  dataObject: {
+    groups: [
+      { label: "Group 1", weight: 1 },
+      { label: "Group 2", weight: 1 },
+      { label: "Group 3", weight: 1 },
+      { label: "Group 4", weight: 0 },
+    ]
+  },
+});
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              <div class="api">
+                <h3 id="visibleGroupCount">visibleGroupCount</h3>
+
+                <p>Maximum number of groups to display in a sub-level of a parent group. If there are
+                  more children than <code>visibleGroupCount</code>, an expander widget is shown, allowing
+                  the user to open up a group manually. A <code>visibleGroupCount</code> equal to zero
+                  means all children groups will be displayed.</p>
+
+                <div class="row">
+                  <div class="span4">
+                    <pre class="partial executable example">
+circles.set({
+  visibleGroupCount: 2,
+  dataObject: {
+    groups: [
+      {label: "G1"}, {label: "G2"},
+      {label: "G3"}, {label: "G4"}
+    ]
+  },
+});
+                    </pre>
+                  </div>
+                  <div class="span4">
+                    <pre class="partial executable example">
+circles.set({
+  visibleGroupCount: 4,
+  dataObject: {
+    groups: [
+      {label: "G1"}, {label: "G2"},
+      {label: "G3"}, {label: "G4"}
+    ]
+  },
+});
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              <div class="api">
+                <h3 id="zoomedFraction">zoomedFraction</h3>
+
+                <p>For zoomed-in groups specifies the fraction of their parent group's current angle. This fraction
+                  is evenly distributed among all zoomed-in groups belonging to one parent.
+                  See the example below.</p>
+
+                <div class="row">
+                  <div class="span4">
+                    <pre class="partial executable example">
+circles.set({
+  zoomedFraction: 0.5,
+  dataObject: {
+    groups: [
+      {label: "G1"}, {label: "G2"},
+      {label: "G3"},
+      {label: "G4", zoomed: true}
+    ]
+  },
+});
+                    </pre>
+                  </div>
+                  <div class="span4">
+                    <pre class="partial executable example">
+circles.set({
+  zoomedFraction: 0.5,
+  dataObject: {
+    groups: [
+      {label: "G1"}, {label: "G2"},
+      {label: "G3", zoomed: true},
+      {label: "G4", zoomed: true}
+    ]
+  },
+});
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              <div class="api">
+                <h3 id="isGroupVisible">isGroupVisible</h3>
+
+                <p>A callback used to determine whether a given group should be displayed or not. The callback
+                  function will receive a single argument: the group object from the <code>dataObject</code> model.</p>
+
+                <p>An invisible group still occupies space in the visualization but will not be rendered and will not receive mouse events
+                (hover, clicks). It is effectively a blank space between the surrounding siblings (if any). This
+                function can be used to implement visual separators (spaces) between groups, as in the following
+                example.</p>
+
+                <pre class="partial executable example">
+circles.set({
+  zoomedFraction: 0.5,
+  isGroupVisible: function(group) { return group.visible; },
+  visibleGroupCount: 0,
+  dataObject: {
+    groups: (function() {
+      var v = [];
+      for (var i = 1; i &lt;= 50; i++) {
+        var visible = i & 1;
+        v.push({label: "G" + i, visible: visible, weight: 1 / i});
+      }
+      return v;
+    })()
+  }
+});
+                </pre>
+
+                <p>A more practical use for the gap groups is to insert a visual space between parent groups so that their
+                children are separated. The following example inserts such spaces automatically to the current model.</p>
+
+                <pre class="partial executable example">
+circles.set({
+  isGroupVisible: function(group) { return !group.gap; },
+  dataObject: { groups: [
+    {label: "1", groups: [{label: "1"}, {label: "2"}, {label: "3"}]},
+    {gap: true, weight: 0.1},
+    {label: "2", groups: [{label: "1"}, {label: "2"}, {label: "3"}]},
+    {gap: true, weight: 0.1},
+    {label: "3", groups: [
+      {label: "1"},
+        {gap: true, weight: 0.1},
+      {label: "2"},
+        {gap: true, weight: 0.1},
+      {label: "3"}]},
+    {gap: true, weight: 0.1}
+  ]}
+});
+                </pre>
+              </div>
+            </div>
+
+            <div class="api-group">
+              <h2 id="options-groups">Groups</h2>
+
+              <div class="api">
+                <h3 id="groupOutlineWidth">groupOutlineWidth</h3>
+
+                <p>Width of the outline stroke. Stroke of zero means no outline is drawn. The outline is
+                painted with <code>groupOutlineColor</code>.</p>
+
+                <pre class="partial executable example">
+circles.set("groupOutlineWidth", 5);
+                </pre>
+              </div>
+
+              <div class="api">
+                <h3 id="groupOutlineColor">groupOutlineColor</h3>
+
+                <p>Color of the outline stroke, <code>groupOutlineWidth</code> controls the stroke's width.</p>
+
+                <pre class="partial executable example">
+circles.set({
+  groupOutlineWidth: 5,
+  groupOutlineColor: "#fff"
+});
+                </pre>
+
+                <p>Note that transparent outlines will not remove the underlying group's fill (this is a technical
+                  limitation of HTML5 canvases). Unless this is the desirable effect, transparencies should be avoided.</p>
+
+                <pre class="partial executable example">
+circles.set({
+  groupOutlineWidth: 10,
+  groupOutlineColor: "rgba(0,0,0,0.2)"
+});
+                </pre>
+              </div>
+
+              <div class="api">
+                <h3 id="rainbowStartColor">rainbowStartColor</h3>
+
+                <p>Start color to use if rainbow color model is used for coloring groups. A rainbow color model
+                  will proportionally spread the color hue among top-level groups (starting at <code>rainbowStartColor</code>
+                  and ending at <code>rainbowEndColor</code>). Any sub-groups will be painted with the parent group's hue but with
+                  varying degrees of saturation and lightness.</p>
+
+                <pre class="partial executable example">
+circles.set("dataObject", largeDataSet);
+circles.set("open", {all: true});
+                </pre>
+
+                <p>For custom coloring <code>groupColorDecorator</code> should be used.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="rainbowEndColor">rainbowEndColor</h3>
+                <p>Start color to use if rainbow color model is used for coloring groups. See <code>rainbowStartColor</code>
+                for a description of how rainbow color model works.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="groupColorDecorator">groupColorDecorator</h3>
+
+                <p>A callback function to customize or completely replace the default rainbow color model for groups.
+                  During each redraw, the visualization core will call the provided function once
+                  for each group. The task of the function is to modify
+                  or completely replace the default color of the group and its label. New colors can be
+                  derived from various properties of the group, such as its nesting level,
+                  number of siblings, or custom properties passed along with the data model.</p>
+
+                <p>The callback function receives three arguments: <code>options</code>, <code>properties</code>
+                  and <code>variables</code>.</p>
+                <dl class="dl-horizontal">
+                  <dt>options</dt>
+                  <dd>all current visualization options (keys and values).</dd>
+
+                  <dt>properties</dt>
+                  <dd>
+                    <p>a hash object with properties describing the current group. The object contains the following properties:</p>
+                    <ul>
+                      <li>
+                        <code>group</code>: the data object corresponding to the group, exactly as
+                        passed in the <code>dataObject</code> option.
+                      </li>
+                      <li>
+                        <code>weightNormalized</code>: the weight of the group normalized to the 0..1 range
+                        in relation the group's siblings (the raw weight of the group can be
+                        retrieved from the original data model if it was present there).
+                      </li>
+                      <li>
+                        <code>index</code>: the position of the group relative to its siblings in the input
+                        data object. Position indices start at 0.
+                      </li>
+                      <li>
+                        <code>siblingCount</code>: the number of immediate siblings of the group.
+                      </li>
+                      <li>
+                        <code>level</code>: the nesting level of the group. Level numbers
+                        start with 0.
+                      </li>
+                    </ul>
+                  </dd>
+
+                  <dt>variables</dt>
+                  <dd>
+                    <p>a hash with two keys (<code>groupColor</code>, <code>labelColor</code>) and values computed
+                      by the default rainbow model. The callback function can either change some of the properties
+                      of these values or replace them with new ones.</p>
+
+                    <p>The callback function can replace these values with a CSS3 color string (<code>hsl</code>,
+                      <code>hsla</code>, <code>rgb</code> or <code>rgba</code> color specification)
+                      or a hash object containing the following properties:</p>
+
+                    <ul>
+                      <li>
+                        <code>model</code>: <code>rgba</code> for the RGBA model, <code>hsla</code> for the HSLA model.
+                        When adding or changing the values of other properties, it is important to
+                        set this property to reflect the desired color model.
+                      </li>
+
+                      <li>
+                        <code>r</code>, <code>g</code>, <code>b</code>, <code>a</code>: RGBA values (integers in the 0..255 range).
+                      </li>
+
+                      <li>
+                        <code>h</code>, <code>s</code>, <code>l</code>, <code>a</code>: HSLA values, hue is an angle (0..359), saturation
+                        and lightness are percentages (0..100) and transparency is a range between 0 and 1.
+                      </li>
+                    </ul>
+
+                    <p>The default values computed by the rainbow color model are always passed to the callback
+                      in the HSLA hash format described above.</p>
+
+                    <p>The <code>labelColor</code> variable can be set to a string value of <code>auto</code> which will
+                      recompute the label color again depending on the updated <code>groupColor</code> and
+                      visualization options controlling dark/ light label colors: <code>labelColorThreshold</code>,
+                      <code>labelLightColor</code> and <code>labelDarkColor</code>.
+                    </p>
+                  </dd>
+                </dl>
+
+                <p>The simplest color model could just use explicit color values provided as part of the model.</p>
+                <pre class="partial executable example">
+var customAttributes = function(opts, params, vars) {
+  console.log("Color decorator callback.", params, vars);
+  vars.groupColor = params.group.gcolor;
+  vars.labelColor = "auto";
+};
+
+circles.set({
+  groupColorDecorator: customAttributes,
+  dataObject: {
+    groups: [
+      { label: "C", gcolor: "#00aeef" },
+      { label: "M", gcolor: "#ec008c" },
+      { label: "Y", gcolor: "#fff200" },
+      { label: "K", gcolor: "#231f20" }
+    ]
+  }
+});
+                </pre>
+
+                <p>A more complex example is shown below. Here we compute HSLA values depending on sentiment
+                  attribute of each group.</p>
+
+                <pre class="partial executable example">
+var sentimentPainter = function(opts, params, vars) {
+  // Sentiment is a custom property with values in the -1..+1 range, -1 means negative sentiment,
+  // +1 -- positive, 0 -- neutral
+  var sentiment = params.group.sentiment;
+  if (!sentiment) {
+    // Make neutral groups grey
+    vars.groupColor.s = 0;
+    vars.groupColor.l = 0;
+    vars.groupColor.a = 0.2;
+  } else {
+    if (sentiment > 0) {
+      // Make positive groups green
+      vars.groupColor.h = 120;
+    } else {
+      // Make negative groups red
+      vars.groupColor.h = 0;
+    }
+
+    // Make saturation and lightness depend on
+    // the strength of the sentiment.
+    vars.groupColor.s = 50 * (1 + Math.abs(sentiment));
+    vars.groupColor.l = Math.abs(60 * sentiment);
+
+    // Indicate that we use the HSL model
+    vars.groupColor.model = "hsl";
+  }
+};
+
+circles.set({
+  groupColorDecorator: sentimentPainter,
+  dataObject: {
+    groups: [
+      { label: "Bad news", groups: [
+        { label: "Last penny lost", sentiment: -0.5 },
+        { label: "Bazinga doomed",  sentiment: -1 }
+        ]},
+      { label: "Good news", groups: [
+        { label: "iPads under $100",      sentiment: 0.5 },
+        { label: "Martians are friendly", sentiment: 1 }
+        ]},
+      { label: "Other news", groups: [
+        { label: "Vampires on the loose", sentiment: 0 },
+        { label: "Van Helsing to the rescue", sentiment: 0 }
+        ]}
+    ]
+  }
+});
+                </pre>
+              </div>
+
+              <div class="api">
+                <h3 id="labelColorThreshold">labelColorThreshold</h3>
+
+                <p>Picks the label color automatically depending on the group's color brightness. If the
+                  brightness is below this threshold <code>labelLightColor</code> is used, otherwise
+                  <code>labelDarkColor</code> is used. Setting the threshold to either 0 or 1 will pick
+                  dark or light labels, correspondingly.</p>
+
+                <p>Automatic choice of label colors is also provided as part of <code>groupColorDecorator</code>'s functionality.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="labelDarkColor">labelDarkColor</h3>
+
+                <p>The label color to use on bright groups (see <code>labelColorThreshold</code>).</p>
+              </div>
+
+              <div class="api">
+                <h3 id="labelLightColor">labelLightColor</h3>
+
+                <p>The label color to use on dark groups (see <code>labelColorThreshold</code>).</p>
+              </div>
+
+              <div class="api">
+                <h3 id="zoomDecorationFillColor">zoomDecorationFillColor</h3>
+
+                <p>Color of the zoomed-in group's decoration. Note that transparency may be used to remove the decoration entirely.</p>
+
+                <pre class="partial executable example">
+circles.set({
+  zoomDecorationFillColor: "rgba(0,0,0,0)",
+  zoomDecorationStrokeColor: "#fff"
+});
+circles.set("zoom", "1");
+                </pre>
+              </div>
+
+              <div class="api">
+                <h3 id="zoomDecorationStrokeColor">zoomDecorationStrokeColor</h3>
+
+                <p>Color of the zoomed-in group's decoration stroke. See <code>zoomDecorationFillColor</code></p>
+              </div>
+            </div>
+
+            <div class="api-group">
+              <h2 id="options-labels">Labels</h2>
+
+              <div class="api">
+                <h3 id="groupFontFamily">groupFontFamily</h3>
+
+                <p>Font family to use for drawing group labels. CSS-compliant font family specifications
+                   are supported, including webfonts imported using the <code>@font-face</code> syntax.</p>
+
+                <p>Study the source code of the <a href="../demos/mobile-demo.html">mobile demo</a> for an example of using Google web fonts.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="groupMinFontSize">groupMinFontSize</h3>
+
+                <p>Minimum font size used for drawing group labels. Two font sizing strategies are supported:</p>
+                <ul>
+                  <li><strong>absolute:</strong> when the property is set to a numeric value, such as <code>27</code>,
+                    the value will be interpreted as the number of pixels,
+                  </li>
+                  <li><strong>relative:</strong> when the property is set to a percentage, such as <code>40%</code>,
+                      the font size will be calculated as a percentage of the group's maximum allowed label height.
+                  </li>
+                </ul>
+
+                <p>Note that setting minimum font size to a large value may result in empty labels (unlabeled groups) or
+                very unclear labels ending in ellipsis, as in this example:</p>
+
+                <pre class="partial executable example">
+circles.set({
+  dataObject: largeDataSet,
+  groupMinFontSize: 30,
+  groupMaxFontSize: 40
+});
+                </pre>
+              </div>
+
+              <div class="api">
+                <h3 id="groupMaxFontSize">groupMaxFontSize</h3>
+
+                <p>Maximum font size used for drawing group labels. See the
+                  <code>groupMinFontSize</code> attribute for details.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="groupLinePadding">groupLinePadding</h3>
+
+                <p>Padding between lines in multi-line labels, expressed in pixels. This padding may be necessary for
+                  certain fonts to avoid font trimming as there is no (fast) way to get exact rendered text metrics from
+                  within canvas/JavaScript.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="groupLabelDecorator">groupLabelDecorator</h3>
+
+                <p>A callback function to customize the label of each group. The function will be called on each
+                  <a href="#layout-method">layout()</a> operation (which is a consequence of most calls to <code>resize</code>).</p>
+
+                <p>The callback function receives three arguments: <code>options</code>, <code>properties</code>
+                  and <code>variables</code>. Options and
+                  properties are identical to those passed to <code>groupColorDecorator</code>
+                  (see their description there). The <code>variables</code> argument is a hash with a single key
+                  <code>labelText</code> that the callback function can overwrite with a decorated value (or may leave as-is
+                  if the current label should be used).</p>
+
+                <p>The following example reverses all group labels and adds angle quotes around it.</p>
+                <pre class="partial executable example">
+circles.set({
+  groupLabelDecorator: function(opts, props, vars) {
+    vars.labelText = "«" + vars.labelText.split("").reverse().join("") + "»";
+  }
+});
+                </pre>
+              </div>
+
+              <div class="api">
+                <h3 id="ratioAngularPadding">ratioAngularPadding</h3>
+
+                <p>How much padding space to leave on the left and right of the group's
+                  circle slice. The value is a ratio (percentage) of the entire
+                  angle assigned for the group.</p>
+
+                <p>This attribute is useful in combination with
+                  <code>minAngularPadding</code>, <code>ratioRadialPadding</code> and <code>minRadialPadding</code>
+                  as they all affect the visual padding applied to the label fit box before the label is rendered.
+                  The following figure illustrates these concepts (note the radial and angular dimensions; the grayed
+                  area within the group is the allowed fit box for the label).</p>
+
+                <div class="pagination pagination-centered">
+                  <img class="well" src="../demos/assets/img/circles-paddings.png" />
+                </div>
+              </div>
+
+              <div class="api">
+                <h3 id="minAngularPadding">minAngularPadding</h3>
+
+                <p>Minimum angular padding for group labels. In pixels. See <code>ratioAngularPadding</code>
+                  for an explanation how paddings work.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="ratioRadialPadding">ratioRadialPadding</h3>
+
+                <p>How much padding space to leave at the top and bottom of the group's
+                  circle slice. The value is a ratio (percentage) of the entire
+                  group's height (a difference between the inner and outer radii). See <code>ratioAngularPadding</code>
+                  for an explanation how paddings work.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="minRadialPadding">minRadialPadding</h3>
+
+                <p>Minimum radial padding space, in pixels. See <code>ratioAngularPadding</code>
+                  for an explanation how paddings work.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="radialTextureStep">radialTextureStep</h3>
+
+                <p>Specifies the radial interval between "tiles" which are used
+                  to map rectangular label image onto the slice of the circle. Smaller
+                  numbers will result in higher quality.</p>
+
+                <p>Texture mapping is an expensive operation that requires a trade-off: more subdivision polygons will
+                result in high quality but will render longer. When high interactivity is expected (or on slower devices)
+                poorer textures may be a better choice instead of long delays required to render labels. In addition,
+                <code>noTexturingCurvature</code> attribute allows one to define the threshold when the texture should not be
+                applied at all (when the curvature of the label is small enough that it can be drawn as a straight box).</p>
+
+                <p><code>textureMappingMesh</code> is helpful in debugging and estimating the needed value of this
+                parameter. The following examples show different texture mapping settings and how they affect labels
+                quality.</p>
+
+                <div class="row">
+                  <div class="span3">
+                    <pre class="partial executable example">
+circles.set({
+  dataObject: largeDataSet,
+  noTexturingCurvature: 0,
+  radialTextureStep: 15,
+  angularTextureStep: 15,
+  textureMappingMesh: true
+});
+                    </pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example">
+circles.set({
+  dataObject: largeDataSet,
+  noTexturingCurvature: 0,
+  radialTextureStep: 30,
+  angularTextureStep: 30,
+  textureMappingMesh: true
+});
+                    </pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example">
+circles.set({
+  dataObject: largeDataSet,
+  noTexturingCurvature: 0,
+  radialTextureStep: 50,
+  angularTextureStep: 50,
+  textureMappingMesh: true
+});
+                    </pre>
+                  </div>
+                </div>
+
+                <p>The following example sets <code>noTexturingCurvature</code> to different thresholds so that near-straight labels
+                are not textured at all (fully grayed boxes).</p>
+
+                <div class="row">
+                  <div class="span3">
+                    <pre class="partial executable example">
+circles.set({
+  dataObject: largeDataSet,
+  noTexturingCurvature: 0.2,
+  radialTextureStep: 15,
+  angularTextureStep: 15,
+  textureMappingMesh: true
+});
+                    </pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example">
+circles.set({
+  dataObject: largeDataSet,
+  noTexturingCurvature: 0.4,
+  radialTextureStep: 15,
+  angularTextureStep: 15,
+  textureMappingMesh: true
+});
+                    </pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example">
+circles.set({
+  dataObject: largeDataSet,
+  noTexturingCurvature: 0.8,
+  radialTextureStep: 15,
+  angularTextureStep: 15,
+  textureMappingMesh: true
+});
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              <div class="api">
+                <h3 id="angularTextureStep">angularTextureStep</h3>
+
+                <p>Specifies the angular interval (in pixels) between "tiles" which are used
+                  to map rectangular label image onto the slice of the circle. See the description
+                  and examples accompanying <code>radialTextureStep</code> attribute for more.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="noTexturingCurvature">noTexturingCurvature</h3>
+
+                <p>Sets the threshold between normal label rendering and texture-mapping onto a slice of a circle. See the description and examples accompanying <code>radialTextureStep</code> attribute for more.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="textureOverlapFudge">textureOverlapFudge</h3>
+
+                <p>Texture mapping may result in empty gap pixels between triangles on certain browsers (due to anti-aliasing of images).
+                  This parameter controls how much triangles overlap which to some extent solves the problem.
+                  The default value of this parameter is determined depending on the current browser.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="deferLabelRedraws">deferLabelRedraws</h3>
+
+                <p>Defers redrawing of labels for a given number of seconds after a layout. In case any changes are made to the
+                  visualization in the mean time that would result in another layout operation, redrawing of labels will be
+                  further delayed. This is a trick to speed up interactions on slower devices.</p>
+
+                <p>Compare how labels are drawn on the following examples (resize the window once the example is visible).</p>
+
+                <div class="row">
+                  <div class="span3">
+                    <pre class="partial executable example" data-runbefore="installResizeHook" data-runafter="removeResizeHook">
+circles.set({
+  dataObject: largeDataSet,
+  deferLabelRedraws: 0,
+  labelRedrawFadeInTime: 0
+});
+                    </pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example" data-runbefore="installResizeHook" data-runafter="removeResizeHook">
+circles.set({
+  dataObject: largeDataSet,
+  deferLabelRedraws: 1,
+  labelRedrawFadeInTime: 0
+});
+                    </pre>
+                  </div>
+                  <div class="span3">
+                    <pre class="partial executable example" data-runbefore="installResizeHook" data-runafter="removeResizeHook">
+circles.set({
+  dataObject: largeDataSet,
+  deferLabelRedraws: 1,
+  labelRedrawFadeInTime: 1
+});
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              <div class="api">
+                <h3 id="labelRedrawFadeInTime">labelRedrawFadeInTime</h3>
+
+                <p>Duration of fade-in effect for labels after they are redrawn from scratch. The value is expressed in
+                  seconds. Used in combination with <code>deferLabelRedraws</code>.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="ratioAspectSwap">ratioAspectSwap</h3>
+
+                <p>Provides control over group label's direction (angular or radial). The aspect ratio of a label is
+                computed by dividing the width and height of the label box (see <code>ratioAngularPadding</code> for an explanation).
+                If the computed value is smaller than <code>ratioAspectSwap</code> the label is rotated and printed
+                along the radial direction.</p>
+
+                <p>This parameter can be used to enforce directionality of labels by passing extreme ratios, as in the
+                following example.</p>
+
+                <div class="row">
+                  <div class="span4">
+                    <pre class="partial executable example">
+// Only radial labels.
+circles.set({
+  dataObject: largeDataSet,
+  ratioAspectSwap: 10000
+});
+                    </pre>
+                  </div>
+                  <div class="span4">
+                    <pre class="partial executable example">
+// Only angular labels.
+circles.set({
+  dataObject: largeDataSet,
+  ratioAspectSwap: 0.0001
+});
+                    </pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="api-group">
+              <h2 id="options-expanders">Expanders</h2>
+
+              <div class="api">
+                <h3 id="expanderAngle">expanderAngle</h3>
+
+                <p>An angle (in degrees) to reserve for an expander widget if a group has sub-groups and their number
+                  exceeds <code>visibleGroupCount</code>. The expander space will be either <code>expanderAngle</code>
+                  or half of the group's available angle, whichever value is smaller.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="minExpanderAngle">minExpanderAngle</h3>
+
+                <p>If the angle assigned for a group is smaller than <code>minExpanderAngle</code>, the expander
+                  widget will not be displayed at all (due to lack of space).</p>
+              </div>
+
+              <div class="api">
+                <h3 id="expanderOutlineWidth">expanderOutlineWidth</h3>
+
+                <p>Expander widget's outline stroke width in pixels.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="expanderOutlineColor">expanderOutlineColor</h3>
+
+                <p>Expander widget's outline color.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="expanderColor">expanderColor</h3>
+
+                <p>Expander widget's fill color.</p>
+              </div>
+            </div>
+
+            <div class="api-group">
+              <h2 id="options-titlebar">Title bar</h2>
+
+              <div class="api">
+                <h3 id="titleBar">titleBar</h3>
+
+                <p>A title bar is a text label component inscribed into the center of the circle
+                  or overlaid at the top/ bottom of the visualization area. A title bar shows the
+                  label of the group under cursor or label(s) of currently selected groups.</p>
+
+                <p>The title bar was introduced in version 2.2.0 of Circles.</p>
+
+                <p>The following snippets demonstrate each type of the title bar component and
+                combinations of attributes which may be handy to achieve certain effects.</p>
+
+
+                <div class="row">
+                  <div class="span4">
+                    <pre class="partial executable example">
+circles.set({
+  dataObject: largeDataSet,
+  titleBar: "none"
+});
+                    </pre>
+                  </div>
+                  <div class="span5">
+                    <pre class="partial executable example">
+circles.set({
+  dataObject: largeDataSet,
+  titleBar: "inscribed"
+});
+                    </pre>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="span4">
+                    <pre class="partial executable example">
+circles.set({
+  dataObject: largeDataSet,
+  titleBar: "topbottom",
+  titleBarBackgroundColor: "rgba(0,0,0,.2)",
+  titleBarTextColor: "#fff",
+  titleBarTextPaddingTopBottom: 10
+});
+                    </pre>
+                  </div>
+                  <div class="span5">
+                    <pre class="partial executable example">
+var padding = 5;
+var fraction = 10 / 100;
+circles.set({
+  dataObject: largeDataSet,
+  titleBar: "bottom",
+  titleBarTextColor: "#fff",
+  titleBarTextPaddingTopBottom: 5,
+  titleBarMinFontSize:  "5%",
+  titleBarMaxFontSize:  "8%",
+  diameter: function(box) {
+    return (box.height - padding * 2) * (1 - fraction);
+  },
+  centery: function(box) {
+    var h = box.height - padding - box.height * fraction;
+    return h / 2;
+  }
+});
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              <div class="api">
+                <h3 id="titleBarFontFamily">titleBarFontFamily</h3>
+
+                <p>Font family for the <code>titleBar</code>, if shown. CSS-compliant font family specifications are supported,
+                  including webfonts imported using the <code>@font-face</code> syntax. If not specified, the same font
+                  as specified for the <code>groupFontFamily</code> will be used.</p>
+
+                <p>This example renders the title bar in monospace font.</p>
+                <pre class="partial executable example">
+circles.set({
+  dataObject: { groups: [
+    { label: "ABC123", selected: true },
+    { label: "DEF456" }]},
+  titleBar: "inscribed",
+  titleBarFontFamily: "monospace",
+  groupFontFamily: "Arial, sans-serif"
+});
+                </pre>
+              </div>
+
+              <div class="api">
+                <h3 id="titleBarMinFontSize">titleBarMinFontSize</h3>
+
+                <p>Minimum font size to draw the title bar's label. Two font sizing strategies are supported:</p>
+                <ul>
+                  <li><strong>absolute:</strong> when the property is set to a numeric value, such as <code>27</code>,
+                    the value will be interpreted as the number of pixels,
+                  </li>
+                  <li><strong>relative:</strong> when the property is set to a percentage, such as <code>40%</code>,
+                    the font size will be calculated as a percentage of the title bar's maximum allowed height. This
+                    makes sense for the inscribed title bar type since the height of the inscribed box will depend
+                    on the size of the visualization.
+                  </li>
+                </ul>
+
+                <p>Note that setting minimum font size to a large value may result in an empty title bar label
+                  or very unclear label ending in ellipsis</p>
+              </div>
+
+              <div class="api">
+                <h3 id="titleBarMaxFontSize">titleBarMaxFontSize</h3>
+
+                <p>Maximum font size to draw the title bar's label. See <code>titleBarMinFontSize</code>
+                  attribute for details.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="titleBarBackgroundColor">titleBarBackgroundColor</h3>
+
+                <p>The background color of the title bar area.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="titleBarTextColor">titleBarTextColor</h3>
+
+                <p>The text color for drawing labels in the title bar area.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="titleBarTextPaddingLeftRight">titleBarTextPaddingLeftRight</h3>
+
+                <p>Left and right (horizontal) padding to leave inside the title bar's area.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="titleBarTextPaddingTopBottom">titleBarTextPaddingTopBottom</h3>
+
+                <p>Top and bottom (vertical) padding to leave inside the title bar's area.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="titleBarLabelDecorator">titleBarLabelDecorator</h3>
+
+                <p>A callback decorator function to transform the label displayed by the <code>titleBar</code>
+                component.</p>
+
+                <p>The callback function receives a hash with the following properties:</p>
+                <dl class="dl-horizontal">
+                  <dt>hoverGroup</dt>
+                  <dd>The group the cursor currently covers over or undefined if none.</dd>
+
+                  <dt>selectedGroups</dt>
+                  <dd>An array of currently selected groups or an empty array.</dd>
+
+                  <dt>label</dt>
+                  <dd>Suggested label for the title bar. Changing this value will override the defaults.</dd>
+                </dl>
+
+                <p>The callback function may leave the default label as-is or it may change it. An <code>undefined</code>
+                label will hide the title bar.</p>
+
+                <pre class="partial executable example">
+circles.set({
+  dataObject: largeDataSet,
+  titleBar: "topbottom",
+  diameter: "80%",
+  titleBarLabelDecorator: function(attrs) {
+    if (attrs.hoverGroup) {
+       attrs.label = "Hovering over: " + attrs.hoverGroup.label;
+    } else if (attrs.selectedGroups.length > 0) {
+       attrs.label = "Selected: " + attrs.selectedGroups.length + " group(s)";
+    } else {
+       attrs.label = "[hover or select something]";
+    }
+  }
+});
+                </pre>
+              </div>
+            </div>
+
+
+            <div class="api-group">
+              <h2 id="options-animations">Animations</h2>
+
+              <div class="api">
+                <h3 id="expandTime">expandTime</h3>
+
+                <p>Duration of the open/close group animation (in seconds).</p>
+              </div>
+
+              <div class="api">
+                <h3 id="zoomTime">zoomTime</h3>
+
+                <p>Duration of the zoom/unzoom group animation (in seconds).</p>
+              </div>
+
+              <div class="api">
+                <h3 id="rolloutAnimation">rolloutAnimation</h3>
+
+                <p>Sets the effect used to rollout a new model into view. The value should be any of the following strings:
+                  <code>implode</code>,
+                  <code>rollout</code>,
+                  <code>tumbler</code>,
+                  <code>fadein</code>,
+                  <code>random</code>.</p>
+
+                <p>The following example demonstrates each of these effects.</p>
+                <pre class="partial executable example" data-runbefore="installResizeHook" data-runafter="removeResizeHook">
+var model = {groups: [
+  { label: "implode" },
+  { label: "rollout" },
+  { label: "tumbler" },
+  { label: "fadein" },
+  { label: "random" }]};
+
+circles.set({
+  modelChangeAnimations: "sequential",
+  rolloutTime: 1,
+  rolloutAnimation: "implode",
+  dataObject: model,
+  onBeforeZoom: function() { return false; },
+  onBeforeSelection: function() { return false; },
+  onGroupClick: function(info) {
+    // Reset the model to replay the animation.
+    circles.set("dataObject", null);
+    circles.set("rolloutAnimation", info.group.label);
+    circles.set("dataObject", model);
+  }
+});
+                </pre>
+              </div>
+
+              <div class="api">
+                <h3 id="rolloutTime">rolloutTime</h3>
+
+                <p>Duration (in seconds) of the <code>rolloutAnimation</code> sequence. To skip the animation sequence
+                  entirely, set the <code>rolloutTime</code> to zero.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="pullbackAnimation">pullbackAnimation</h3>
+
+                <p>Sets the effect used to pullback the current model from view.
+                  The value should be any of the following strings:
+                  <code>explode</code>,
+                  <code>rollin</code>,
+                  <code>tumbler</code>,
+                  <code>fadeout</code>,
+                  <code>random</code>.</p>
+
+                <p>The following example demonstrates each of these effects.</p>
+                <pre class="partial executable example" data-runbefore="installResizeHook" data-runafter="removeResizeHook">
+var model = {groups: [
+  { label: "explode" },
+  { label: "rollin" },
+  { label: "tumbler" },
+  { label: "fadeout" },
+  { label: "random" }]};
+
+circles.set({
+  modelChangeAnimations: "sequential",
+  pullbackTime: 1,
+  pullbackAnimation: "explode",
+  dataObject: model,
+  onBeforeZoom:      function() { return false; },
+  onBeforeSelection: function() { return false; },
+  onGroupClick:      function(info) {
+    circles.set("pullbackAnimation", info.group.label);
+    circles.set("dataObject", null);
+    circles.set("dataObject", model);
+  }
+});
+                </pre>
+              </div>
+
+              <div class="api">
+                <h3 id="pullbackTime">pullbackTime</h3>
+
+                <p>Duration (in seconds) of the <code>pullbackAnimation</code> sequence. To skip the animation sequence
+                  entirely, set the <code>pullbackTime</code> to zero.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="modelChangeAnimations">modelChangeAnimations</h3>
+
+                <p>Controls how effects played on model changes are ordered and replayed with respect to one another.
+                The following values are possible:</p>
+
+                <dl class="dl-horizontal">
+                  <dt>auto</dt>
+                  <dd>the concurrency is chosen automatically depending on the target browser speed.</dd>
+
+                  <dt>sequential</dt>
+                  <dd>pullback animation runs fully before the rollout animation of the new model.</dd>
+
+                  <dt>parallel</dt>
+                  <dd>pullback animation and rollout animation run at the same time (concurrently). This may require
+                    more computational and graphic resources.</dd>
+                </dl>
+
+                <p>Note that <code>sequential</code> setting does not imply a rapid succession of several model changes
+                will be reflected on screen (some of the intermediate changes may be skipped and never displayed). The following
+                example shows a rapid succession of model changes in sequential mode.</p>
+
+                <pre class="partial executable example">
+circles.set({
+  modelChangeAnimations: "sequential",
+  rolloutAnimation: "implode",
+  pullbackAnimation: "explode",
+  pullbackTime: 1,
+  rolloutTime: 1
+});
+window.setTimeout(function() {
+  circles.set("dataObject", {groups: [{label: "g1"}]});
+  circles.set("dataObject", {groups: [{label: "g2"}]});
+  circles.set("dataObject", null);
+  circles.set("dataObject", {groups: [{label: "g3"}]});
+  circles.set("dataObject", {groups: [{label: "g4"}]});
+  circles.set("dataObject", null);
+  circles.set("dataObject", {groups: [{label: "g5"}]});
+  circles.set("dataObject", {groups: [{label: "final"}]});
+}, 500);
+                </pre>
+
+                <p>And a corresponding example in parallel mode.</p>
+
+                <pre class="partial executable example">
+circles.set({
+  modelChangeAnimations: "parallel",
+  rolloutAnimation: "implode",
+  pullbackAnimation: "explode",
+  pullbackTime: 1,
+  rolloutTime: 1
+});
+window.setTimeout(function() {
+  circles.set("dataObject", {groups: [{label: "g1"}]});
+  circles.set("dataObject", {groups: [{label: "g2"}]});
+  circles.set("dataObject", {groups: [{label: "g3"}]});
+  circles.set("dataObject", {groups: [{label: "g4"}]});
+  circles.set("dataObject", null);
+  circles.set("dataObject", {groups: [{label: "g5"}]});
+  circles.set("dataObject", {groups: [{label: "final"}]});
+}, 500);
+                </pre>
+
+              </div>
+            </div>
+
+            <div class="api-group">
+              <h2 id="options-selection">Selection</h2>
+
+              <div class="api">
+                <h3 id="groupSelectionColor">groupSelectionColor</h3>
+
+                <p>Overlay color for selected groups.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="groupSelectionOutlineColor">groupSelectionOutlineColor</h3>
+
+                <p>Color of the outline stroke for the selected groups.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="groupSelectionOutlineWidth">groupSelectionOutlineWidth</h3>
+
+                <p>Outline stroke width (in pixels) for the selected groups.</p>
+              </div>
+            </div>
+
+            <div class="api-group">
+              <h2 id="options-hover">Hover</h2>
+
+              <div class="api">
+                <h3 id="groupHoverColor">groupHoverColor</h3>
+                <p>The color of an overlay applied to the group (or groups) the cursor hovers on.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="groupHoverOutlineColor">groupHoverOutlineColor</h3>
+                <p>The outline color of an overlay applied to the group (or groups) the cursor hovers on.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="groupHoverOutlineWidth">groupHoverOutlineWidth</h3>
+                <p>The width of an outline stroke (in pixels) applied to the group (or groups) the cursor hovers on.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="groupHoverHierarchy">groupHoverHierarchy</h3>
+                <p>If <code>true</code>, all parents of the hovered group are also included in the overlay. Compare the
+                  following two examples (hover on any group; the colors intentionally eye-watering).</p>
+
+                <div class="row">
+                  <div class="span4">
+                    <pre class="partial executable example">
+circles.set({
+  groupHoverOutlineColor: "#f00",
+  groupHoverOutlineWidth: 3,
+  groupHoverColor: "rgba(0,0,255,0.5)",
+  dataObject: largeDataSet,
+  groupHoverHierarchy: true
+});
+                    </pre>
+                  </div>
+                  <div class="span4">
+                    <pre class="partial executable example">
+circles.set({
+  groupHoverOutlineColor: "#f00",
+  groupHoverOutlineWidth: 3,
+  groupHoverColor: "rgba(0,0,255,0.5)",
+  dataObject: largeDataSet,
+  groupHoverHierarchy: false
+});
+                    </pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="api-group">
+              <h2 id="options-export">Export</h2>
+
+              <div class="api">
+                <h3 id="imageData" class="nodefault">imageData</h3>
+
+                <p>Returns the current state of the visualization as an image in the
+                  <a target="_blank" href="http://en.wikipedia.org/wiki/Data_URI_scheme">data URL</a> format.</p>
+
+                <p>Unlike most attributes, this one accepts an optional object which can
+                  specify the image format details. This hash object can have the following keys:</p>
+
+                <dl class="dl-horizontal">
+                  <dt>format</dt>
+                  <dd>format of the image data: <code>image/png</code> or
+                      <code>image/jpeg</code></dd>
+
+                  <dt>quality</dt>
+                  <dd>if <code>format</code> is <code>image/jpeg</code>, specifies
+                    the desired quality of JPEG compression in the 0..1 range, where 1
+                    means the highest quality and largest image data. Note that JPEG images are always opaque, even
+                    if the background color is specified as transparent. Use PNG images to handle background
+                    transparency.</dd>
+
+                  <dt>pixelRatio</dt>
+                  <dd>
+                    the pixel ratio to use when producing the export image. Use a value larger than <code>1</code>,
+                    such as <code>2</code> to create a higher-resolution image.
+                  </dd>
+                </dl>
+
+                <p>The visualization image can be used by the application in many different ways.
+                  On certain browsers, it is possible to
+                  <a target="_blank" href="http://jsfiddle.net/flyingsheep/wpQtH/">trigger a dialog</a>
+                  allowing the user to save the image to the local disk. The image data can be also
+                  sent to a server that will do further processing (for example save it or send it via e-mail
+                  somewhere).</p>
+
+                <div class="alert alert-danger">
+                  <strong>Heads up!</strong>
+                  <p>If the attribution logo was fetched from a different domain than
+                  the page that embeds the visualization, getting the visualization
+                  image will not be possible due to
+                  <a target="_blank" href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#security-with-canvas-elements">security constraints</a>.</p>
+                </div>
+
+                <p>The following example logs the size of the visualization image (the data URL string, not actual bytes)
+                  in various formats to <code>console</code>.</p>
+
+                <pre class="partial executable example">
+circles.set({
+  backgroundColor: "rgba(0,0,0,0)",
+  dataObject: largeDataSet,
+  onRolloutComplete: function() {
+    var opts = [
+      { format: "image/png" },
+      { format: "image/jpeg", quality: 0.2 },
+      { format: "image/jpeg", quality: 0.4 },
+      { format: "image/jpeg", quality: 0.6 },
+      { format: "image/jpeg", quality: 0.8 },
+      { format: "image/jpeg", quality: 1 }
+    ];
+    $(opts).each(function(i, format) {
+      console.log(format, "Image takes: " +
+                  (circles.get("imageData", format).length / 1024).toFixed(0) + "kB");
+    });
+  }
+});
+                </pre>
+
+                <p>This example opens up a popup windows with three renderings of the
+                  same visualization at different pixel ratios.</p>
+
+                <pre class="partial executable example">
+circles.set({
+  backgroundColor: "rgba(0,0,0,0)",
+  dataObject: largeDataSet,
+  onRolloutComplete: function() {
+    var opts = [
+      { format: "image/png", pixelRatio: 0.5 },
+      { format: "image/png", pixelRatio: 1 },
+      { format: "image/png", pixelRatio: 1.5 }
+    ];
+
+    var layout = circles.get("layout");
+    var popup = window.open("", "",
+            "innerWidth=" + (layout.w + 30) + "," +
+            "innerHeight=" + (layout.h + 100) + "," +
+            "resizable=yes,scrollbars=yes");
+
+    if (popup) {
+      popup.document.write('&lt;!DOCTYPE html&gt;&lt;html lang="en"&gt;&lt;head&gt;&lt;title&gt;Image export example&lt;/title&gt;&lt;/head&gt;&lt;body&gt;');
+      popup.document.write('&lt;p style="font-family: sans-serif;"&gt;Exported bitmaps at various pixelRatios.&lt;/p&gt;');
+      $(opts).each(function(i, format) {
+        console.log("Exporting at pixelRatio: " + format.pixelRatio);
+
+        popup.document.write("&lt;p&gt;Pixel ratio: " + format.pixelRatio + "&lt;/p&gt;");
+        popup.document.write("&lt;p&gt;&lt;img src='" + circles.get("imageData", format) + "' /&gt;&lt;/p&gt;");
+      });
+      popup.document.write('&lt;/body&gt;&lt;/html&gt;');
+    } else {
+      console.log("Could not open demo popup window.");
+    }
+  }
+});
+                </pre>
+              </div>
+            </div>
+
+            <div class="api-group">
+              <h2 id="options-interactions">Interactions</h2>
+
+              <div class="api">
+                <h3 id="selection" class="nodefault">selection</h3>
+
+                <dl class="dl-horizontal">
+                  <dt>getter</dt>
+                  <dd>
+                    <p>Calling <code>get("selection")</code> returns an object with the currently selected groups. The object
+                      contains one property, <code>groups</code>, containing an array of references to the model's groups.
+                      For example.</p>
+
+                    <pre class="partial executable example">
+circles.set("dataObject", { groups: [
+  { label: "Group 1", selected: true },
+  { label: "Group 2" },
+  { label: "Group 3", selected: true },
+  { label: "Group 4" }]});
+
+console.log(circles.get("selection").groups);
+                    </pre>
+                  </dd>
+
+                  <dt>setter</dt>
+                  <dd>
+                    <p>When setting the selection, various syntax flavors are accepted.</p>
+
+                    <ul>
+                      <li>
+                        <p>A string identifier of the group to select.</p>
+                        <pre class="partial executable example">circles.set("selection", "1");</pre>
+                      </li>
+
+                      <li>
+                        <p>An array of string identifiers of all groups to select.</p>
+                        <pre class="partial executable example">circles.set("selection", ["1", "2.1"]);</pre>
+                      </li>
+
+                      <li>
+                        <p>A hash with a key <code>all</code> indicating the selection applies to all groups, or
+                          a key <code>groups</code> with an array of group identifiers, and
+                          the desired selection state under the key <code>selected</code>.</p>
+
+                        <p>This selects all groups, for example:</p>
+                        <pre class="partial executable example">circles.set("selection", {all: true, selected: true});</pre>
+
+                        <p>This selects all groups, and then deselects certain groups:</p>
+                        <pre class="partial executable example">
+circles.set("selection", {all: true, selected: true});
+circles.set("selection", {groups: ["2.1", "1.2"], selected: false});
+                        </pre>
+
+                        <p>When a group under a collapsed parent is selected the parent
+                        will open up automatically. This default behavior can be controlled
+                        using the <code>open</code> attribute. The following example opens up the parent group
+                        (root) explicitly on selecting Group 4.</p>
+
+                        <pre class="partial executable example">
+circles.set({
+  visibleGroupCount: 3,
+  dataObject: { groups: [
+    { label: "Group 1" },
+    { label: "Group 2" },
+    { label: "Group 3" },
+    { label: "Group 4", id: "group.4" }
+  ]}
+});
+
+// Will bring group 4 into view by opening up the parent.
+circles.set("selection", { groups: ["group.4"], selected: true, open: true });
+                        </pre>
+                      </li>
+                    </ul>
+
+                    <p>Any selection changes affect only the groups specified in the selector. No callback events
+                      are triggered for selection changes introduced via API.</p>
+                  </dd>
+                </dl>
+              </div>
+
+              <div class="api">
+                <h3 id="open" class="nodefault">open</h3>
+
+                <dl class="dl-horizontal">
+                  <dt>getter</dt>
+                  <dd>
+                    <p>Calling <code>get("open")</code> returns an object with those groups that have the <code>open</code>
+                      attribute set to <code>true</code>, typically groups with children groups and an expander widget
+                      in the open state. The returned object
+                      contains one property, <code>groups</code>, containing an array of references to the model's groups.
+                      This may include the root group, as in this example.</p>
+
+                    <pre class="partial executable example">
+circles.set({
+  visibleGroupCount: 2,
+  dataObject: {
+    open: true,
+    label: "I'm the root!",
+    groups: [
+      { label: "Bad news"   },
+      { label: "Good news"  },
+      { label: "Other news" }
+    ]
+  }
+});
+console.log(circles.get("open").groups);
+                    </pre>
+                  </dd>
+
+                  <dt>setter</dt>
+                  <dd>
+                    <p>When altering the open state of groups, all syntax flavors from the <code>selection</code> attribute
+                      are supported. For example, given the following data model:</p>
+
+                    <pre class="partial executable example" id="setupOpenExamples">
+circles.set({
+  visibleGroupCount: 2,
+  dataObject: {
+    id: "root",
+    groups: [
+      { label:"Group 1", id: "1", groups: [
+        { label:"Group 1.1" },
+        { label:"Group 1.2" },
+        { label:"Group 1.3" }
+      ]},
+      { label:"Group 2", id: "2", groups: [
+        { label:"Group 2.1" },
+        { label:"Group 2.2" },
+        { label:"Group 2.3" }
+      ]},
+      { label:"Group 3", id: "3", groups: [
+        { label:"Group 3.1" },
+        { label:"Group 3.2" },
+        { label:"Group 3.3" }
+      ]}
+    ]
+  }
+});
+                    </pre>
+
+                    <p>We can open and collapse groups using the following.</p>
+
+                    <ul>
+                      <li>
+                        <p>A string identifier of the group.</p>
+                        <pre class="partial executable example" data-runbefore="setupOpenExamples">
+                          circles.set("open", "root");
+                        </pre>
+                      </li>
+
+                      <li>
+                        <p>An array of string identifiers of all involved groups.</p>
+                        <pre class="partial executable example" data-runbefore="setupOpenExamples">
+                          circles.set("open", ["1", "2"]);
+                        </pre>
+                      </li>
+
+                      <li>
+                        <p>A hash with a key <code>all</code> indicating the operation applies to all groups, or
+                          a key <code>groups</code> with an array of group identifiers, and
+                          the desired state under the key <code>open</code>.</p>
+
+                        <p>This opens up all groups, for example:</p>
+                        <pre class="partial executable example" data-runbefore="setupOpenExamples">
+                          circles.set("open", {all: true, open: true});
+                        </pre>
+
+                        <p>This opens up all groups, and collapses certain groups:</p>
+                        <pre class="partial executable example" data-runbefore="setupOpenExamples">
+circles.set("open", {all: true, open: true});
+circles.set("open", {groups: ["2"], open: false});
+                        </pre>
+                      </li>
+                    </ul>
+
+                    <p>Only the groups specified in the selector are affected. No callback events
+                      are triggered for changes introduced via API.</p>
+                  </dd>
+                </dl>
+              </div>
+
+              <div class="api">
+                <h3 id="zoom" class="nodefault">zoom</h3>
+
+                <dl class="dl-horizontal">
+                  <dt>getter</dt>
+                  <dd>
+                    <p>Calling <code>get("zoom")</code> returns an object with those groups that have the <code>zoom</code>
+                      attribute set to <code>true</code>, typically groups which the user zoomed-in by double clicking or
+                      tap-and-holding. The returned object
+                      contains one property, <code>groups</code>, containing an array of references to the model's groups.</p>
+                  </dd>
+
+                  <dt>setter</dt>
+                  <dd>
+                    <p>When altering the zoom state of groups, all syntax flavors from the <code>selection</code> attribute
+                      are supported.</p>
+
+                    <ul>
+                      <li>
+                        <p>A string identifier of the group.</p>
+                        <pre class="partial executable example">
+                          circles.set("zoom", "1");
+                        </pre>
+                      </li>
+
+                      <li>
+                        <p>An array of string identifiers of all involved groups.</p>
+                        <pre class="partial executable example">
+                          circles.set("zoom", ["1.1", "2.1"]);
+                        </pre>
+                      </li>
+
+                      <li>
+                        <p>A hash with a key <code>all</code> indicating the operation applies to all groups, or
+                          a key <code>groups</code> with an array of group identifiers, and
+                          the desired state under the key <code>zoomed</code>.</p>
+
+                        <p>This zooms-in on all groups, for example (although it makes little sense in practice because when
+                          all groups are zoomed-in their corrected weights will be equal their original weights):</p>
+                        <pre class="partial executable example">
+                          circles.set("zoom", {all: true, zoomed: true});
+                        </pre>
+
+                        <p>This clears the zoom state from certain groups:</p>
+                        <pre class="partial executable example">
+circles.set("zoom", {all: true, zoomed: true});
+circles.set("zoom", {groups: ["2", "1.1"], zoomed: false});
+                        </pre>
+                      </li>
+                    </ul>
+
+                    <p>Only the groups specified in the selector are affected. No callback events
+                      are triggered for changes introduced via API.</p>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+
+            <div class="api-group">
+              <h2 id="options-attribution">Attribution</h2>
+
+              <div class="api">
+                <h3 id="attributionLogo">attributionLogo</h3>
+
+                <p>The image to display for the attribution. The image can be specified
+                  as a relative or absolute HTTP URL or a data URI. When using HTTP
+                  URLs, the image should to be preloaded before visualization
+                  is embedded, otherwise it may not be immediately visible. For this
+                  reason, the data URIs are recommended. You can use services like
+                  <a href="http://dataurl.net" target="_blank">dataurl.net</a> to convert
+                  your images to data URIs.</p>
+
+                <div class="showInDemoVersion alert alert-danger">
+                  The demo version and all branded versions of Circles visualization have the attribution
+                  image locked. <a target="_blank" href="http://carrotsearch.com/circles-how-to-order">
+                  Contact Carrot Search</a> for licensing if you need a fully customizable version.
+                </div>
+
+                <pre class="partial executable example requiresFullVersion">
+circles.set("attributionLogo", "../demos/assets/img/logo-stub.png");
+                </pre>
+              </div>
+
+              <div class="api">
+                <h3 id="attributionUrl">attributionUrl</h3>
+
+                <p>The URL to open when the user clicks on the <code>attributionLogo</code>. Can be undefined.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="attributionPositionX">attributionPositionX</h3>
+
+                <p>Horizontal position for the attribution logo, expressed in pixels or as a percentage of the available
+                  container's width. "0%" means the left side of the visualization container,
+                  "100%" means the right side of the visualization container.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="attributionPositionY">attributionPositionY</h3>
+
+                <p>Vertical position for the attribution logo expressed in pixels or as percentage of the available
+                container's height. "0%" means the top side of the visualization container,
+                "100%" means the bottom side of the visualization window.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="attributionSize">attributionSize</h3>
+
+                <p>A callback function used to adjust or compute the attribution image's width and height.
+                  The callback function receives an associative array with the following properties.</p>
+
+                <dl class="dl-horizontal">
+                  <dt>imageWidth</dt>
+                  <dd>The current width of the image, in pixels.</dd>
+
+                  <dt>imageHeight</dt>
+                  <dd>The current height of the image, in pixels.</dd>
+
+                  <dt>layout</dt>
+                  <dd>An object reflecting current layout. The hash will contain the following properties:
+                    <code>x</code>,
+                    <code>y</code>,
+                    <code>w</code>,
+                    <code>h</code>. They reflect the visualization's client area (upper left corner's position,
+                    width and height.</dd>
+                </dl>
+
+                <p>The callback function is expected to modify (or leave unchanged)
+                  <code>imageWidth</code> and <code>imageHeight</code> properties. Any return value returned
+                  by the callback is ignored.</p>
+
+                <p>The callback function is called once per layout call for performance reasons.</p>
+
+                <p>The following demo places the attribution logo right in the center of the visualization
+                and resizes it to 33% of the available size, keeping the image proportional.</p>
+
+                <div class="alert alert-info showInDemoVersion">
+                  The logo is locked to this branded release's default one but the example will work.
+                </div>
+
+                <pre class="partial executable example" data-runbefore="installResizeHook" data-runafter="removeResizeHook">
+circles.set({
+  attributionLogo: "../demos/assets/img/logo-stub.png",
+  attributionPositionX: "50%",
+  attributionPositionY: "50%",
+  attributionStayOnTime: undefined,
+  attributionSize: function(attrs) {
+    with (attrs.layout) {
+      var aspect = attrs.imageWidth / attrs.imageHeight;
+      if (w > h) {
+        attrs.imageHeight = h * 0.5;
+        attrs.imageWidth  = attrs.imageHeight * aspect;
+      } else {
+        attrs.imageWidth  = w * 0.5;
+        attrs.imageHeight = attrs.imageWidth * aspect;
+      }
+    }
+  }
+});
+                </pre>
+              </div>
+
+              <div class="api">
+                <h3 id="attributionStayOnTime">attributionStayOnTime</h3>
+
+                <p>Duration (in seconds) after which the attribution logo is removed from view. An <code>undefined</code>
+                  value or zero indicates the attribution logo will stay on forever.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="attributionFadeInTime">attributionFadeInTime</h3>
+
+                <p>Fade-in transition duration (in seconds) for the attribution logo
+                  (if <code>attributionLogo</code> is defined).</p>
+              </div>
+
+              <div class="api">
+                <h3 id="attributionFadeOutTime">attributionFadeOutTime</h3>
+
+                <p>Fade-out transition duration (in seconds) after <code>attributionStayOnTime</code> expires
+                and the attribution logo should be removed from view.</p>
+              </div>
+            </div>
+
+            <div class="api-group">
+              <h2 id="options-debugging">Debugging</h2>
+
+              <div class="api">
+                <h3 id="logging">logging</h3>
+
+                <p>Enables logging of some debug information to <code>console</code>.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="textureMappingMesh">textureMappingMesh</h3>
+
+                <p>If <code>true</code> the texture mapping grid will be drawn on top of labels.
+                  Useful for adjusting texture mapping parameters. See <code>radialTextureStep</code>
+                  for an example where this option is used.</p>
+              </div>
+
+              <div class="api">
+                <h3 id="times" class="nodefault">times</h3>
+
+                <p>Execution times and statistics. The details of the returned hash object are not
+                guaranteed to work between versions but it may turn useful for debugging performance
+                problems.</p>
+
+                <pre class="partial executable example">
+window.setTimeout(function() {
+  console.log("Execution time stats: ", circles.get("times"));
+}, 500);
+                </pre>
+              </div>
+            </div>
+          </section>
+
+          <!--
+          <div class="api-group">
+            <h2 id=""></h2>
+
+            <div class="api">
+              <h3 id=""></h3>
+            </div>
+          </div>
+          -->
+
+          <hr />
+          <footer><p>&copy; Carrot Search s.c.</p></footer>
+        </div>
+      </div>
+    </div>
+
+    <script src="../demos/assets/js/jquery-1.8.2.min.js"></script>
+
+    <script src="../demos/assets/js/bootstrap-scrollspy.js"></script>
+    <script src="../demos/assets/js/prettify.js"></script>
+
+    <script src="../carrotsearch.circles.js"></script>
+    <script src="../carrotsearch.circles.asserts.js"></script>
+    <script src="../demos/assets/js/carrotsearch.api.helpers.js"></script>
+
+    <!-- Preload some data sets with JSONP. -->
+    <script>
+      window['dataSets'] = {};
+      modelDataAvailable = function(data, description) {
+        dataSets[description.file] = description;
+        description.data = data;
+
+        // Make a shorter alias to the large file.
+        if (description.file == "data-mining-500-topic-hierarchical.jsonp") {
+          window['largeDataSet'] = data;
+        }
+      }
+    </script>
+    <script src="../demos/assets/data/data-mining-500-topic-hierarchical.jsonp"></script>
+    <script src="../demos/assets/data/full-3-level.jsonp"></script>
+  </body>
+</html>

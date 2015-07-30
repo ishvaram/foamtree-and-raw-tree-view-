@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>FoamTree legacy emulation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+
+    <meta charset="utf-8" />
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/common.css" rel="stylesheet" />
+    <style>
+      /** Emulation of FoamTree 2.0.x line demo layout */
+      body {
+        background-color: #1d1c1b;
+        color: white;
+      }
+      #container {
+        background: url(assets/img/checker.png) #252423;
+      }
+      #visualization {
+        background-color: rgba(0, 0, 0, 0.3);
+        top: 15px;
+        bottom: 15px;
+        left: 15px;
+        right: 15px;
+      }
+      #inner {
+        position: absolute;
+        top: 5px;
+        bottom: 5px;
+        left: 5px;
+        right: 5px;
+      }
+      code {
+        background-color: #333;
+        border-color: #444;
+        color: #b3d8ff;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="visualization"><div id="inner"></div></div>
+    </div>
+
+   
+    <!-- Include FoamTree visualization code -->
+    <script src="../carrotsearch.foamtree.js"></script>
+
+    <!-- Include Hammer.js for mobile interactions -->
+    <script src="assets/js/hammer.min.js"></script>
+
+    <!-- A simple static JSON-P loader, optional -->
+    <script src="assets/js/carrotsearch.jsonp.js"></script>
+
+    <script>
+      window.addEventListener("load", function () {
+        // Initialize FoamTree 3.0.x with settings that emulate FoamTree 2.0.x
+        // as closely as possible. Feel free to tweak or disable the customizations
+        // to use some of the new features introduced in version 3.0.x.
+        var foamtree = new CarrotSearchFoamTree({
+          id: "inner",
+          pixelRatio: window.devicePixelRatio || 1,
+
+          // The "ordered" initializer produces layouts known from FoamTree 2.0.x defaults.
+          relaxationInitializer: "ordered",
+
+          // The following decorator produces colors just like FoamTree 2.0.x defaults.
+          groupColorDecorator: function (opts, params, vars) {
+            if (params.level === 0) {
+              vars.groupColor.h = params.indexByWeight / params.siblingCount * 300;
+              vars.groupColor.a = 0.95;
+            }
+          },
+
+          // Disable saturation and lightness corrections introduced in FoamTree 3.0.x.
+          rainbowSaturationCorrection: 1,
+          rainbowLightnessCorrection: 0,
+
+          // Make the subgroup color variations more subtle, like in FoamTree 2.0.x.
+          rainbowLightnessShift: 40,
+
+          // Use FoamTree 2.0.x defaults for group label font and colors.
+          groupLabelFontFamily: "Impact, sans-serif",
+          groupLabelLightColor: "rgba(255, 255, 255, 0.8)",
+          groupLabelDarkColor: "rgba(0, 0, 0, 0.8)",
+
+          // FoamTree 2.0.x did not support group polygon strokes so we disable them.
+          groupStrokeType: "none",
+
+          // Use FoamTree 2.0.x defaults for polygon border sizes.
+          groupBorderWidth: 3,
+          groupInsetWidth: 6,
+
+          // Use FoamTree 2.0.x defaults for the parent group opacity.
+          parentFillOpacity: 0.85,
+
+          // Draw group selection outlines in white.
+          groupSelectionOutlineColor: "#fff",
+
+          // For readability, FoamTree 3.0.x introduced a subtle drop shadow
+          // around the selection outline and we keep it enabled here.
+          groupSelectionOutlineWidth: 4,
+          groupSelectionOutlineShadowSize: 0.5,
+          groupSelectionOutlineShadowColor: "#000",
+
+          // FoamTree 3.0.x does not offer a rollout animation similar to
+          // the default one known from the 2.0.x line. Below are options
+          // for a gentle fading rollout that is similar to the "fadein" rollout
+          // type known from FoamTree 2.0.x.
+          rolloutStartPoint: "topleft",
+          rolloutEasing: "squareInOut",
+          rolloutScalingStrength: -0.3,
+          rolloutRotationStrength: 0,
+
+          // FoamTree 2.0.x did not offer pullback effects, so we disable them here.
+          pullbackDuration: 0,
+
+          // Just in case you'd like to keep the group expose feature introduced
+          // in FoamTree 3.0.x, below are the setting that make the expose look
+          // good on dark backgrounds.
+          groupExposureShadowColor: "#000",
+          groupUnexposureLightnessShift: -50,
+          groupUnexposureLabelColorThreshold: 0.15,
+
+          // On double click, open the group for browsing instead of exposing it.
+          onGroupDoubleClick: function (event) {
+            // Prevent the default behavior (expose)
+            event.preventDefault();
+
+            // Open the group instead
+            this.open(event.group);
+          },
+
+          // FoamTree 2.0.x opens the group on Shift+click and closes on Ctrl+Shift+click.
+          onGroupClick: function(event) {
+            if (event.shiftKey) {
+              // Don't select group in this case
+              event.preventDefault();
+
+              // Open or close depending on the Ctrl key
+              this.open({
+                groups: event.ctrlKey ? event.bottommostOpenGroup : event.group,
+                open: !event.ctrlKey
+              });
+            }
+          }
+        });
+
+        // Initiate loading of the data
+        JSONP.load("assets/data/data-mining-100-topic-hierarchical.js", "modelDataAvailable", function (dataObject) {
+          foamtree.set("dataObject", dataObject);
+        });
+
+        // Resize FoamTree on orientation change
+        window.addEventListener("orientationchange", foamtree.resize);
+
+        // Resize on window size changes
+        window.addEventListener("resize", (function () {
+          var timeout;
+          return function () {
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(foamtree.resize, 300);
+          }
+        })());
+      });
+    </script>
+  </body>
+</html>

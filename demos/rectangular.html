@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>FoamTree rectangular and order-preserving layouts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+
+    <meta charset="utf-8"/>
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="assets/css/common.css" rel="stylesheet"/>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="visualization"></div>
+    </div>
+    <div id="side">
+      <h2 class="font">Rectangular and order-preserving layouts</h2>
+
+      <p>
+        By default FoamTree lays out the input groups as polygons in the order of increasing weights. Sometimes,
+        however, it may be desirable to preserve the order of groups presented in the input data object.
+      </p>
+
+      <p>
+        One way to preserve the input order is to set the <code><a href="../api/index.html#layout">layout</a></code> option to
+        <code>ordered</code>, which will cause FoamTree to lay out the groups as polygons in the left-to-right,
+        top-to-bottom fashion.
+      </p>
+
+      <p>
+        Alternatively, to lay out the groups as polygons approximately in the left-to-right
+        arrangement, set <code><a href="../api/index.html#layout">layout</a></code> to <code>relaxed</code> and
+        <code><a href="../api/index.html#relaxationInitializer">relaxationInitializer</a></code> to <code>ordered</code>. How closely
+        the original order will be preserved depends on how imbalanced group weights are. The lower the variance
+        of the weights, the better the order will be preserved.
+      </p>
+
+      <p>
+        Using the experiments section below, you can see how well the original order of groups will be preserved
+        with different layout and initializer settings. To make order preservation judgments easier, this example sets
+        a custom <code><a href="../api/index.html#groupColorDecorator">groupColorDecorator</a></code> to vary the
+        lightness of the polygon depending on the position in the data object.
+      </p>
+
+      <h4 class="font">Experiments</h4>
+
+      <p>
+        Generate new data with
+        <a href="#data-uniform">uniform</a> |
+        <a href="#data-balanced">balanced</a> |
+        <a href="#data-unbalanced">unbalanced</a> weights.
+        <br />
+        Set layout to
+        <a href="#layout-ordered">ordered</a> |
+        <a href="#layout-squarified">squarified</a>.
+        <br />
+        Set group shapes to
+        <a href="#shape-rectangle">rectangles</a> |
+        <a href="#shape-polygon">polygons</a>.
+        <br />
+      </p>
+
+      <h4 class="font">What's in the code?</h4>
+
+      <ul>
+        <li>
+          <p>
+            Generating ordered rectangular layout by setting the <code><a href="../api/index.html#layout">layout</a></code>
+            option to <code>ordered</code> or <code>squarified</code>.
+          </p>
+        </li>
+
+        <li>
+          <p>
+            Varying the lightness of the group's color depending on its position in the data object using a custom
+            <code><a href="../api/index.html#groupColorDecorator">groupColorDecorator</a></code>.
+          </p>
+        </li>
+
+        <li>
+          <p>
+            Disabling the color lightness and saturation corrections required for the default FoamTree layout by setting
+            <code><a href="../api/index.html#rainbowSaturationCorrection">rainbowSaturationCorrection</a></code> to
+            <code>1.0</code>  and
+            <code><a href="../api/index.html#rainbowLightnessCorrection">rainbowLightnessCorrection</a></code> to
+            <code>0.0</code>.
+          </p>
+        </li>
+      </ul>
+    </div>
+
+    <script src="../carrotsearch.foamtree.js"></script>
+
+    <!-- Include Hammer.js for mobile interactions. Not required for desktop-only apps. -->
+    <script src="assets/js/hammer.min.js"></script>
+    <script src="assets/js/jquery-2.0.3.min.js"></script>
+
+    <script>
+      // Once the content loads, initialize the demo
+      window.addEventListener("load", function () {
+        var foamtree = new CarrotSearchFoamTree({
+          id: "visualization",
+          pixelRatio: window.devicePixelRatio || 1,
+
+          layout: "ordered",
+          relaxationInitializer: "ordered",
+          layoutByWeightOrder: false,
+          rainbowSaturationCorrection: 1,
+          rainbowLightnessCorrection: 0,
+
+          groupFillType: "plain",
+
+          // We'll make the relaxation visible
+          relaxationVisible: true,
+          relaxationMaxDuration: 3000,
+          relaxationQualityThreshold: 0.1,
+
+          rolloutDuration: 0,
+          pullbackDuration: 0,
+          fadeDuration: 0,
+
+          groupColorDecorator: function (opts, params, vars) {
+            vars.groupColor.h = 80;
+            vars.groupColor.l = 100 - 100 * params.index / params.siblingCount;
+          }
+        });
+
+        // Resize FoamTree on orientation change
+        window.addEventListener("orientationchange", foamtree.resize);
+
+        // Resize on window size changes
+        window.addEventListener("resize", (function () {
+          var timeout;
+          return function () {
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(foamtree.resize, 300);
+          }
+        })());
+
+        foamtree.set("dataObject", generateGroups(32, 0.5));
+
+        // React on link clicks
+        $(document).on("click", "a[href ^= '#']", function (e) {
+          e.preventDefault();
+
+          var action = this.hash.substring(1).split("-");
+
+          switch (action[0]) {
+            case "data":
+              var params;
+              switch (action[1]) {
+                case "uniform":
+                  foamtree.set("dataObject", generateGroups(32, 1.0));
+                  break;
+
+                case "balanced":
+                  foamtree.set("dataObject", generateGroups(32, 0.5));
+                  break;
+
+                case "unbalanced":
+                  foamtree.set("dataObject", generateGroups(32, 0.1));
+                  break;
+              }
+              break;
+
+            case "layout":
+              if (foamtree.get("layout") != "relaxed") {
+                foamtree.set("layout", action[1]);
+              } else {
+                foamtree.set("relaxationInitializer", action[1]);
+              }
+              foamtree.set("dataObject", foamtree.get("dataObject"));
+              break;
+
+            case "shape":
+              switch (action[1]) {
+                case "rectangle":
+                  foamtree.set("layout", foamtree.get("relaxationInitializer"));
+                  break;
+
+                case "polygon":
+                  foamtree.set("layout", "relaxed");
+                  break;
+              }
+              foamtree.set("dataObject", foamtree.get("dataObject"));
+              break;
+          }
+        });
+
+        function generateGroups(count, balance) {
+          var groups = [];
+          for (var i = 1; i <= count; i++) {
+            groups.push({label: i.toString(), weight: balance + (1 - balance) * Math.random()});
+          }
+          return {groups: groups};
+        }
+      });
+    </script>
+  </body>
+</html>

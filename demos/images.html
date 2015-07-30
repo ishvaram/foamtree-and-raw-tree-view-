@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>FoamTree: images inside group polygons</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta property="og:image" content="http://get.carrotsearch.com/foamtree/latest/demos/assets/img/main-thumbnail.jpg"/>
+
+    <meta charset="utf-8" />
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/common.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="container"><div id="visualization"></div></div>
+    <div id="side">
+      <h2>Images inside group polygons</h2>
+
+      <p>
+        You can use the <a href="../api/index.html#groupContentDecorator">groupContentDecorator</a> callback
+        to draw arbitrary content in each group polygon. This example loads a set of
+        <a href="https://github.com/adamfairhead/webicons" target="_blank">social icons in the SVG format</a> and
+        renders them inside FoamTree.
+      </p>
+
+      <h4>What's in the code?</h4>
+
+      <p>
+        <ul>
+          <li>
+            using the <a href="../api/index.html#groupContentDecorator">groupContentDecorator</a> to draw
+            custom contents inside group polygons
+          </li>
+      
+          <li>
+            asynchronous loading of SVG images, redrawing FoamTree once new images finished loading
+          </li>
+          
+          <li>
+            a workaround for the <a target="_blank" href="https://bugzilla.mozilla.org/show_bug.cgi?id=1017847">Firefox
+            bug related to SVG rendering</a>. Please also note that the quality of SVG rendering onto Canvas on Firefox
+            seems much lower than on other browsers.
+          </li>
+        </ul>
+      </p>
+    </div>
+
+    <script src="../carrotsearch.foamtree.js"></script>
+
+    <!-- Include Hammer.js for mobile interactions. Not required for desktop-only apps. -->
+    <script src="assets/js/hammer.min.js"></script>
+
+    <script src="assets/js/jquery-2.0.3.min.js"></script>
+    <script>
+      // Firefox has problems handling SVG images on canvas
+      // (https://bugzilla.mozilla.org/show_bug.cgi?id=1017847),
+      // so we need to enable a workaround.
+      var isFirefox = window.navigator.userAgent.indexOf("Firefox") >= 0;
+
+      // The list of images to load
+      var svgs = [
+        "../demos/assets/svg/webicon-aboutme.svg",
+        "../demos/assets/svg/webicon-adn.svg",
+        "../demos/assets/svg/webicon-android.svg",
+        "../demos/assets/svg/webicon-apple.svg",
+        "../demos/assets/svg/webicon-behance.svg",
+        "../demos/assets/svg/webicon-bitbucket.svg",
+        "../demos/assets/svg/webicon-blogger.svg",
+        "../demos/assets/svg/webicon-branch.svg",
+        "../demos/assets/svg/webicon-coderwall.svg",
+        "../demos/assets/svg/webicon-creativecloud.svg",
+        "../demos/assets/svg/webicon-deviantart.svg",
+        "../demos/assets/svg/webicon-dribbble.svg",
+        "../demos/assets/svg/webicon-dropbox.svg",
+        "../demos/assets/svg/webicon-evernote.svg",
+        "../demos/assets/svg/webicon-f500px.svg",
+        "../demos/assets/svg/webicon-facebook.svg",
+        "../demos/assets/svg/webicon-fairheadcreative.svg",
+        "../demos/assets/svg/webicon-flickr.svg",
+        "../demos/assets/svg/webicon-foursquare.svg",
+        "../demos/assets/svg/webicon-git.svg",
+        "../demos/assets/svg/webicon-github.svg",
+        "../demos/assets/svg/webicon-goodreads.svg",
+        "../demos/assets/svg/webicon-google.svg",
+        "../demos/assets/svg/webicon-googleplay.svg",
+        "../demos/assets/svg/webicon-googleplus.svg",
+        "../demos/assets/svg/webicon-hangouts.svg",
+        "../demos/assets/svg/webicon-html5.svg",
+        "../demos/assets/svg/webicon-icloud.svg",
+        "../demos/assets/svg/webicon-indiegogo.svg",
+        "../demos/assets/svg/webicon-instagram.svg",
+        "../demos/assets/svg/webicon-instapaper.svg",
+        "../demos/assets/svg/webicon-kickstarter.svg",
+        "../demos/assets/svg/webicon-klout.svg",
+        "../demos/assets/svg/webicon-lastfm.svg",
+        "../demos/assets/svg/webicon-linkedin.svg",
+        "../demos/assets/svg/webicon-mac.svg",
+        "../demos/assets/svg/webicon-mail.svg",
+        "../demos/assets/svg/webicon-medium.svg",
+        "../demos/assets/svg/webicon-mercurial.svg",
+        "../demos/assets/svg/webicon-mixi.svg",
+        "../demos/assets/svg/webicon-msn.svg",
+        "../demos/assets/svg/webicon-openid.svg",
+        "../demos/assets/svg/webicon-orkut.svg",
+        "../demos/assets/svg/webicon-picasa.svg",
+        "../demos/assets/svg/webicon-pinterest.svg",
+        "../demos/assets/svg/webicon-pocketapp.svg",
+        "../demos/assets/svg/webicon-potluck.svg",
+        "../demos/assets/svg/webicon-quora.svg",
+        "../demos/assets/svg/webicon-rdio.svg",
+        "../demos/assets/svg/webicon-reddit.svg",
+        "../demos/assets/svg/webicon-renren.svg",
+        "../demos/assets/svg/webicon-rss.svg",
+        "../demos/assets/svg/webicon-skitch.svg",
+        "../demos/assets/svg/webicon-skype.svg",
+        "../demos/assets/svg/webicon-soundcloud.svg",
+        "../demos/assets/svg/webicon-spotify.svg",
+        "../demos/assets/svg/webicon-stackoverflow.svg",
+        "../demos/assets/svg/webicon-stumbleupon.svg",
+        "../demos/assets/svg/webicon-svn.svg",
+        "../demos/assets/svg/webicon-svtle.svg",
+        "../demos/assets/svg/webicon-tent.svg",
+        "../demos/assets/svg/webicon-tripadvisor.svg",
+        "../demos/assets/svg/webicon-tumblr.svg",
+        "../demos/assets/svg/webicon-twitter.svg",
+        "../demos/assets/svg/webicon-viadeo.svg",
+        "../demos/assets/svg/webicon-vimeo.svg",
+        "../demos/assets/svg/webicon-vine.svg",
+        "../demos/assets/svg/webicon-weibo.svg",
+        "../demos/assets/svg/webicon-windows.svg",
+        "../demos/assets/svg/webicon-wordpress.svg",
+        "../demos/assets/svg/webicon-xing.svg",
+        "../demos/assets/svg/webicon-yahoo.svg",
+        "../demos/assets/svg/webicon-yelp.svg",
+        "../demos/assets/svg/webicon-youtube.svg",
+        "../demos/assets/svg/webicon-youversion.svg",
+        "../demos/assets/svg/webicon-zerply.svg"
+      ];
+
+      // Initialize FoamTree after the whole page loads to make sure
+      // the element has been laid out and has non-zero dimensions.
+      window.addEventListener("load", function() {
+        // Convert the list of SVG URLs into the list of groups to display.
+        var groups = svgs.map(function(url, i) {
+          var group = {
+            weight: 0.2 + Math.pow(i / svgs.length, 2)
+          };
+
+          // Initiate loading of the image
+          var img = new Image();
+          img.onload = function() {
+            // Once the image has been loaded,
+            // put it in the group's data object
+            group.image = img;
+
+            // Redraw FoamTree to show the newly loaded image
+            foamtree.redraw();
+          };
+          img.src = url;
+          return group
+        });
+
+        var foamtree = new CarrotSearchFoamTree({
+          // Identifier of the HTML element defined above
+          id: "visualization",
+
+          dataObject: {
+            groups: groups
+          },
+
+          // Use a simple fading animation
+          rolloutDuration: 0,
+          pullbackDuration: 0,
+          fadeDuration: 2000,
+
+          // Show relaxation
+          relaxationVisible: true,
+          relaxationMaxDuration: 6000,
+          relaxationQualityThreshold: 0.1,
+
+          // Draw all groups in grey
+          rainbowStartColor: "hsla(0, 0%, 80%, 1.0)",
+          rainbowEndColor: "hsla(0, 0%, 80%, 1.0)",
+          rainbowLightnessCorrection: 0,
+
+          // Draw icons during animation
+          wireframeContentDecorationDrawing: "always",
+
+          // The decorator that draws our images
+          groupContentDecorator: function (opts, params, vars) {
+            vars.groupLabelDrawn = false;
+
+            // Check if image already loaded
+            if (params.group.image) {
+              // Compute the rectangle into which we'll render the image
+              var box = CarrotSearchFoamTree.geometry.rectangleInPolygon(
+                params.polygon, params.polygonCenterX, params.polygonCenterY, 1.0, 0.65);
+
+              // Draw the image
+              var imageSize = isFirefox ? Math.round(box.w) : box.w;
+              params.context.drawImage(params.group.image, box.x, box.y, imageSize, imageSize);
+            }
+          }
+        });
+
+        // Resize FoamTree on orientation change
+        window.addEventListener("orientationchange", foamtree.resize);
+
+        // Resize on window size changes
+        window.addEventListener("resize", (function () {
+          var timeout;
+          return function () {
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(foamtree.resize, 300);
+          }
+        })());
+      });
+    </script>
+  </body>
+</html>
