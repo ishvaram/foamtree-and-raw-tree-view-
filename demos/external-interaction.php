@@ -3,10 +3,10 @@ error_reporting(E_ALL);
 ini_set("display_errors", true);
 $caseid=$_GET['caseid'];
 $sourceroot=$_GET['sourceroot'];
- if($sourceroot=='trial.assistmycase.com')
+ 
 {
     shell_exec("sh clustertrial.sh $caseid");
-    $conn=pg_connect("host=178.63.22.132 port=5432 dbname=trial_prod user=amc_engineer password=serendio123");
+    
     if($conn){
        $sq=pg_query("select case_cluster from case_ where id=$caseid");
        $cluster=pg_fetch_result($sq, 0, 'case_cluster');
@@ -16,10 +16,10 @@ $sourceroot=$_GET['sourceroot'];
     fputs($fp, $json);
     fclose($fp);
 }
-else if($sourceroot=='app.extrosive.com')
+
 {
     shell_exec("sh clustertrial.sh $caseid");
-    $conn=pg_connect("host=178.63.22.132 port=5432 dbname=trial_prod user=amc_engineer password=serendio123");
+   
     if($conn){
        $sq=pg_query("select case_cluster from case_ where id=$caseid");
        $cluster=pg_fetch_result($sq, 0, 'case_cluster');
@@ -29,10 +29,10 @@ else if($sourceroot=='app.extrosive.com')
     fputs($fp, $json);
     fclose($fp);
 }
-else if($sourceroot=='app.detavue.com')
+
 {
        // shell_exec("sh clustertrial.sh $caseid");
-            $conn=pg_connect("host=178.63.22.132 port=5432 dbname=trial_prod user=amc_engineer password=serendio123");
+         
             if($conn){
                        $sq=pg_query("select case_cluster from case_ where id=$caseid");
                               $cluster=pg_fetch_result($sq, 0, 'case_cluster');
@@ -49,7 +49,7 @@ else
    // echo shell_exec("sh clustercase.sh $caseid");
     //print_r($shell);
     //exit;
-    $conn=pg_connect("host=178.63.22.132 port=5432 dbname=vipin_test user=amc_engineer password=serendio123");
+  
    // print_r($conn);
     if($conn){
         $sq=pg_query("select case_cluster from case_ where id=$caseid");
